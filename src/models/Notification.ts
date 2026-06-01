@@ -1,0 +1,26 @@
+import mongoose, { Document, Model, Schema } from 'mongoose';
+
+export interface INotification extends Document {
+  recipientId?: mongoose.Types.ObjectId; // if targeting a specific user
+  targetRole?: 'admin' | 'director' | 'department_head' | 'manager' | 'team_head' | 'employee'; // if targeting all users with a specific role
+  type: string;
+  message: string;
+  isRead: boolean;
+  link?: string;
+  createdAt: Date;
+}
+
+const NotificationSchema: Schema = new Schema(
+  {
+    recipientId: { type: Schema.Types.ObjectId, ref: 'User' },
+    targetRole: { type: String, enum: ['admin', 'director', 'department_head', 'manager', 'team_head', 'employee'] },
+    type: { type: String, required: true },
+    message: { type: String, required: true },
+    isRead: { type: Boolean, default: false },
+    link: { type: String },
+  },
+  { timestamps: true }
+);
+
+const Notification: Model<INotification> = mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema);
+export default Notification;

@@ -1,0 +1,19 @@
+| Page                | Purpose               | What to Show                                                                                                             | Main Actions                                      |
+| ------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| `/admin/dashboard`  | Company overview      | Total employees, present today, absent today, late employees, leave requests, payroll summary, charts, recent activities | Add employee, generate payroll, approve leave     |
+| `/admin/employees`  | Manage employees      | Employee table, department, role, shift, contact info, status, filters                                                   | Add, edit, delete, disable login, reset password  |
+| `/admin/attendance` | Attendance monitoring | Daily attendance table, check-in/out, work hours, late marks, overtime, attendance source                                | Edit attendance, approve overtime, export reports |
+| `/admin/leaves`     | Leave management      | Pending/approved/rejected leave requests, leave balances                                                                 | Approve leave, reject leave                       |
+| `/admin/payroll`    | Salary management     | Salary table, deductions, overtime, net salary, payment status                                                           | Generate salary, mark paid, download payslip      |
+| `/admin/reports`    | Analytics & exports   | Attendance reports, payroll reports, leave analytics, charts                                                             | Export PDF/CSV/Excel                              |
+| `/admin/settings`   | System configuration  | Company settings, attendance rules, leave settings, payroll settings                                                     | Update system settings                            |
+
+
+
+| Page                   | Purpose            | What to Show                                                           | Main Actions                    |
+| ---------------------- | ------------------ | ---------------------------------------------------------------------- | ------------------------------- |
+| `/employee/dashboard`  | Personal overview  | Attendance summary, leave balance, salary summary, attendance calendar | Check-in/out, apply leave       |
+| `/employee/attendance` | Attendance history | Daily attendance records, monthly summary                              | Filter attendance               |
+| `/employee/leaves`     | Leave management   | Leave balance, leave history, leave requests                           | Apply leave                     |
+| `/employee/payslips`   | Salary access      | Payslip list, salary breakdown                                         | Download payslip                |
+| `/employee/profile`    | Personal profile   | Personal info, employment details                                      | Update profile, change password |
