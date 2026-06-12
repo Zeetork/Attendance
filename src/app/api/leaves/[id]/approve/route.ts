@@ -5,14 +5,14 @@ import Leave from '@/models/Leave';
 import User from '@/models/User';
 import Notification from '@/models/Notification';
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const { status } = await req.json(); // "approved" or "rejected"
 
     if (!['approved', 'rejected'].includes(status)) {

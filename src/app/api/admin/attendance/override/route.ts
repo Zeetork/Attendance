@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
               const credit = await CompOffCredit.findOne({ usedAgainstLeave: existingLeave._id });
               if (credit) {
                 credit.isUsed = false;
-                credit.usedAgainstLeave = null;
+                credit.usedAgainstLeave = undefined;
                 await credit.save();
                 user.leaveBalance.compensatoryOff.taken -= 1;
                 user.leaveBalance.compensatoryOff.available += 1;
@@ -188,7 +188,7 @@ export async function POST(req: NextRequest) {
                const credit = await CompOffCredit.findOne({ usedAgainstLeave: existingLeave._id });
                if (credit) {
                  credit.isUsed = false;
-                 credit.usedAgainstLeave = null;
+                 credit.usedAgainstLeave = undefined;
                  await credit.save();
                  user.leaveBalance.compensatoryOff.taken -= 1;
                  user.leaveBalance.compensatoryOff.available += 1;
