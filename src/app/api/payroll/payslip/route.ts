@@ -102,21 +102,21 @@ export async function GET(req: NextRequest) {
           <tbody>
             <tr>
               <td>Basic Salary</td>
-              <td>${payroll.monthlySalary.toFixed(2)}</td>
+              <td>${(payroll.monthlySalary || 0).toFixed(2)}</td>
               <td>Leave / Absent</td>
-              <td>${payroll.deductions.toFixed(2)}</td>
+              <td>${(payroll.deductions || 0).toFixed(2)}</td>
             </tr>
             <tr class="total-row">
               <td>Total Earnings</td>
-              <td>${payroll.monthlySalary.toFixed(2)}</td>
+              <td>${(payroll.monthlySalary || 0).toFixed(2)}</td>
               <td>Total Deductions</td>
-              <td>${payroll.deductions.toFixed(2)}</td>
+              <td>${(payroll.deductions || 0).toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
 
         <div class="net-pay">
-          Net Payable: ₹${payroll.finalSalary.toFixed(2)}
+          Net Payable: ₹${(payroll.finalSalary || 0).toFixed(2)}
         </div>
 
         <div class="footer">
@@ -142,7 +142,7 @@ export async function GET(req: NextRequest) {
 
     await browser.close();
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as any, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

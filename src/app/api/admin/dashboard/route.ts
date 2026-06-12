@@ -59,7 +59,7 @@ export async function GET() {
       }
       return {
         text,
-        time: a.updatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        time: (a as any).updatedAt ? (a as any).updatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         type
       };
     });

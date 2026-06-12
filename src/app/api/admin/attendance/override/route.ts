@@ -217,7 +217,8 @@ export async function POST(req: NextRequest) {
       // Handle Comp-Off logic for manual override
       const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       const dayName = dayNames[attendanceDate.getDay()];
-      const isWeeklyOff = user?.shiftId && (!user.shiftId.workingDays || !user.shiftId.workingDays.includes(dayName));
+      const shift = user?.shiftId as any;
+      const isWeeklyOff = shift && (!shift.workingDays || !shift.workingDays.includes(dayName));
       
       const Holiday = (await import('@/models/Holiday')).default;
       const isHoliday = await Holiday.exists({

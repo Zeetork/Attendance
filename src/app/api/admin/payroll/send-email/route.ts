@@ -257,13 +257,13 @@ export async function POST(req: NextRequest) {
       <div class="salary-box">
 
         <div class="card earnings">
-          <div class="row"><span>Basic Salary</span><span>₹${payroll.monthlySalary.toFixed(2)}</span></div>
+          <div class="row"><span>Basic Salary</span><span>₹${(payroll.monthlySalary || 0).toFixed(2)}</span></div>
           <div class="row"><span>Allowances</span><span>₹0.00</span></div>
           <div class="row"><span>Bonus</span><span>₹0.00</span></div>
         </div>
 
         <div class="card deductions">
-          <div class="row"><span>Absence</span><span>₹${payroll.deductions.toFixed(2)}</span></div>
+          <div class="row"><span>Absence</span><span>₹${(payroll.deductions || 0).toFixed(2)}</span></div>
           <div class="row"><span>Tax</span><span>₹0.00</span></div>
           <div class="row"><span>Other</span><span>₹0.00</span></div>
         </div>
@@ -274,7 +274,7 @@ export async function POST(req: NextRequest) {
     <!-- NET PAY -->
     <div class="net-pay">
       <span>Net Payable</span>
-      <span>₹${payroll.finalSalary.toFixed(2)}</span>
+      <span>₹${(payroll.finalSalary || 0).toFixed(2)}</span>
     </div>
 
   </div>
@@ -337,7 +337,7 @@ export async function POST(req: NextRequest) {
       attachments: [
         {
           filename: fileName,
-          content: pdfBuffer,
+          content: Buffer.from(pdfBuffer),
         },
       ],
     });

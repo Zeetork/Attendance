@@ -56,8 +56,8 @@ export async function GET(req: NextRequest) {
     const payrolls = await Payroll.find({ month: currentMonth, year: currentYear });
     const payrollStats = {
       totalGenerated: payrolls.length,
-      totalPayout: payrolls.reduce((sum, p) => sum + p.finalSalary, 0),
-      totalDeductions: payrolls.reduce((sum, p) => sum + p.deductions, 0)
+      totalPayout: payrolls.reduce((sum, p) => sum + (p.finalSalary || 0), 0),
+      totalDeductions: payrolls.reduce((sum, p) => sum + (p.deductions || 0), 0)
     };
 
     return NextResponse.json({

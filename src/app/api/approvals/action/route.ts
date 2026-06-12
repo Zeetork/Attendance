@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       default: return NextResponse.json({ error: 'Invalid requestType' }, { status: 400 });
     }
 
-    request = await ModelType.findById(id);
+    request = await (ModelType as any).findById(id);
     if (!request) return NextResponse.json({ error: 'Request not found' }, { status: 404 });
 
     // Permissions check
