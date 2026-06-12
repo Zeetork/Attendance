@@ -10,9 +10,6 @@ attendance
 ├─ public
 │  ├─ TF_logo.png
 │  └─ TF_logo2.png
-├─ query_db.js
-├─ scripts
-│  └─ fix-joining-dates.ts
 ├─ src
 │  ├─ app
 │  │  ├─ admin
@@ -20,6 +17,9 @@ attendance
 │  │  │  │  ├─ AttendanceClient.tsx
 │  │  │  │  └─ page.tsx
 │  │  │  ├─ calendar
+│  │  │  │  ├─ AttendanceCalendar.tsx
+│  │  │  │  └─ page.tsx
+│  │  │  ├─ companies
 │  │  │  │  └─ page.tsx
 │  │  │  ├─ dashboard
 │  │  │  │  ├─ DashboardClient.tsx
@@ -31,6 +31,16 @@ attendance
 │  │  │  ├─ leaves
 │  │  │  │  ├─ LeavesClient.tsx
 │  │  │  │  └─ page.tsx
+│  │  │  ├─ letters
+│  │  │  │  ├─ create
+│  │  │  │  │  └─ page.tsx
+│  │  │  │  ├─ layout.tsx
+│  │  │  │  ├─ logs
+│  │  │  │  │  └─ page.tsx
+│  │  │  │  ├─ sent
+│  │  │  │  │  └─ page.tsx
+│  │  │  │  └─ templates
+│  │  │  │     └─ page.tsx
 │  │  │  ├─ organization
 │  │  │  │  ├─ HierarchyBuilderClient.tsx
 │  │  │  │  └─ page.tsx
@@ -42,17 +52,24 @@ attendance
 │  │  │  ├─ reports
 │  │  │  │  ├─ ReportsClient.tsx
 │  │  │  │  └─ page.tsx
-│  │  │  └─ settings
-│  │  │     ├─ CalendarClient.tsx
-│  │  │     ├─ page.tsx
-│  │  │     └─ policies
-│  │  │        ├─ PoliciesClient.tsx
-│  │  │        └─ page.tsx
+│  │  │  ├─ settings
+│  │  │  │  ├─ CalendarClient.tsx
+│  │  │  │  └─ page.tsx
+│  │  │  └─ shifts
+│  │  │     ├─ ShiftsClient.tsx
+│  │  │     └─ page.tsx
 │  │  ├─ api
 │  │  │  ├─ admin
 │  │  │  │  ├─ attendance
 │  │  │  │  │  ├─ [id]
 │  │  │  │  │  │  └─ route.ts
+│  │  │  │  │  ├─ override
+│  │  │  │  │  │  └─ route.ts
+│  │  │  │  │  └─ route.ts
+│  │  │  │  ├─ calendar
+│  │  │  │  │  └─ export
+│  │  │  │  │     └─ route.ts
+│  │  │  │  ├─ companies
 │  │  │  │  │  └─ route.ts
 │  │  │  │  ├─ dashboard
 │  │  │  │  │  └─ route.ts
@@ -90,6 +107,10 @@ attendance
 │  │  │  │     └─ route.ts
 │  │  │  ├─ calendar
 │  │  │  │  └─ route.ts
+│  │  │  ├─ companies
+│  │  │  │  ├─ route.ts
+│  │  │  │  └─ switch
+│  │  │  │     └─ route.ts
 │  │  │  ├─ cron
 │  │  │  │  └─ attendance
 │  │  │  │     └─ route.ts
@@ -124,6 +145,19 @@ attendance
 │  │  │  │  │     └─ route.ts
 │  │  │  │  └─ apply
 │  │  │  │     └─ route.ts
+│  │  │  ├─ letters
+│  │  │  │  ├─ bulk-send
+│  │  │  │  │  └─ route.ts
+│  │  │  │  ├─ email-logs
+│  │  │  │  │  └─ route.ts
+│  │  │  │  ├─ employees
+│  │  │  │  │  └─ route.ts
+│  │  │  │  ├─ history
+│  │  │  │  │  └─ route.ts
+│  │  │  │  └─ templates
+│  │  │  │     ├─ [id]
+│  │  │  │     │  └─ route.ts
+│  │  │  │     └─ route.ts
 │  │  │  ├─ notifications
 │  │  │  │  └─ route.ts
 │  │  │  ├─ payroll
@@ -137,9 +171,9 @@ attendance
 │  │  │  │  └─ submit
 │  │  │  │     └─ route.ts
 │  │  │  ├─ settings
-│  │  │  │  └─ policies
-│  │  │  │     └─ route.ts
 │  │  │  └─ shifts
+│  │  │     ├─ [id]
+│  │  │     │  └─ route.ts
 │  │  │     └─ route.ts
 │  │  ├─ employee
 │  │  │  ├─ approvals
@@ -172,46 +206,49 @@ attendance
 │  ├─ auth.ts
 │  ├─ components
 │  │  ├─ AttendanceButtons.tsx
-│  │  ├─ AttendanceCalendar.tsx
+│  │  ├─ CompanyProvider.tsx
+│  │  ├─ CompanySwitcher.tsx
 │  │  ├─ DashboardLayoutClient.tsx
 │  │  ├─ NotificationSlide.tsx
 │  │  ├─ ProfileClient.tsx
 │  │  ├─ Sidebar.tsx
 │  │  └─ TopNav.tsx
-│  ├─ hooks
 │  ├─ lib
+│  │  ├─ bulkEmailService.ts
 │  │  ├─ emailService.ts
-│  │  └─ mongodb.ts
+│  │  ├─ mongodb.ts
+│  │  ├─ multiTenantPlugin.ts
+│  │  └─ pdfService.ts
 │  ├─ middleware.ts
 │  ├─ models
 │  │  ├─ ApprovalAuditLog.ts
 │  │  ├─ Attendance.ts
 │  │  ├─ AttendanceCorrection.ts
 │  │  ├─ CompOffCredit.ts
+│  │  ├─ Company.ts
 │  │  ├─ EmployeeLeaveBalance.ts
+│  │  ├─ GeneratedLetter.ts
 │  │  ├─ Holiday.ts
 │  │  ├─ Leave.ts
-│  │  ├─ LeavePolicy.ts
+│  │  ├─ LetterAuditLog.ts
+│  │  ├─ LetterEmailLog.ts
+│  │  ├─ LetterTemplate.ts
 │  │  ├─ MissPunch.ts
 │  │  ├─ Notification.ts
 │  │  ├─ OvertimeRequest.ts
 │  │  ├─ Payroll.ts
 │  │  ├─ Shift.ts
+│  │  ├─ SystemAuditLog.ts
 │  │  ├─ User.ts
 │  │  └─ WFHRequest.ts
 │  ├─ scripts
-│  │  ├─ seed.ts
-│  │  └─ seedHierarchy.ts
+│  │  └─ seed.ts
 │  ├─ services
 │  │  ├─ LeaveBalanceEngine.ts
 │  │  └─ hierarchy.service.ts
-│  ├─ types
-│  │  ├─ global.d.ts
-│  │  └─ next-auth.d.ts
-│  ├─ utils
-│  └─ validations
-├─ step.txt
-├─ steps.txt
+│  └─ types
+│     ├─ global.d.ts
+│     └─ next-auth.d.ts
 └─ tsconfig.json
 
 ```
