@@ -15,7 +15,11 @@ import {
   LogOut,
   Receipt,
   X,
-  Network
+  Network,
+  CalendarDays,
+  Mail,
+  Building2,
+  Clock
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import clsx from 'clsx';
@@ -33,18 +37,24 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { name: 'Payroll', href: '/admin/payroll', icon: Banknote },
     { name: 'Reports', href: '/admin/reports', icon: FileBarChart },
     { name: 'Organization', href: '/admin/organization', icon: Network },
-    { name: 'Settings', href: '/admin/settings', icon: Settings },
+    { name: 'Companies', href: '/admin/companies', icon: Building2 },
+    { name: 'Calendar', href: '/admin/calendar', icon: CalendarDays },
+    { name: 'Calendar Settings', href: '/admin/settings', icon: Settings },
+    { name: 'Shifts', href: '/admin/shifts', icon: Clock },
+    { name: 'Letters', href: '/admin/letters/create', icon: Mail },
   ];
 
   const employeeLinks = [
     { name: 'Dashboard', href: '/employee/dashboard', icon: LayoutDashboard },
     { name: 'Attendance', href: '/employee/attendance', icon: CalendarClock },
     { name: 'Leaves', href: '/employee/leaves', icon: CalendarOff },
+    { name: 'Approval Center', href: '/employee/approvals', icon: Network },
+    { name: 'Calendar', href: '/employee/calendar', icon: CalendarDays },
     { name: 'Payslips', href: '/employee/payslips', icon: Receipt },
     { name: 'Profile', href: '/employee/profile', icon: UserIcon },
   ];
 
-  const links = role === 'admin' ? adminLinks : employeeLinks;
+  const links = ['admin', 'super_admin'].includes(role as string) ? adminLinks : employeeLinks;
 
   return (
     <div className="flex flex-col w-64 h-[100dvh] bg-neutral-900 border-r border-neutral-800 transition-all duration-300">

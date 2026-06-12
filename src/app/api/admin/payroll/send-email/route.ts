@@ -5,9 +5,7 @@ import Payroll from '@/models/Payroll';
 import User from '@/models/User';
 import puppeteer from 'puppeteer';
 import { format } from 'date-fns';
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendEmail } from '@/lib/emailService';
 
 export async function POST(req: NextRequest) {
   let browser;
@@ -15,7 +13,7 @@ export async function POST(req: NextRequest) {
   try {
     // ================= AUTH =================
     const session = await auth();
-    if (!session || session.user.role !== 'admin') {
+    if (!session || !['admin', 'super_admin'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -326,12 +324,10 @@ export async function POST(req: NextRequest) {
     }
 
     const fileName = `Payslip_${user.employeeId}_${monthName}.pdf`;
-    const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
 
     // ================= EMAIL =================
-    const { data, error } = await resend.emails.send({
-      from: 'HRMS <onboarding@resend.dev>',
-      to: [user.email],
+    await sendEmail({
+      to: user.email,
       subject: `Your Payslip for ${monthName}`,
       html: `
         <p>Dear ${user.name},</p>
@@ -341,22 +337,15 @@ export async function POST(req: NextRequest) {
       attachments: [
         {
           filename: fileName,
-          content: pdfBase64,
+          content: pdfBuffer,
         },
       ],
     });
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json({
       success: true,
       message: 'Payslip sent successfully',
-      data,
+      data: null,
     });
 
   } catch (err: any) {

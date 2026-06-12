@@ -1,11 +1,13 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IUser extends Document {
+  companyId?: mongoose.Types.ObjectId;
+  companyIds: mongoose.Types.ObjectId[];
   employeeId: string;
   name: string;
   email: string;
   password?: string;
-  role: 'admin' | 'director' | 'department_head' | 'manager' | 'team_head' | 'employee';
+  role: 'super_admin' | 'company_admin' | 'admin' | 'director' | 'department_head' | 'manager' | 'team_head' | 'employee';
   department: string;
   designation: string;
   reportsTo?: mongoose.Types.ObjectId | null;
@@ -19,16 +21,28 @@ export interface IUser extends Document {
   ifscCode?: string;
   joiningDate: Date;
   monthlySalary: number;
+  gender?: 'male' | 'female' | 'other';
   isActive: boolean;
+  leaveBalance?: {
+    sickLeave: { total: number; available: number; taken: number; withoutCertificate: { limit: number; used: number }; withCertificate: { limit: number; used: number } };
+    casualLeave: { total: number; available: number; taken: number; carryForward: number };
+    compensatoryOff: { total: number; available: number; taken: number; earned: number };
+    restrictedLeave: { total: number; available: number; taken: number };
+    maternityLeave: { total: number; available: number; taken: number };
+    paternityLeave: { total: number; available: number; taken: number };
+    leaveWithoutPay: { taken: number };
+  };
 }
 
 const UserSchema: Schema = new Schema(
   {
+    companyId: { type: Schema.Types.ObjectId, ref: 'Company' },
+    companyIds: [{ type: Schema.Types.ObjectId, ref: 'Company' }],
     employeeId: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, select: false },
-    role: { type: String, enum: ['admin', 'director', 'department_head', 'manager', 'team_head', 'employee'], default: 'employee' },
+    role: { type: String, enum: ['super_admin', 'company_admin', 'admin', 'director', 'department_head', 'manager', 'team_head', 'employee'], default: 'employee' },
     department: { type: String, required: true },
     designation: { type: String, required: true },
     reportsTo: { type: Schema.Types.ObjectId, ref: 'User', default: null },
@@ -42,10 +56,54 @@ const UserSchema: Schema = new Schema(
     ifscCode: { type: String },
     joiningDate: { type: Date, required: true },
     monthlySalary: { type: Number, required: true },
+    gender: { type: String, enum: ['male', 'female', 'other'] },
     isActive: { type: Boolean, default: true },
+    leaveBalance: {
+      sickLeave: {
+        total: { type: Number, default: 12 },
+        available: { type: Number, default: 12 },
+        taken: { type: Number, default: 0 },
+        withoutCertificate: { limit: { type: Number, default: 4 }, used: { type: Number, default: 0 } },
+        withCertificate: { limit: { type: Number, default: 8 }, used: { type: Number, default: 0 } }
+      },
+      casualLeave: {
+        total: { type: Number, default: 0 },
+        available: { type: Number, default: 0 },
+        taken: { type: Number, default: 0 },
+        carryForward: { type: Number, default: 0 }
+      },
+      compensatoryOff: {
+        total: { type: Number, default: 0 },
+        available: { type: Number, default: 0 },
+        taken: { type: Number, default: 0 },
+        earned: { type: Number, default: 0 }
+      },
+      restrictedLeave: {
+        total: { type: Number, default: 2 },
+        available: { type: Number, default: 2 },
+        taken: { type: Number, default: 0 }
+      },
+      maternityLeave: {
+        total: { type: Number, default: function(this: any) { return this.gender === 'female' ? 60 : 0; } },
+        available: { type: Number, default: function(this: any) { return this.gender === 'female' ? 60 : 0; } },
+        taken: { type: Number, default: 0 }
+      },
+      paternityLeave: {
+        total: { type: Number, default: function(this: any) { return this.gender === 'male' ? 2 : 0; } },
+        available: { type: Number, default: function(this: any) { return this.gender === 'male' ? 2 : 0; } },
+        taken: { type: Number, default: 0 }
+      },
+      leaveWithoutPay: {
+        taken: { type: Number, default: 0 }
+      }
+    }
   },
   { timestamps: true }
 );
+
+// Indexes for multi-company support
+UserSchema.index({ companyId: 1 });
+UserSchema.index({ companyIds: 1 });
 
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 export default User;

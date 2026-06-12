@@ -15,6 +15,7 @@ export default function AttendanceClient() {
   const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [shiftFilter, setShiftFilter] = useState('');
+  const [limit, setLimit] = useState('100');
 
   // Debounce search
   useEffect(() => {
@@ -25,11 +26,11 @@ export default function AttendanceClient() {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, dateFilter, statusFilter, shiftFilter]);
+  }, [debouncedSearch, dateFilter, statusFilter, shiftFilter, limit]);
 
   const queryParams = new URLSearchParams({
     page: page.toString(),
-    limit: '10',
+    limit: limit,
     ...(debouncedSearch && { search: debouncedSearch }),
     ...(dateFilter && { date: dateFilter }),
     ...(statusFilter && { status: statusFilter }),
@@ -143,6 +144,12 @@ export default function AttendanceClient() {
       absent: 'bg-red-500/10 text-red-500 border-red-500/20',
       'half-day': 'bg-purple-500/10 text-purple-500 border-purple-500/20',
       late: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+      'Weekly Off': 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20',
+      'Work From Home': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      'On Duty': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+      'Restricted Holiday': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+      'Leave': 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+      'Holiday': 'bg-teal-500/10 text-teal-400 border-teal-500/20',
     };
     return (
       <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${styles[status] || 'bg-neutral-800 text-neutral-400'}`}>
@@ -196,6 +203,12 @@ export default function AttendanceClient() {
           <option value="late">Late</option>
           <option value="half-day">Half-Day</option>
           <option value="absent">Absent</option>
+          <option value="Weekly Off">Weekly Off</option>
+          <option value="Work From Home">Work From Home</option>
+          <option value="On Duty">On Duty</option>
+          <option value="Leave">Leave</option>
+          <option value="Holiday">Holiday</option>
+          <option value="Restricted Holiday">Restricted Holiday</option>
         </select>
 
         <select 
@@ -207,6 +220,18 @@ export default function AttendanceClient() {
           {shiftData?.shifts?.map((s: any) => (
             <option key={s._id} value={s._id}>{s.shiftName}</option>
           ))}
+        </select>
+
+        <select 
+          className="w-full md:w-32 bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+          value={limit}
+          onChange={(e) => setLimit(e.target.value)}
+        >
+          <option value="10">10 / page</option>
+          <option value="25">25 / page</option>
+          <option value="50">50 / page</option>
+          <option value="100">100 / page</option>
+          <option value="500">500 / page</option>
         </select>
       </div>
 
@@ -263,9 +288,12 @@ export default function AttendanceClient() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 bg-neutral-800 text-neutral-300 text-xs rounded">
+                      <span className="px-2 py-1 bg-neutral-800 text-neutral-300 text-xs rounded block w-max mb-1">
                         {record.userId?.shiftId?.shiftName || 'N/A'}
                       </span>
+                      <div className="text-[10px] text-neutral-500">
+                        {record.userId?.shiftId?.workingDays?.map((d: string) => d.slice(0, 3)).join('-') || 'N/A'}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
                       {format(new Date(record.date), 'MMM dd, yyyy')}
@@ -303,7 +331,7 @@ export default function AttendanceClient() {
         {data?.pagination && data.pagination.totalPages > 1 && (
           <div className="bg-neutral-900 px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-neutral-800">
             <div className="text-sm text-neutral-400 text-center sm:text-left">
-              Showing <span className="font-medium text-white">{(page - 1) * 10 + 1}</span> to <span className="font-medium text-white">{Math.min(page * 10, data.pagination.total)}</span> of <span className="font-medium text-white">{data.pagination.total}</span> results
+              Showing <span className="font-medium text-white">{(page - 1) * parseInt(limit) + 1}</span> to <span className="font-medium text-white">{Math.min(page * parseInt(limit), data.pagination.total)}</span> of <span className="font-medium text-white">{data.pagination.total}</span> results
             </div>
             <div className="flex gap-2">
               <button 
@@ -362,6 +390,12 @@ export default function AttendanceClient() {
                     <option value="late">Late</option>
                     <option value="half-day">Half-Day</option>
                     <option value="absent">Absent</option>
+                    <option value="Weekly Off">Weekly Off</option>
+                    <option value="Work From Home">Work From Home</option>
+                    <option value="On Duty">On Duty</option>
+                    <option value="Leave">Leave</option>
+                    <option value="Holiday">Holiday</option>
+                    <option value="Restricted Holiday">Restricted Holiday</option>
                   </select>
                 </div>
 

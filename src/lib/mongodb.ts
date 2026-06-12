@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import { multiTenantPlugin } from './multiTenantPlugin';
+
+// Plugin will be applied below if not already registered
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 
@@ -9,7 +12,18 @@ if (!MONGODB_URI) {
 let cached = global.mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = global.mongoose = { conn: null, promise: null, pluginRegistered: false };
+}
+
+if (!cached.pluginRegistered) {
+  mongoose.plugin(multiTenantPlugin);
+  cached.pluginRegistered = true;
+}
+
+// In development, clear Mongoose models on hot reload to prevent schema caching issues
+if (process.env.NODE_ENV !== 'production') {
+  mongoose.models = {};
+  mongoose.modelSchemas = {};
 }
 
 async function dbConnect() {
@@ -27,6 +41,19 @@ async function dbConnect() {
     });
   }
   cached.conn = await cached.promise;
+
+  // Temporarily drop old indexes that conflict with multi-company setup
+  try {
+    const db = mongoose.connection.db;
+    if (db) {
+      await db.collection('shifts').dropIndex('shiftName_1').catch(() => {});
+      await db.collection('leavepolicies').dropIndex('leaveCode_1').catch(() => {});
+      await db.collection('payrolls').dropIndex('userId_1_month_1_year_1').catch(() => {});
+    }
+  } catch (e) {
+    console.error('Error dropping indexes:', e);
+  }
+
   return cached.conn;
 }
 

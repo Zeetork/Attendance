@@ -1,4 +1,4 @@
-import { NextResponse } from 'next-auth/middleware'; // Need standard NextResponse instead
+import { NextResponse } from 'next-auth/middleware';
 import { NextRequest } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
       loginTime: now,
       status,
       lateMinutes,
+      companyId: session.user.companyId,
     });
 
     if (status === 'late') {
@@ -71,6 +72,7 @@ export async function POST(req: NextRequest) {
         type: 'LATE_CHECKIN',
         message: `${user.name} checked in late by ${lateMinutes} minutes.`,
         link: '/admin/attendance',
+        companyId: session.user.companyId,
       });
     }
 

@@ -1,6 +1,7 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IHoliday extends Document {
+  companyId: mongoose.Types.ObjectId;
   holidayName: string;
   holidayType: 'public' | 'restricted' | 'company' | 'half-day' | 'working-day';
   description?: string;
@@ -12,6 +13,7 @@ export interface IHoliday extends Document {
 
 const HolidaySchema: Schema = new Schema(
   {
+    companyId: { type: Schema.Types.ObjectId, ref: 'Company', required: false },
     holidayName: { type: String, required: true },
     holidayType: { 
       type: String, 
@@ -26,6 +28,8 @@ const HolidaySchema: Schema = new Schema(
   },
   { timestamps: true }
 );
+
+HolidaySchema.index({ companyId: 1 });
 
 const Holiday: Model<IHoliday> = mongoose.models.Holiday || mongoose.model<IHoliday>('Holiday', HolidaySchema);
 export default Holiday;

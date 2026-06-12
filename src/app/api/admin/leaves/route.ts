@@ -7,7 +7,7 @@ import User from '@/models/User'; // Ensure User is registered
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session || session.user.role !== 'admin') {
+    if (!session || !['admin', 'super_admin'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

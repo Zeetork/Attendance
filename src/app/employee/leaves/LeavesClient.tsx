@@ -4,6 +4,7 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { format } from 'date-fns';
 import { Plus, X, CheckCircle, XCircle, Clock, Loader2, Calendar } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -13,10 +14,11 @@ export default function EmployeeLeavesClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
-    leaveType: 'Casual Leave',
+    leaveType: '',
     fromDate: '',
     toDate: '',
-    reason: ''
+    reason: '',
+    attachments: [] as string[]
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,24 +39,44 @@ export default function EmployeeLeavesClient() {
       
       mutate();
       setIsModalOpen(false);
-      setFormData({ leaveType: 'Casual Leave', fromDate: '', toDate: '', reason: '' });
+      setFormData({ leaveType: '', fromDate: '', toDate: '', reason: '', attachments: [] });
+      toast.success('Leave applied successfully');
     } catch (err: any) {
-      alert(err.message || 'Error applying for leave');
+      toast.error(err.message || 'Error applying for leave');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    Promise.all(files.map(file => {
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    })).then(base64Files => {
+      setFormData(prev => ({ ...prev, attachments: [...prev.attachments, ...base64Files] }));
+    });
+  };
+
   const leaves = data?.leaves || [];
+  const balanceData = data?.balance;
   
-  // Calculate stats
-  const approvedLeaves = leaves.filter((l: any) => l.status === 'approved');
-  const takenDays = approvedLeaves.reduce((acc: number, l: any) => {
-    const days = Math.round((new Date(l.toDate).getTime() - new Date(l.fromDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    return acc + days;
-  }, 0);
-  const totalAllowance = 24;
-  const balance = totalAllowance - takenDays;
+  // Calculate total taken days across all paid leave types
+  const takenDays = balanceData ? (balanceData.casualLeave.taken + balanceData.sickLeave.taken + balanceData.restrictedLeave.taken) : 0;
+  
+  // Calculate total available balance across all paid leave types
+  const availableBalance = balanceData ? (
+    balanceData.casualLeave.available + 
+    balanceData.sickLeave.available + 
+    balanceData.restrictedLeave.available + 
+    balanceData.compensatoryOff.available
+  ) : 0;
+  
+  const totalAllowance = balanceData ? (balanceData.casualLeave.total + balanceData.sickLeave.total + balanceData.restrictedLeave.total) : 0;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -80,32 +102,41 @@ export default function EmployeeLeavesClient() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-sm flex items-center">
-          <div className="rounded-lg p-3 bg-blue-500/10 mr-4">
-            <Calendar className="h-6 w-6 text-blue-500" />
-          </div>
-          <div>
-            <div className="text-sm text-neutral-400 font-medium">Total Allowance</div>
-            <div className="text-2xl font-bold text-white">{totalAllowance} Days</div>
-          </div>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-sm flex items-center">
-          <div className="rounded-lg p-3 bg-red-500/10 mr-4">
-            <XCircle className="h-6 w-6 text-red-500" />
-          </div>
-          <div>
-            <div className="text-sm text-neutral-400 font-medium">Leaves Taken</div>
-            <div className="text-2xl font-bold text-white">{takenDays} Days</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Summary Cards */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          <div className="text-sm text-neutral-400 font-medium mb-2">Casual Leave</div>
+          <div className="flex justify-between items-baseline">
+            <div className="text-2xl font-bold text-white">{balanceData?.casualLeave.available ?? '-'}</div>
+            <div className="text-xs text-neutral-500">Taken: {balanceData?.casualLeave.taken ?? '-'}</div>
           </div>
         </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-sm flex items-center">
-          <div className="rounded-lg p-3 bg-green-500/10 mr-4">
-            <CheckCircle className="h-6 w-6 text-green-500" />
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          <div className="text-sm text-neutral-400 font-medium mb-2">Sick Leave</div>
+          <div className="flex justify-between items-baseline">
+            <div className="text-2xl font-bold text-white">{balanceData?.sickLeave.available ?? '-'}</div>
+            <div className="text-xs text-neutral-500">Taken: {balanceData?.sickLeave.taken ?? '-'}</div>
           </div>
-          <div>
-            <div className="text-sm text-neutral-400 font-medium">Available Balance</div>
-            <div className="text-2xl font-bold text-white">{balance} Days</div>
+        </div>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          <div className="text-sm text-neutral-400 font-medium mb-2">Restricted Holiday</div>
+          <div className="flex justify-between items-baseline">
+            <div className="text-2xl font-bold text-white">{balanceData?.restrictedLeave.available ?? '-'}</div>
+            <div className="text-xs text-neutral-500">Taken: {balanceData?.restrictedLeave.taken ?? '-'}</div>
+          </div>
+        </div>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          <div className="text-sm text-neutral-400 font-medium mb-2">Compensatory Off</div>
+          <div className="flex justify-between items-baseline">
+            <div className="text-2xl font-bold text-white">{balanceData?.compensatoryOff.available ?? '-'}</div>
+            <div className="text-xs text-neutral-500">Taken: {balanceData?.compensatoryOff.taken ?? '-'}</div>
+          </div>
+        </div>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+          <div className="text-sm text-neutral-400 font-medium mb-2">Leave Without Pay</div>
+          <div className="flex justify-between items-baseline">
+            <div className="text-2xl font-bold text-neutral-400">{balanceData?.leaveWithoutPay.taken ?? '-'}</div>
+            <div className="text-xs text-neutral-500">Taken</div>
           </div>
         </div>
       </div>
@@ -140,7 +171,7 @@ export default function EmployeeLeavesClient() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-neutral-300">{format(new Date(leave.fromDate), 'MMM dd, yyyy')} - {format(new Date(leave.toDate), 'MMM dd, yyyy')}</div>
-                        <div className="text-xs text-neutral-500">{days} Day{days !== 1 && 's'}</div>
+                        <div className="text-xs text-neutral-500">{leave.numberOfDays || days} Day{(leave.numberOfDays || days) !== 1 && 's'}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-neutral-300 max-w-xs truncate" title={leave.reason}>{leave.reason}</div>
@@ -182,10 +213,14 @@ export default function EmployeeLeavesClient() {
                     value={formData.leaveType}
                     onChange={(e) => setFormData({...formData, leaveType: e.target.value})}
                   >
-                    <option value="Casual Leave">Casual Leave</option>
+                    <option value="" disabled>-- Select Leave Type --</option>
                     <option value="Sick Leave">Sick Leave</option>
-                    <option value="Paid Leave">Paid Leave</option>
-                    <option value="Unpaid Leave">Unpaid Leave</option>
+                    <option value="Casual Leave">Casual Leave</option>
+                    <option value="Compensatory Off">Compensatory Off</option>
+                    <option value="Restricted Holiday">Restricted Holiday</option>
+                    <option value="Maternity Leave">Maternity Leave</option>
+                    <option value="Paternity Leave">Paternity Leave</option>
+                    <option value="Leave Without Pay">Leave Without Pay</option>
                   </select>
                 </div>
                 
@@ -224,6 +259,21 @@ export default function EmployeeLeavesClient() {
                     onChange={(e) => setFormData({...formData, reason: e.target.value})}
                     placeholder="Briefly describe the reason for your leave..."
                   ></textarea>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-300 mb-1">Supporting Documents</label>
+                  <input
+                    type="file"
+                    multiple
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-neutral-400 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500/10 file:text-blue-500 hover:file:bg-blue-500/20 text-sm"
+                    onChange={handleFileUpload}
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">Medical certificate required for Sick Leave &gt; 4 days.</p>
+                  {formData.attachments.length > 0 && (
+                    <div className="mt-2 text-sm text-green-500">{formData.attachments.length} file(s) attached</div>
+                  )}
                 </div>
 
                 <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse border-t border-neutral-800 pt-4">

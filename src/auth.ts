@@ -21,13 +21,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const user = await User.findOne({ email: credentials.email }).select('+password');
+        const user = await User.findOne({ email: credentials.email }, null, { bypassTenant: true }).select('+password');
+        console.log('User found:', !!user, 'isActive:', user?.isActive);
 
         if (!user || !user.isActive) {
+          console.log('Login failed: user not found or not active');
           return null;
         }
 
         const isMatch = await bcrypt.compare(credentials.password as string, user.password);
+        console.log('Password match:', isMatch);
 
         if (!isMatch) {
           return null;
@@ -38,6 +41,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role,
+          companyId: user.companyId ? user.companyId.toString() : undefined,
+          companyIds: user.companyIds ? user.companyIds.map((id: any) => id.toString()) : [],
         };
       },
     }),

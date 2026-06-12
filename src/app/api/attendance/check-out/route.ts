@@ -21,6 +21,9 @@ export async function POST(req: NextRequest) {
       userId,
       date: { $gte: todayStart, $lte: todayEnd },
     });
+    
+    const User = (await import('@/models/User')).default;
+    const user = await User.findById(userId).populate('shiftId');
 
     if (!attendance) {
       return Response.json({ error: 'Not checked in today' }, { status: 400 });
@@ -43,6 +46,48 @@ export async function POST(req: NextRequest) {
     }
 
     await attendance.save();
+
+    // Comp-Off Engine logic
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayName = dayNames[now.getDay()];
+    
+    const isWeeklyOff = user?.shiftId && !user.shiftId.workingDays.includes(dayName);
+
+    const Holiday = (await import('@/models/Holiday')).default;
+    const isHoliday = await Holiday.exists({
+      date: { $gte: todayStart, $lte: todayEnd },
+      holidayType: { $in: ['public', 'company'] }
+    });
+
+    if (isWeeklyOff || isHoliday) {
+       const CompOffCredit = (await import('@/models/CompOffCredit')).default;
+       
+       // Check if credit already exists to prevent duplicates
+       const existingCredit = await CompOffCredit.findOne({ employeeId: userId, attendanceDate: { $gte: todayStart, $lte: todayEnd } });
+       
+       if (!existingCredit) {
+         const expiry = new Date(now);
+         expiry.setMonth(expiry.getMonth() + 3); // expires after 3 months
+  
+         await CompOffCredit.create({
+           employeeId: userId,
+           attendanceDate: now,
+           earnedDate: now,
+           availableFromDate: now, // Available immediately
+           expiryDate: expiry,
+           companyId: session.user.companyId,
+         });
+  
+         const Notification = (await import('@/models/Notification')).default;
+         await Notification.create({
+            recipientId: userId,
+            type: 'COMP_OFF_EARNED',
+            message: 'You have earned 1 Compensatory Off for working on a holiday/Weekly Off.',
+            link: '/employee/leaves',
+            companyId: session.user.companyId,
+         });
+       }
+    }
 
     return Response.json({ message: 'Checked out successfully', attendance }, { status: 200 });
   } catch (error: any) {

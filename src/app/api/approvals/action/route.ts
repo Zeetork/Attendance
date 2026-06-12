@@ -1,0 +1,165 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import dbConnect from '@/lib/mongodb';
+import Leave from '@/models/Leave';
+import MissPunch from '@/models/MissPunch';
+import AttendanceCorrection from '@/models/AttendanceCorrection';
+import OvertimeRequest from '@/models/OvertimeRequest';
+import WFHRequest from '@/models/WFHRequest';
+import ApprovalAuditLog from '@/models/ApprovalAuditLog';
+import Notification from '@/models/Notification';
+import Attendance from '@/models/Attendance';
+import User from '@/models/User';
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id, requestType, status, finalCheckIn, finalCheckOut } = await req.json(); // status = approved | rejected
+    if (!['approved', 'rejected'].includes(status)) {
+      return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+    }
+
+    await dbConnect();
+    const userId = session.user.id;
+
+    let request;
+    let employeeId;
+    let ModelType;
+
+    switch (requestType) {
+      case 'LEAVE': ModelType = Leave; break;
+      case 'MISS_PUNCH': ModelType = MissPunch; break;
+      case 'ATTENDANCE_CORRECTION': ModelType = AttendanceCorrection; break;
+      case 'OVERTIME': ModelType = OvertimeRequest; break;
+      case 'WFH': ModelType = WFHRequest; break;
+      default: return NextResponse.json({ error: 'Invalid requestType' }, { status: 400 });
+    }
+
+    request = await ModelType.findById(id);
+    if (!request) return NextResponse.json({ error: 'Request not found' }, { status: 404 });
+
+    // Permissions check
+    const currentUser = await User.findById(userId);
+    const isAdmin = currentUser?.role === 'admin';
+    const approverField = requestType === 'LEAVE' ? request.currentApprover : request.approverId;
+    const isApprover = approverField?.toString() === userId;
+
+    if (!isAdmin && !isApprover) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const previousStatus = request.status;
+    request.status = status;
+    
+    if (requestType === 'LEAVE') {
+       request.approvedBy = userId;
+    } else if (status === 'approved' && (requestType === 'MISS_PUNCH' || requestType === 'ATTENDANCE_CORRECTION')) {
+       if (finalCheckIn) request.requestedCheckIn = new Date(finalCheckIn);
+       if (finalCheckOut) request.requestedCheckOut = new Date(finalCheckOut);
+    }
+
+    await request.save();
+
+    // If approved, handle side effects
+    if (status === 'approved') {
+      if (requestType === 'LEAVE') {
+        const { LeaveBalanceEngine } = await import('@/services/LeaveBalanceEngine');
+        await LeaveBalanceEngine.syncLeaveBalance(request.userId);
+        const user = await User.findById(request.userId);
+        
+        if (user && user.leaveBalance) {
+          if (request.leaveType === 'Casual Leave') {
+            user.leaveBalance.casualLeave.taken += request.numberOfDays;
+            user.leaveBalance.casualLeave.available -= request.numberOfDays;
+          } else if (request.leaveType === 'Sick Leave') {
+            user.leaveBalance.sickLeave.taken += request.numberOfDays;
+            user.leaveBalance.sickLeave.available -= request.numberOfDays;
+          } else if (request.leaveType === 'Restricted Holiday') {
+            user.leaveBalance.restrictedLeave.taken += request.numberOfDays;
+            user.leaveBalance.restrictedLeave.available -= request.numberOfDays;
+          } else if (request.leaveType === 'Maternity Leave') {
+            user.leaveBalance.maternityLeave.taken += request.numberOfDays;
+            user.leaveBalance.maternityLeave.available -= request.numberOfDays;
+          } else if (request.leaveType === 'Paternity Leave') {
+            user.leaveBalance.paternityLeave.taken += request.numberOfDays;
+            user.leaveBalance.paternityLeave.available -= request.numberOfDays;
+          } else if (request.leaveType === 'Leave Without Pay') {
+            user.leaveBalance.leaveWithoutPay.taken += request.numberOfDays;
+          } else if (request.leaveType === 'Compensatory Off') {
+            const CompOffCredit = (await import('@/models/CompOffCredit')).default;
+            const credits = await CompOffCredit.find({ 
+              employeeId: request.userId, 
+              isUsed: false 
+            }).sort({ earnedDate: 1 }).limit(request.numberOfDays);
+            
+            for (const credit of credits) {
+              credit.isUsed = true;
+              credit.usedAgainstLeave = request._id;
+              await credit.save();
+            }
+            user.leaveBalance.compensatoryOff.taken += credits.length;
+            user.leaveBalance.compensatoryOff.available -= credits.length;
+          }
+          user.markModified('leaveBalance');
+          await user.save();
+        }
+      } else if (requestType === 'MISS_PUNCH' || requestType === 'ATTENDANCE_CORRECTION') {
+        const atDate = requestType === 'MISS_PUNCH' ? request.date : request.currentCheckIn; // or attendanceId
+        if (requestType === 'MISS_PUNCH') {
+          // Find or create attendance
+          let attendance = await Attendance.findOne({ userId: request.employeeId, date: { $gte: new Date(new Date(request.date).setHours(0,0,0,0)), $lte: new Date(new Date(request.date).setHours(23,59,59,999)) } });
+          if (!attendance) {
+            attendance = new Attendance({
+              userId: request.employeeId,
+              date: request.date,
+              status: 'present'
+            });
+          }
+          if (request.requestedCheckIn) attendance.loginTime = request.requestedCheckIn;
+          if (request.requestedCheckOut) attendance.logoutTime = request.requestedCheckOut;
+          
+          if (attendance.loginTime && attendance.logoutTime) {
+            attendance.totalHours = (new Date(attendance.logoutTime).getTime() - new Date(attendance.loginTime).getTime()) / (1000 * 60 * 60);
+          }
+          await attendance.save();
+        } else if (requestType === 'ATTENDANCE_CORRECTION') {
+          const attendance = await Attendance.findById(request.attendanceId);
+          if (attendance) {
+            if (request.requestedCheckIn) attendance.loginTime = request.requestedCheckIn;
+            if (request.requestedCheckOut) attendance.logoutTime = request.requestedCheckOut;
+            if (attendance.loginTime && attendance.logoutTime) {
+              attendance.totalHours = (new Date(attendance.logoutTime).getTime() - new Date(attendance.loginTime).getTime()) / (1000 * 60 * 60);
+            }
+            await attendance.save();
+          }
+        }
+      }
+    }
+
+    employeeId = requestType === 'LEAVE' ? request.userId : request.employeeId;
+
+    await ApprovalAuditLog.create({
+      requestId: request._id,
+      requestType,
+      action: status,
+      performedBy: userId,
+      oldValue: previousStatus,
+      newValue: status
+    });
+
+    await Notification.create({
+      recipientId: employeeId,
+      type: `${requestType}_UPDATE`,
+      message: `Your ${requestType.replace('_', ' ').toLowerCase()} request has been ${status.toLowerCase()}.`,
+      link: `/employee/dashboard`,
+    });
+
+    return NextResponse.json({ message: `Request ${status.toLowerCase()} successfully`, request });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

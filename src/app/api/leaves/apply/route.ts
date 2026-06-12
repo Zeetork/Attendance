@@ -12,25 +12,49 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { leaveType, fromDate, toDate, reason } = await req.json();
+    const { leaveType, fromDate, toDate, reason, attachments } = await req.json();
+
+    // Calculate number of days
+    const start = new Date(fromDate);
+    const end = new Date(toDate);
+    const numberOfDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+    if (numberOfDays <= 0) {
+      return NextResponse.json({ error: 'Invalid date range' }, { status: 400 });
+    }
 
     await dbConnect();
 
+    const { LeaveBalanceEngine } = await import('@/services/LeaveBalanceEngine');
+    
+    const eligibility = await LeaveBalanceEngine.checkEligibility(session.user.id, leaveType, numberOfDays);
+
+    if (!eligibility.eligible) {
+      return NextResponse.json({ error: eligibility.reason }, { status: 400 });
+    }
+
+    if (eligibility.requiresDocument && (!attachments || attachments.length === 0)) {
+      return NextResponse.json({ error: 'Supporting documents are required for this leave type.' }, { status: 400 });
+    }
+
     const user = await User.findById(session.user.id);
     let currentApprover = user?.reportsTo;
-    let initialStatus = currentApprover ? 'pending' : 'pending_admin_approval';
 
     // If there's no manager, try to find an admin to be the current approver
     if (!currentApprover) {
       const admin = await User.findOne({ role: 'admin' });
       if (admin) currentApprover = admin._id;
     }
+    
+    let initialStatus = 'pending';
 
     const leave = await Leave.create({
       userId: session.user.id,
       leaveType,
       fromDate: new Date(fromDate),
       toDate: new Date(toDate),
+      numberOfDays,
+      attachments,
       reason,
       status: initialStatus,
       currentApprover

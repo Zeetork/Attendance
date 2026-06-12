@@ -17,21 +17,25 @@ export default function DashboardClient() {
     { name: 'Total Employees', value: '-', icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
     { name: 'Present Today', value: '-', icon: UserCheck, color: 'text-green-500', bg: 'bg-green-500/10' },
     { name: 'Absent Today', value: '-', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
-    { name: 'Late Today', value: '-', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-    { name: 'Pending Leaves', value: '-', icon: FileSpreadsheet, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { name: 'Total SL Used', value: '-', icon: FileSpreadsheet, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+    { name: 'Total CL Used', value: '-', icon: FileSpreadsheet, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    { name: 'Total LWP Used', value: '-', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
+    { name: 'Pending Leaves', value: '-', icon: Clock, color: 'text-purple-500', bg: 'bg-purple-500/10' },
   ];
 
   const stats = data ? [
     { name: 'Total Employees', value: data.stats.totalEmployees, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
     { name: 'Present Today', value: data.stats.presentToday, icon: UserCheck, color: 'text-green-500', bg: 'bg-green-500/10' },
     { name: 'Absent Today', value: data.stats.absentToday, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
-    { name: 'Late Today', value: data.stats.lateEmployees, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-    { name: 'Pending Leaves', value: data.stats.pendingLeaves, icon: FileSpreadsheet, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { name: 'Total SL Used', value: data.stats.totalSLUsed, icon: FileSpreadsheet, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+    { name: 'Total CL Used', value: data.stats.totalCLUsed, icon: FileSpreadsheet, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    { name: 'Total LWP Used', value: data.stats.totalLWPUsed, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
+    { name: 'Pending Leaves', value: data.stats.pendingLeaves, icon: Clock, color: 'text-purple-500', bg: 'bg-purple-500/10' },
   ] : defaultStats;
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((item) => {
           const Icon = item.icon;
           return (

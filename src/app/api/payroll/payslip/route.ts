@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     const user = payroll.userId as any;
 
     // Check authorization: Only admin or the owner can view this payslip
-    if (session.user.role !== 'admin' && session.user.id !== user._id.toString()) {
+    if (!['admin', 'super_admin'].includes(session.user.role) && session.user.id !== user._id.toString()) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

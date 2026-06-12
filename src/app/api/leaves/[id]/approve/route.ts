@@ -34,53 +34,30 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'You do not have permission to approve this leave' }, { status: 403 });
     }
 
-    if (status === 'rejected') {
-      leave.status = 'rejected';
-      leave.approvedBy = session.user.id;
-      await leave.save();
+    const previousStatus = leave.status;
+    leave.status = status;
+    leave.approvedBy = session.user.id;
+    await leave.save();
 
-      await Notification.create({
-        recipientId: leave.userId._id,
-        type: 'LEAVE_UPDATE',
-        message: `Your ${leave.leaveType} leave request has been rejected.`,
-        link: '/employee/leaves',
-      });
-      return NextResponse.json({ message: 'Leave rejected', leave });
-    }
+    // Dynamically import ApprovalAuditLog to avoid circular dependencies if any
+    const ApprovalAuditLog = (await import('@/models/ApprovalAuditLog')).default;
+    await ApprovalAuditLog.create({
+      requestId: leave._id,
+      requestType: 'LEAVE',
+      action: status,
+      performedBy: session.user.id,
+      oldValue: previousStatus,
+      newValue: status
+    });
 
-    // If approved
-    if (isAdmin) {
-      // Admin approval is final
-      leave.status = 'approved';
-      leave.approvedBy = session.user.id;
-      await leave.save();
+    await Notification.create({
+      recipientId: leave.userId._id,
+      type: 'LEAVE_UPDATE',
+      message: `Your ${leave.leaveType} leave request has been ${status.toLowerCase()}.`,
+      link: '/employee/leaves',
+    });
 
-      await Notification.create({
-        recipientId: leave.userId._id,
-        type: 'LEAVE_UPDATE',
-        message: `Your ${leave.leaveType} leave request has been approved by Admin.`,
-        link: '/employee/leaves',
-      });
-      return NextResponse.json({ message: 'Leave approved by admin', leave });
-    } else {
-      // Manager approved -> move to admin
-      leave.status = 'pending_admin_approval';
-      
-      const admin = await User.findOne({ role: 'admin' });
-      if (admin) {
-        leave.currentApprover = admin._id;
-        await Notification.create({
-          recipientId: admin._id,
-          type: 'LEAVE_ESCALATION',
-          message: `Leave request for ${(leave.userId as any).name} requires your final approval.`,
-          link: '/admin/leaves',
-        });
-      }
-      
-      await leave.save();
-
-      return NextResponse.json({ message: 'Leave approved and escalated to Admin', leave });
-    }
+    return NextResponse.json({ message: `Leave ${status.toLowerCase()}`, leave });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

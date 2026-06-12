@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Plus, Search, Edit, Trash2, X, Loader2, Camera, User as UserIcon } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Plus, Search, Edit, Trash2, X, Loader2, Camera, User as UserIcon, ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function EmployeeClient({ initialEmployees, shifts }: { initialEmployees: any[], shifts: any[] }) {
@@ -11,6 +11,7 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
@@ -218,7 +219,8 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                 </tr>
               ) : (
                 filteredEmployees.map((employee) => (
-                  <tr key={employee._id} className="hover:bg-neutral-800/50 transition-colors">
+                  <React.Fragment key={employee._id}>
+                  <tr className="hover:bg-neutral-800/50 transition-colors cursor-pointer" onClick={() => setExpandedRowId(expandedRowId === employee._id ? null : employee._id)}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-400 font-bold overflow-hidden">
@@ -261,20 +263,76 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button 
-                          onClick={() => openModal(employee)}
+                          onClick={(e) => { e.stopPropagation(); openModal(employee); }}
                           className="text-neutral-400 hover:text-white transition-colors p-1"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button 
-                          onClick={() => handleDelete(employee._id)}
+                          onClick={(e) => { e.stopPropagation(); handleDelete(employee._id); }}
                           className="text-neutral-400 hover:text-red-500 transition-colors p-1"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
+                        <button 
+                          className="text-neutral-400 hover:text-white transition-colors p-1"
+                        >
+                          {expandedRowId === employee._id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </button>
                       </div>
                     </td>
                   </tr>
+                  {expandedRowId === employee._id && employee.leaveBalance && (
+                    <tr className="bg-neutral-800/30">
+                      <td colSpan={6} className="px-6 py-4">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg">
+                            <div className="text-xs text-neutral-400 mb-1">Casual Leave</div>
+                            <div className="flex justify-between items-baseline">
+                              <span className="text-lg font-semibold text-white">
+                                {employee.leaveBalance.casualLeave.available} <span className="text-xs text-neutral-500 font-normal">avail</span>
+                              </span>
+                              <span className="text-xs text-neutral-500">{employee.leaveBalance.casualLeave.taken} booked</span>
+                            </div>
+                          </div>
+                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg">
+                            <div className="text-xs text-neutral-400 mb-1">Sick Leave</div>
+                            <div className="flex justify-between items-baseline">
+                              <span className="text-lg font-semibold text-white">
+                                {employee.leaveBalance.sickLeave.available} <span className="text-xs text-neutral-500 font-normal">avail</span>
+                              </span>
+                              <span className="text-xs text-neutral-500">{employee.leaveBalance.sickLeave.taken} booked</span>
+                            </div>
+                          </div>
+                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg">
+                            <div className="text-xs text-neutral-400 mb-1">Restricted Holiday</div>
+                            <div className="flex justify-between items-baseline">
+                              <span className="text-lg font-semibold text-white">
+                                {employee.leaveBalance.restrictedLeave.available} <span className="text-xs text-neutral-500 font-normal">avail</span>
+                              </span>
+                              <span className="text-xs text-neutral-500">{employee.leaveBalance.restrictedLeave.taken} booked</span>
+                            </div>
+                          </div>
+                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg">
+                            <div className="text-xs text-neutral-400 mb-1">Compensatory Off</div>
+                            <div className="flex justify-between items-baseline">
+                              <span className="text-lg font-semibold text-white">
+                                {employee.leaveBalance.compensatoryOff.available} <span className="text-xs text-neutral-500 font-normal">avail</span>
+                              </span>
+                              <span className="text-xs text-neutral-500">{employee.leaveBalance.compensatoryOff.taken} booked</span>
+                            </div>
+                          </div>
+                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg">
+                            <div className="text-xs text-neutral-400 mb-1">Leave Without Pay</div>
+                            <div className="flex justify-between items-baseline">
+                              <span className="text-xs text-neutral-500">{employee.leaveBalance.leaveWithoutPay.taken} booked</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
                 ))
               )}
             </tbody>

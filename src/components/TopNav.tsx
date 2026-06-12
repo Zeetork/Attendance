@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { Bell, Menu } from 'lucide-react';
 import useSWR from 'swr';
+import CompanySwitcher from './CompanySwitcher';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -39,6 +40,11 @@ export default function TopNav({ onMenuClick, onNotificationClick }: { onMenuCli
               <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-neutral-900" />
             )}
           </button>
+
+          {/* Company Switcher */}
+          <div className="ml-3 hidden sm:block">
+            <CompanySwitcher />
+          </div>
 
           {/* Profile dropdown */}
           <div className="ml-3 relative">

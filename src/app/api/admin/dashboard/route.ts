@@ -8,7 +8,7 @@ import Leave from '@/models/Leave';
 export async function GET() {
   try {
     const session = await auth();
-    if (!session || session.user.role !== 'admin') {
+    if (!session || !['admin', 'super_admin'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -27,6 +27,18 @@ export async function GET() {
 
     const pendingLeaves = await Leave.countDocuments({ status: 'pending' });
 
+    const allEmployees = await User.find({ role: 'employee', isActive: true, leaveBalance: { $exists: true } });
+    let totalSLUsed = 0;
+    let totalCLUsed = 0;
+    let totalLWPUsed = 0;
+    allEmployees.forEach(emp => {
+       if (emp.leaveBalance) {
+         totalSLUsed += emp.leaveBalance.sickLeave?.taken || 0;
+         totalCLUsed += emp.leaveBalance.casualLeave?.taken || 0;
+         totalLWPUsed += emp.leaveBalance.leaveWithoutPay?.taken || 0;
+       }
+    });
+
     // Recent Activities (latest attendances today)
     const recentAttendances = await Attendance.find({ date: { $gte: today } })
       .sort({ updatedAt: -1 })
@@ -34,14 +46,15 @@ export async function GET() {
       .populate('userId', 'name');
 
     const activities = recentAttendances.map(a => {
-      let text = `${(a.userId as any).name} checked in`;
+      const userName = a.userId ? (a.userId as any).name : 'Unknown User';
+      let text = `${userName} checked in`;
       let type = 'success';
       if (a.status === 'late') {
-        text = `${(a.userId as any).name} logged in late`;
+        text = `${userName} logged in late`;
         type = 'warning';
       }
       if (a.logoutTime) {
-        text = `${(a.userId as any).name} checked out`;
+        text = `${userName} checked out`;
         type = 'info';
       }
       return {
@@ -64,6 +77,9 @@ export async function GET() {
         absentToday,
         lateEmployees,
         pendingLeaves,
+        totalSLUsed,
+        totalCLUsed,
+        totalLWPUsed
       },
       activities,
       leaveRequests,
