@@ -1,5 +1,4 @@
-import { NextResponse } from 'next-auth/middleware';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
 import Attendance from '@/models/Attendance';
@@ -39,14 +38,15 @@ export async function POST(req: NextRequest) {
     let graceTime = 15;
 
     if (user.shiftId) {
-      const [hours, minutes] = user.shiftId.startTime.split(':');
+      const shift = user.shiftId as any;
+      const [hours, minutes] = shift.startTime.split(':');
       expectedLoginTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-      graceTime = user.shiftId.graceTime || 15;
+      graceTime = shift.graceTime || 15;
     } else {
       expectedLoginTime.setHours(9, 0, 0, 0); // Default if no shift
     }
 
-    let status = 'present';
+    let status: 'present' | 'late' = 'present';
     let lateMinutes = 0;
 
     const diffMins = differenceInMinutes(now, expectedLoginTime);

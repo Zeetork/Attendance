@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     await dbConnect();
     const user = session.user;
     
-    let companies = [];
+    let companies: any[] = [];
     if (user.role === 'super_admin' || user.role === 'admin') {
       companies = await Company.find({ status: true }).lean();
     } else if (user.companyIds && user.companyIds.length > 0) {

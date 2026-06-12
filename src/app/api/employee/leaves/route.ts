@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       reason,
       attachments,
       status: 'pending',
-      currentApprover
+      currentApprover: undefined,
     });
 
     const Notification = (await import('@/models/Notification')).default;

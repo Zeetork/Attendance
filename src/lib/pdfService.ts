@@ -10,7 +10,7 @@ export async function generatePDF(htmlContent: string): Promise<Buffer> {
   
   // Set content and wait for network idle to ensure fonts/images load
   await page.setContent(htmlContent, {
-    waitUntil: 'networkidle0',
+    waitUntil: 'networkidle0' as any,
   });
 
   const pdfBuffer = await page.pdf({

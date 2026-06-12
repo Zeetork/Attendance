@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
       numberOfDays,
       attachments,
       reason,
-      status: initialStatus,
-      currentApprover
+      status: initialStatus as any,
+      currentApprover: undefined,
     });
 
     if (currentApprover) {

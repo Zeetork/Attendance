@@ -51,7 +51,8 @@ export async function POST(req: NextRequest) {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const dayName = dayNames[now.getDay()];
     
-    const isWeeklyOff = user?.shiftId && !user.shiftId.workingDays.includes(dayName);
+    const shift = user?.shiftId as any;
+    const isWeeklyOff = shift && !shift.workingDays.includes(dayName);
 
     const Holiday = (await import('@/models/Holiday')).default;
     const isHoliday = await Holiday.exists({

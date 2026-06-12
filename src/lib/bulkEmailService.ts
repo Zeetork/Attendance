@@ -70,7 +70,7 @@ export async function processBulkLetters({
     await LetterEmailLog.create({
       employeeId: empData.employeeId,
       templateId,
-      generatedLetterId,
+      generatedLetterId: generatedLetterId || undefined,
       email: empData.email,
       subject: templateSubject,
       status,

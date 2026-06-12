@@ -62,7 +62,7 @@ export function multiTenantPlugin(schema: Schema) {
   // Saving (Create)
   schema.pre('save', async function (this: Document, options: any) {
     try {
-      if (this.constructor.modelName === 'Company') return;
+      if ((this.constructor as any).modelName === 'Company') return;
       if (options && options.bypassTenant) return;
 
       const cookieStore = await cookies();
@@ -71,7 +71,7 @@ export function multiTenantPlugin(schema: Schema) {
       if (companyId && !this.isModified('companyId')) {
         (this as any).companyId = companyId;
 
-        if (this.constructor.modelName === 'User') {
+        if ((this.constructor as any).modelName === 'User') {
           const arr = (this as any).companyIds || [];
           if (!arr.includes(companyId)) {
             arr.push(companyId);

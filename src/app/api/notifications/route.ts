@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
         { recipientId: session.user.id },
         { targetRole: session.user.role }
       ]
-    })
+    } as any)
     .sort({ createdAt: -1 })
     .limit(50)
     .lean();
@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest) {
             { recipientId: session.user.id },
             { targetRole: session.user.role }
           ]
-        },
+        } as any,
         { $set: { isRead: true } }
       );
       return NextResponse.json({ message: 'All notifications marked as read' });

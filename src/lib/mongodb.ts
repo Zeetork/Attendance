@@ -12,18 +12,18 @@ if (!MONGODB_URI) {
 let cached = global.mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null, pluginRegistered: false };
+  cached = (global as any).mongoose = { conn: null, promise: null, pluginRegistered: false } as any;
 }
 
-if (!cached.pluginRegistered) {
+if (!(cached as any).pluginRegistered) {
   mongoose.plugin(multiTenantPlugin);
-  cached.pluginRegistered = true;
+  (cached as any).pluginRegistered = true;
 }
 
 // In development, clear Mongoose models on hot reload to prevent schema caching issues
 if (process.env.NODE_ENV !== 'production') {
-  mongoose.models = {};
-  mongoose.modelSchemas = {};
+  (mongoose as any).models = {};
+  (mongoose as any).modelSchemas = {};
 }
 
 async function dbConnect() {
@@ -37,7 +37,7 @@ async function dbConnect() {
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
+      return mongoose as any;
     });
   }
   cached.conn = await cached.promise;

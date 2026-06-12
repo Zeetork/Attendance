@@ -36,7 +36,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const previousStatus = leave.status;
     leave.status = status;
-    leave.approvedBy = session.user.id;
+    leave.approvedBy = session.user.id as any;
     await leave.save();
 
     // Dynamically import ApprovalAuditLog to avoid circular dependencies if any
