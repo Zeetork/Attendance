@@ -10,15 +10,15 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 export default function TopNav({ onMenuClick, onNotificationClick }: { onMenuClick?: () => void, onNotificationClick?: () => void }) {
   const { data: session } = useSession();
   const { data } = useSWR('/api/notifications', fetcher, { refreshInterval: 30000 }); // Refresh every 30s
-  
+
   const unreadCount = data?.notifications?.filter((n: any) => !n.isRead).length || 0;
 
   return (
     <div className="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-neutral-900 border-b border-neutral-800 shadow">
       <div className="flex-1 px-4 flex justify-between">
         <div className="flex-1 flex items-center gap-3">
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="lg:hidden p-2 -ml-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-md transition-colors"
             onClick={onMenuClick}
           >

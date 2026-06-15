@@ -44,7 +44,7 @@ export default function DashboardLayoutClient({ children }: { children: ReactNod
         setSidebarOpen(true); // open sidebar
       }
     }
-    
+
     // Swipe right-to-left (left swipe)
     if (isLeftSwipe) {
       if (sidebarOpen) {
@@ -56,7 +56,7 @@ export default function DashboardLayoutClient({ children }: { children: ReactNod
   };
 
   return (
-    <div 
+    <div
       className="flex h-[100dvh] overflow-hidden bg-neutral-950"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -64,7 +64,7 @@ export default function DashboardLayoutClient({ children }: { children: ReactNod
     >
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
@@ -81,8 +81,8 @@ export default function DashboardLayoutClient({ children }: { children: ReactNod
 
       {/* Main Content Area */}
       <div className="flex flex-col flex-1 w-0 overflow-hidden min-w-0">
-        <TopNav 
-          onMenuClick={() => setSidebarOpen(true)} 
+        <TopNav
+          onMenuClick={() => setSidebarOpen(true)}
           onNotificationClick={() => setNotificationOpen(true)}
         />
         <main className="flex-1 relative overflow-y-auto focus:outline-none scroll-smooth">

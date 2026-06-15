@@ -82,13 +82,13 @@ async function seed() {
 
     // 2. Create/Update a Single Admin for ALL companies
     await User.findOneAndUpdate(
-      { email: 'admin@zohohrms.com' },
+      { email: 'admin@gmail.com' },
       {
         companyId: companyIds[0], // Default active company
         companyIds: companyIds,   // Has access to all
         employeeId: 'EMP001',
         name: 'Super Admin',
-        email: 'admin@zohohrms.com',
+        email: 'admin@gmail.com',
         password: adminHashed,
         role: 'admin',
         department: 'Management',
@@ -104,12 +104,12 @@ async function seed() {
 
     // 3. Create/Update Different Employees for EACH company
     const employeesData = [
-      {
-        email: 'nishanth@gmail.com',
-        empId: 'EMPTF001',
-        name: 'Nishanth (TruFlow)',
-        companyIdx: 1
-      }
+      // {
+      //   email: 'nishanth@gmail.com',
+      //   empId: 'EMPTF001',
+      //   name: 'Nishanth (TruFlow)',
+      //   companyIdx: 1
+      // }
     ];
 
     for (const emp of employeesData) {
@@ -137,7 +137,7 @@ async function seed() {
 
     console.log('Data seeded successfully!');
     console.log('--- Credentials ---');
-    console.log('Admin (All Companies): admin@zohohrms.com / admin123');
+    console.log('Admin (All Companies): admin@gmail.com / admin123');
     for (const emp of employeesData) {
       console.log(`Employee (${companiesData[emp.companyIdx].companyName}): ${emp.email} / 123123`);
     }

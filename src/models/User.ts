@@ -84,13 +84,13 @@ const UserSchema: Schema = new Schema(
         taken: { type: Number, default: 0 }
       },
       maternityLeave: {
-        total: { type: Number, default: function(this: any) { return this.gender === 'female' ? 60 : 0; } },
-        available: { type: Number, default: function(this: any) { return this.gender === 'female' ? 60 : 0; } },
+        total: { type: Number, default: function (this: any) { return this.gender === 'female' ? 60 : 0; } },
+        available: { type: Number, default: function (this: any) { return this.gender === 'female' ? 60 : 0; } },
         taken: { type: Number, default: 0 }
       },
       paternityLeave: {
-        total: { type: Number, default: function(this: any) { return this.gender === 'male' ? 2 : 0; } },
-        available: { type: Number, default: function(this: any) { return this.gender === 'male' ? 2 : 0; } },
+        total: { type: Number, default: function (this: any) { return this.gender === 'male' ? 2 : 0; } },
+        available: { type: Number, default: function (this: any) { return this.gender === 'male' ? 2 : 0; } },
         taken: { type: Number, default: 0 }
       },
       leaveWithoutPay: {

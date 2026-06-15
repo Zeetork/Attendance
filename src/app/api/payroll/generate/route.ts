@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const targetDate = new Date(year, month - 1, 1);
     const startDate = startOfMonth(targetDate);
     const endDate = endOfMonth(targetDate);
-    
+
     // Calculate total working days (excluding Sundays, maybe Saturdays depending on company policy. Prompt says Mon-Sat working, Sunday holiday)
     let totalWorkingDays = 0;
     for (let d = 1; d <= getDaysInMonth(targetDate); d++) {
@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
         else if (record.status === 'absent') absentDays++;
         else if (record.status === 'half-day') halfDays++;
         else if (record.status === 'late') {
-            lateDays++;
-            presentDays++; // Late is still present for the day, but might have deductions
+          lateDays++;
+          presentDays++; // Late is still present for the day, but might have deductions
         }
       });
 
@@ -74,15 +74,15 @@ export async function POST(req: NextRequest) {
 
       // Financial calculations
       const perDaySalary = employee.monthlySalary / totalWorkingDays;
-      
+
       // Half-day deduction
       const halfDayDeduction = halfDays * (perDaySalary / 2);
-      
+
       // Absent deduction
       const absentDeduction = absentDays * perDaySalary;
 
       // Late deduction (custom rule: every 3 late days = 1 half day, for example. Let's just do absent + half-day)
-      
+
       const totalDeductions = halfDayDeduction + absentDeduction;
       const finalSalary = employee.monthlySalary - totalDeductions;
 

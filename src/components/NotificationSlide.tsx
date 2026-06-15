@@ -38,14 +38,14 @@ export default function NotificationSlide({ isOpen, onClose }: NotificationSlide
         body: JSON.stringify({ id })
       });
       mutate();
-    } catch (e) {}
+    } catch (e) { }
   };
 
   return (
     <>
       {/* Overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity"
           onClick={onClose}
         />
@@ -67,7 +67,7 @@ export default function NotificationSlide({ isOpen, onClose }: NotificationSlide
               </span>
             )}
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-md transition-colors"
           >
@@ -91,8 +91,8 @@ export default function NotificationSlide({ isOpen, onClose }: NotificationSlide
           ) : (
             <div className="divide-y divide-neutral-800/50">
               {notifications.map((notif: any) => (
-                <div 
-                  key={notif._id} 
+                <div
+                  key={notif._id}
                   className={`p-4 hover:bg-neutral-800/50 transition-colors ${!notif.isRead ? 'bg-neutral-800/20' : ''}`}
                 >
                   <div className="flex items-start gap-3">
@@ -110,7 +110,7 @@ export default function NotificationSlide({ isOpen, onClose }: NotificationSlide
                           {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
                         </span>
                         {!notif.isRead && (
-                          <button 
+                          <button
                             onClick={() => markAsRead(notif._id)}
                             className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                           >
@@ -119,7 +119,7 @@ export default function NotificationSlide({ isOpen, onClose }: NotificationSlide
                         )}
                       </div>
                       {notif.link && (
-                        <Link 
+                        <Link
                           href={notif.link}
                           onClick={() => {
                             if (!notif.isRead) markAsRead(notif._id);

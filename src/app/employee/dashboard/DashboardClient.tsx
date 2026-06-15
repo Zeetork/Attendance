@@ -107,8 +107,8 @@ export default function EmployeeDashboardClient() {
                         <span>In: {att.loginTime ? format(new Date(att.loginTime), 'hh:mm a') : '--:--'}</span>
                         <span>Out: {att.logoutTime ? format(new Date(att.logoutTime), 'hh:mm a') : '--:--'}</span>
                         <span className={`px-2 py-0.5 h-max rounded text-xs font-medium border ${att.status === 'present' ? 'text-green-400 bg-green-400/10 border-green-400/20' :
-                            att.status === 'late' ? 'text-amber-400 bg-amber-400/10 border-amber-400/20' :
-                              'text-red-400 bg-red-400/10 border-red-400/20'
+                          att.status === 'late' ? 'text-amber-400 bg-amber-400/10 border-amber-400/20' :
+                            'text-red-400 bg-red-400/10 border-red-400/20'
                           }`}>
                           {att.status.charAt(0).toUpperCase() + att.status.slice(1)}
                         </span>

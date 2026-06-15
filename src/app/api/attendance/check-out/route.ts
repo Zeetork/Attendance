@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       userId,
       date: { $gte: todayStart, $lte: todayEnd },
     });
-    
+
     const User = (await import('@/models/User')).default;
     const user = await User.findById(userId).populate('shiftId');
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     attendance.logoutTime = now;
-    
+
     // Calculate total hours
     const totalMinutes = differenceInMinutes(now, attendance.loginTime!);
     const totalHours = totalMinutes / 60;
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     // Comp-Off Engine logic
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const dayName = dayNames[now.getDay()];
-    
+
     const shift = user?.shiftId as any;
     const isWeeklyOff = shift && !shift.workingDays.includes(dayName);
 
@@ -61,33 +61,33 @@ export async function POST(req: NextRequest) {
     });
 
     if (isWeeklyOff || isHoliday) {
-       const CompOffCredit = (await import('@/models/CompOffCredit')).default;
-       
-       // Check if credit already exists to prevent duplicates
-       const existingCredit = await CompOffCredit.findOne({ employeeId: userId, attendanceDate: { $gte: todayStart, $lte: todayEnd } });
-       
-       if (!existingCredit) {
-         const expiry = new Date(now);
-         expiry.setMonth(expiry.getMonth() + 3); // expires after 3 months
-  
-         await CompOffCredit.create({
-           employeeId: userId,
-           attendanceDate: now,
-           earnedDate: now,
-           availableFromDate: now, // Available immediately
-           expiryDate: expiry,
-           companyId: session.user.companyId,
-         });
-  
-         const Notification = (await import('@/models/Notification')).default;
-         await Notification.create({
-            recipientId: userId,
-            type: 'COMP_OFF_EARNED',
-            message: 'You have earned 1 Compensatory Off for working on a holiday/Weekly Off.',
-            link: '/employee/leaves',
-            companyId: session.user.companyId,
-         });
-       }
+      const CompOffCredit = (await import('@/models/CompOffCredit')).default;
+
+      // Check if credit already exists to prevent duplicates
+      const existingCredit = await CompOffCredit.findOne({ employeeId: userId, attendanceDate: { $gte: todayStart, $lte: todayEnd } });
+
+      if (!existingCredit) {
+        const expiry = new Date(now);
+        expiry.setMonth(expiry.getMonth() + 3); // expires after 3 months
+
+        await CompOffCredit.create({
+          employeeId: userId,
+          attendanceDate: now,
+          earnedDate: now,
+          availableFromDate: now, // Available immediately
+          expiryDate: expiry,
+          companyId: session.user.companyId,
+        });
+
+        const Notification = (await import('@/models/Notification')).default;
+        await Notification.create({
+          recipientId: userId,
+          type: 'COMP_OFF_EARNED',
+          message: 'You have earned 1 Compensatory Off for working on a holiday/Weekly Off.',
+          link: '/employee/leaves',
+          companyId: session.user.companyId,
+        });
+      }
     }
 
     return Response.json({ message: 'Checked out successfully', attendance }, { status: 200 });

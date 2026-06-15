@@ -106,10 +106,10 @@ export default function ShiftsClient() {
   if (loading) return <div className="text-white p-6">Loading shifts...</div>;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto text-neutral-100">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto text-neutral-100">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Shift Management</h1>
+          <h1 className="text-xl md:text-2xl font-bold">Shift Management</h1>
           <p className="text-sm text-neutral-400">Configure work timings and weekly offs</p>
         </div>
         <button 
@@ -120,8 +120,8 @@ export default function ShiftsClient() {
         </button>
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-lg overflow-hidden">
-        <table className="w-full text-left text-sm">
+      <div className="bg-neutral-900 border border-neutral-800 rounded-lg overflow-x-auto">
+        <table className="w-full text-left text-sm whitespace-nowrap min-w-[800px]">
           <thead className="bg-neutral-800 text-neutral-400">
             <tr>
               <th className="px-6 py-3 font-medium">Shift Name</th>

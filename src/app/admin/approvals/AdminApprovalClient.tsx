@@ -6,10 +6,15 @@ import { format } from 'date-fns';
 import { CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Failed to fetch');
+  return json;
+};
 
-export default function ApprovalClient() {
-  const { data, error, isLoading, mutate } = useSWR('/api/approvals', fetcher);
+export default function AdminApprovalClient() {
+  const { data, error, isLoading, mutate } = useSWR('/api/admin/approvals', fetcher);
   const [acting, setActing] = useState<string | null>(null);
   const [editedTimes, setEditedTimes] = useState<Record<string, { checkIn?: string, checkOut?: string }>>({});
 
@@ -158,7 +163,7 @@ export default function ApprovalClient() {
           <div className="text-center py-10 border-2 border-dashed border-neutral-800 rounded-xl">
             <CheckCircle className="w-10 h-10 text-neutral-600 mx-auto mb-3" />
             <h3 className="text-lg font-medium text-neutral-400">All caught up!</h3>
-            <p className="text-neutral-500">You have no pending requests to review.</p>
+            <p className="text-neutral-500">There are no pending requests to review.</p>
           </div>
         ) : (
           <div className="grid gap-4">

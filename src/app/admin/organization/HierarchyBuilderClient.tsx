@@ -68,9 +68,9 @@ export default function HierarchyBuilderClient() {
   }
 
   return (
-    <div className="flex w-full h-full">
+    <div className="flex flex-col md:flex-row w-full h-full">
       {/* Sidebar for Unassigned / Search */}
-      <div className="w-80 bg-neutral-900 border-r border-neutral-800 flex flex-col">
+      <div className="w-full md:w-80 bg-neutral-900 border-b md:border-b-0 md:border-r border-neutral-800 flex flex-col shrink-0">
         <div className="p-4 border-b border-neutral-800">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -114,7 +114,7 @@ export default function HierarchyBuilderClient() {
       </div>
 
       {/* Main visual canvas */}
-      <div className="flex-1 bg-neutral-950 overflow-auto p-8 relative flex items-start justify-center">
+      <div className="flex-1 bg-neutral-950 overflow-auto p-4 md:p-8 relative flex items-start justify-center">
         <div className="min-w-max">
            <OrgChart nodes={tree} />
         </div>

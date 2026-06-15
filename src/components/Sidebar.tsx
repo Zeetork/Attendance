@@ -34,6 +34,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { name: 'Employees', href: '/admin/employees', icon: Users },
     { name: 'Attendance', href: '/admin/attendance', icon: CalendarClock },
     { name: 'Leaves', href: '/admin/leaves', icon: CalendarOff },
+    { name: 'Approval Center', href: '/admin/approvals', icon: Network },
     { name: 'Payroll', href: '/admin/payroll', icon: Banknote },
     { name: 'Reports', href: '/admin/reports', icon: FileBarChart },
     { name: 'Organization', href: '/admin/organization', icon: Network },

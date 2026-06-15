@@ -120,7 +120,7 @@ export default function TemplatesPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <h2 className="text-xl font-semibold text-white">Letter Templates</h2>
         <button
           onClick={() => handleOpenModal()}
@@ -171,7 +171,7 @@ export default function TemplatesPage() {
             </div>
             
             <form onSubmit={handleSubmit} className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-6">
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-1">Template Name</label>
                   <input

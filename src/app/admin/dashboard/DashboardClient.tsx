@@ -35,23 +35,23 @@ export default function DashboardClient() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 sm:grid-cols-3 lg:grid-cols-4">
         {stats.map((item) => {
           const Icon = item.icon;
           return (
             <div
               key={item.name}
-              className="relative overflow-hidden rounded-xl bg-neutral-900 border border-neutral-800 p-6 shadow-sm hover:shadow-md transition-shadow"
+              className="relative overflow-hidden rounded-xl bg-neutral-900 border border-neutral-800 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="flex items-center">
-                <div className={`rounded-lg p-3 ${item.bg}`}>
-                  <Icon className={`h-6 w-6 ${item.color}`} aria-hidden="true" />
+              <div className="flex flex-col sm:flex-row sm:items-center">
+                <div className={`rounded-lg p-2.5 sm:p-3 w-fit mb-3 sm:mb-0 ${item.bg}`}>
+                  <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${item.color}`} aria-hidden="true" />
                 </div>
-                <div className="ml-5 w-0 flex-1">
+                <div className="sm:ml-4 w-full flex-1">
                   <dl>
-                    <dt className="truncate text-sm font-medium text-neutral-400">{item.name}</dt>
+                    <dt className="truncate text-xs sm:text-sm font-medium text-neutral-400">{item.name}</dt>
                     <dd>
-                      <div className="text-lg font-bold text-white">
+                      <div className="text-xl sm:text-2xl font-bold text-white mt-1 sm:mt-0">
                         {isLoading ? <div className="h-6 w-12 bg-neutral-800 animate-pulse rounded"></div> : item.value}
                       </div>
                     </dd>
@@ -65,8 +65,8 @@ export default function DashboardClient() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-neutral-800 flex justify-between items-center">
-            <h2 className="text-lg font-medium text-white">Recent Activities (Real-Time)</h2>
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-neutral-800 flex justify-between items-center">
+            <h2 className="text-base sm:text-lg font-medium text-white">Recent Activities (Real-Time)</h2>
             <div className="flex items-center space-x-2">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -84,11 +84,11 @@ export default function DashboardClient() {
               <div className="p-6 text-center text-neutral-500">No recent activities</div>
             ) : (
               data?.activities?.map((activity: any, i: number) => (
-                <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-neutral-800/50 transition-colors animate-in fade-in slide-in-from-top-2">
+                <div key={i} className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-neutral-800/50 transition-colors animate-in fade-in slide-in-from-top-2 gap-1 sm:gap-0">
                   <div className="flex items-center space-x-3">
                     <div className={`h-2 w-2 rounded-full ${activity.type === 'warning' ? 'bg-amber-500' :
-                        activity.type === 'info' ? 'bg-blue-500' :
-                          activity.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                      activity.type === 'info' ? 'bg-blue-500' :
+                        activity.type === 'success' ? 'bg-green-500' : 'bg-red-500'
                       }`}></div>
                     <span className="text-sm text-neutral-300">{activity.text}</span>
                   </div>
@@ -100,10 +100,10 @@ export default function DashboardClient() {
         </div>
 
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-neutral-800 flex justify-between items-center">
-            <h2 className="text-lg font-medium text-white">Pending Leave Requests</h2>
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-neutral-800 flex justify-between items-center">
+            <h2 className="text-base sm:text-lg font-medium text-white">Pending Leave Requests</h2>
           </div>
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {isLoading ? (
               <div className="space-y-4">
                 {[1, 2].map(i => <div key={i} className="h-16 bg-neutral-800 animate-pulse rounded w-full"></div>)}

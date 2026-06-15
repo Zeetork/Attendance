@@ -43,8 +43,7 @@ export async function POST(req: NextRequest) {
     if (!request) return NextResponse.json({ error: 'Request not found' }, { status: 404 });
 
     // Permissions check
-    const currentUser = await User.findById(userId);
-    const isAdmin = currentUser?.role === 'admin';
+    const isAdmin = ['admin', 'super_admin', 'company_admin'].includes(session.user.role);
     const approverField = requestType === 'LEAVE' ? request.currentApprover : request.approverId;
     const isApprover = approverField?.toString() === userId;
 
@@ -54,12 +53,12 @@ export async function POST(req: NextRequest) {
 
     const previousStatus = request.status;
     request.status = status;
-    
+
     if (requestType === 'LEAVE') {
-       request.approvedBy = userId;
+      request.approvedBy = userId;
     } else if (status === 'approved' && (requestType === 'MISS_PUNCH' || requestType === 'ATTENDANCE_CORRECTION')) {
-       if (finalCheckIn) request.requestedCheckIn = new Date(finalCheckIn);
-       if (finalCheckOut) request.requestedCheckOut = new Date(finalCheckOut);
+      if (finalCheckIn) request.requestedCheckIn = new Date(finalCheckIn);
+      if (finalCheckOut) request.requestedCheckOut = new Date(finalCheckOut);
     }
 
     await request.save();
@@ -70,7 +69,7 @@ export async function POST(req: NextRequest) {
         const { LeaveBalanceEngine } = await import('@/services/LeaveBalanceEngine');
         await LeaveBalanceEngine.syncLeaveBalance(request.userId);
         const user = await User.findById(request.userId);
-        
+
         if (user && user.leaveBalance) {
           if (request.leaveType === 'Casual Leave') {
             user.leaveBalance.casualLeave.taken += request.numberOfDays;
@@ -91,11 +90,11 @@ export async function POST(req: NextRequest) {
             user.leaveBalance.leaveWithoutPay.taken += request.numberOfDays;
           } else if (request.leaveType === 'Compensatory Off') {
             const CompOffCredit = (await import('@/models/CompOffCredit')).default;
-            const credits = await CompOffCredit.find({ 
-              employeeId: request.userId, 
-              isUsed: false 
+            const credits = await CompOffCredit.find({
+              employeeId: request.userId,
+              isUsed: false
             }).sort({ earnedDate: 1 }).limit(request.numberOfDays);
-            
+
             for (const credit of credits) {
               credit.isUsed = true;
               credit.usedAgainstLeave = request._id;
@@ -111,7 +110,7 @@ export async function POST(req: NextRequest) {
         const atDate = requestType === 'MISS_PUNCH' ? request.date : request.currentCheckIn; // or attendanceId
         if (requestType === 'MISS_PUNCH') {
           // Find or create attendance
-          let attendance = await Attendance.findOne({ userId: request.employeeId, date: { $gte: new Date(new Date(request.date).setHours(0,0,0,0)), $lte: new Date(new Date(request.date).setHours(23,59,59,999)) } });
+          let attendance = await Attendance.findOne({ userId: request.employeeId, date: { $gte: new Date(new Date(request.date).setHours(0, 0, 0, 0)), $lte: new Date(new Date(request.date).setHours(23, 59, 59, 999)) } });
           if (!attendance) {
             attendance = new Attendance({
               userId: request.employeeId,
@@ -121,7 +120,7 @@ export async function POST(req: NextRequest) {
           }
           if (request.requestedCheckIn) attendance.loginTime = request.requestedCheckIn;
           if (request.requestedCheckOut) attendance.logoutTime = request.requestedCheckOut;
-          
+
           if (attendance.loginTime && attendance.logoutTime) {
             attendance.totalHours = (new Date(attendance.logoutTime).getTime() - new Date(attendance.loginTime).getTime()) / (1000 * 60 * 60);
           }

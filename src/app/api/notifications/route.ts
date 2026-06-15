@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     }
 
     await dbConnect();
-    
+
     // Fetch notifications meant for this user OR meant for their role
     const notifications = await Notification.find({
       $or: [
@@ -19,9 +19,9 @@ export async function GET(req: NextRequest) {
         { targetRole: session.user.role }
       ]
     } as any)
-    .sort({ createdAt: -1 })
-    .limit(50)
-    .lean();
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
 
     return NextResponse.json({ notifications });
   } catch (error: any) {

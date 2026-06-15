@@ -30,7 +30,7 @@ export default function EmailLogsPage() {
 
   return (
     <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-sm">
-      <div className="p-5 border-b border-neutral-800 flex justify-between items-center bg-neutral-800/50">
+      <div className="p-5 border-b border-neutral-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-neutral-800/50">
         <h2 className="text-lg font-semibold text-white flex items-center">
           <Mail className="w-5 h-5 mr-2 text-blue-400" />
           Email Delivery Logs
@@ -38,7 +38,7 @@ export default function EmailLogsPage() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-neutral-400">
+        <table className="w-full text-left text-sm text-neutral-400 whitespace-nowrap min-w-[600px]">
           <thead className="text-xs uppercase bg-neutral-800/80 text-neutral-300 border-b border-neutral-700">
             <tr>
               <th className="px-6 py-4 font-medium">Status</th>
