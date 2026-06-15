@@ -47,8 +47,8 @@ export async function GET(req: NextRequest) {
 
     // Sort approvals by created date if needed, though they might not have createdAt universally, assuming they do
     approvals.sort((a, b) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      const dateA = (a as any).createdAt ? new Date((a as any).createdAt).getTime() : 0;
+      const dateB = (b as any).createdAt ? new Date((b as any).createdAt).getTime() : 0;
       return dateB - dateA;
     });
 

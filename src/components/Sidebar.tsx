@@ -74,7 +74,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         <nav className="px-2 space-y-1">
           {links.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname.startsWith(item.href);
+            const isActive = pathname?.startsWith(item.href) ?? false;
             return (
               <Link
                 key={item.name}

@@ -103,7 +103,7 @@ async function seed() {
     console.log('Created/Updated Single Admin for all companies');
 
     // 3. Create/Update Different Employees for EACH company
-    const employeesData = [
+    const employeesData: { email: string; empId: string; name: string; companyIdx: number }[] = [
       // {
       //   email: 'nishanth@gmail.com',
       //   empId: 'EMPTF001',

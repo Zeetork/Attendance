@@ -21,7 +21,7 @@ export default function LettersLayout({ children }: { children: React.ReactNode 
         <div className="border-b border-neutral-800 overflow-x-auto hide-scrollbar">
           <nav className="-mb-px flex space-x-6 md:space-x-8 min-w-max px-1">
             {tabs.map((tab) => {
-              const isActive = pathname.startsWith(tab.href);
+              const isActive = pathname?.startsWith(tab.href) ?? false;
               return (
                 <Link
                   key={tab.name}
