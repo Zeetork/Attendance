@@ -14,7 +14,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id } = await params;
     const data = await req.json();
     const {
-      employeeId, name, email, department, designation, shiftId, joiningDate, monthlySalary, isActive, password, phoneNumber, profileImage, bankName, accountNumber, ifscCode
+      employeeId, name, email, department, designation, shiftId, joiningDate, monthlySalary, isActive, password, phoneNumber, profileImage, bankName, accountNumber, ifscCode, gender, role
     } = data;
 
     await dbConnect();
@@ -43,6 +43,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       bankName,
       accountNumber,
       ifscCode,
+      gender: gender || undefined,
+      role: role || 'employee',
     };
 
     if (password) {

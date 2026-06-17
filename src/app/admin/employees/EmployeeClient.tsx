@@ -30,6 +30,8 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
     bankName: '',
     accountNumber: '',
     ifscCode: '',
+    gender: '',
+    role: 'employee',
   });
 
   const filteredEmployees = employees.filter(emp => 
@@ -57,6 +59,8 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
         bankName: employee.bankName || '',
         accountNumber: employee.accountNumber || '',
         ifscCode: employee.ifscCode || '',
+        gender: employee.gender || '',
+        role: employee.role || 'employee',
       });
     } else {
       setEditingEmployee(null);
@@ -76,6 +80,8 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
         bankName: '',
         accountNumber: '',
         ifscCode: '',
+        gender: '',
+        role: 'employee',
       });
     }
     setIsModalOpen(true);
@@ -242,7 +248,14 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-neutral-300">{employee.department}</div>
-                      <div className="text-xs text-neutral-500">{employee.designation}</div>
+                      <div className="text-xs text-neutral-500">
+                        {employee.designation}
+                        {employee.role && employee.role !== 'employee' && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-800 text-neutral-300 capitalize border border-neutral-700">
+                            {employee.role.replace('_', ' ')}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
@@ -424,6 +437,37 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-300 mb-1">Gender</label>
+                    <select
+                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      value={formData.gender}
+                      onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                      required
+                    >
+                      <option value="">Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-300 mb-1">Role</label>
+                    <select
+                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      value={formData.role}
+                      onChange={(e) => setFormData({...formData, role: e.target.value})}
+                      required
+                    >
+                      <option value="employee">Employee</option>
+                      <option value="team_head">Team Head</option>
+                      <option value="manager">Manager</option>
+                      <option value="department_head">Department Head</option>
+                      <option value="director">Director</option>
+                      <option value="admin">Admin</option>
+                      <option value="company_admin">Company Admin</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-neutral-300 mb-1">Department</label>

@@ -9,7 +9,7 @@ export const metadata = {
 export default async function EmployeeAttendancePage() {
   const session = await auth();
   
-  if (!session || session.user.role !== 'employee') {
+  if (!session || ['admin', 'super_admin'].includes(session.user.role)) {
     redirect('/login');
   }
 

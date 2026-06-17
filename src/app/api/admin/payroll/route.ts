@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     const endDate = new Date(year, month, 0);
 
     // Get all active employees with their shifts
-    const users = await User.find({ role: 'employee', isActive: true }).populate('shiftId');
+    const users = await User.find({ role: { $in: ['employee', 'manager', 'team_head', 'department_head'] }, isActive: true }).populate('shiftId');
     console.log(`Found ${users.length} users for company ${activeCompanyId}`);
 
     // Get holidays

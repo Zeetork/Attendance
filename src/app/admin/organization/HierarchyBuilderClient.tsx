@@ -114,8 +114,8 @@ export default function HierarchyBuilderClient() {
       </div>
 
       {/* Main visual canvas */}
-      <div className="flex-1 bg-neutral-950 overflow-auto p-4 md:p-8 relative flex items-start justify-center">
-        <div className="min-w-max">
+      <div className="flex-1 bg-neutral-950 overflow-auto p-4 md:p-8">
+        <div className="w-fit mx-auto min-h-full">
            <OrgChart nodes={tree} />
         </div>
       </div>

@@ -19,7 +19,7 @@ export default async function EmployeesPage() {
     shiftsDoc = await Shift.find({ isActive: true }).lean();
   }
   
-  const employeesDoc = await User.find({ role: 'employee' }).populate('shiftId').sort({ createdAt: -1 }).lean();
+  const employeesDoc = await User.find({ role: { $ne: 'super_admin' } }).populate('shiftId').sort({ createdAt: -1 }).lean();
   
   const currentYear = new Date().getFullYear();
   const employeesWithBalances = await Promise.all(employeesDoc.map(async (emp: any) => {

@@ -11,6 +11,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export default function CompaniesPage() {
   const { data, error, mutate, isLoading } = useSWR('/api/admin/companies', fetcher);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     companyName: '',
@@ -22,12 +23,42 @@ export default function CompaniesPage() {
     status: true,
   });
 
+  const openModal = (company: any = null) => {
+    if (company) {
+      setEditingCompany(company);
+      setFormData({
+        companyName: company.companyName || '',
+        companyCode: company.companyCode || '',
+        email: company.email || '',
+        phone: company.phone || '',
+        address: company.address || '',
+        logo: company.logo || '',
+        status: company.status ?? true,
+      });
+    } else {
+      setEditingCompany(null);
+      setFormData({
+        companyName: '',
+        companyCode: '',
+        email: '',
+        phone: '',
+        address: '',
+        logo: '',
+        status: true,
+      });
+    }
+    setIsModalOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/admin/companies', {
-        method: 'POST',
+      const url = editingCompany ? `/api/admin/companies/${editingCompany._id}` : '/api/admin/companies';
+      const method = editingCompany ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
@@ -66,7 +97,7 @@ export default function CompaniesPage() {
           <p className="text-neutral-400 mt-1">Manage multiple organizations and branches</p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => openModal()}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -137,7 +168,7 @@ export default function CompaniesPage() {
                       {company.createdAt ? format(new Date(company.createdAt), 'MMM d, yyyy') : 'N/A'}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="p-2 text-neutral-400 hover:text-blue-500 transition-colors">
+                      <button onClick={() => openModal(company)} className="p-2 text-neutral-400 hover:text-blue-500 transition-colors">
                         <Edit2 className="w-4 h-4" />
                       </button>
                     </td>
@@ -153,7 +184,7 @@ export default function CompaniesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl max-w-md w-full p-6 shadow-2xl">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-white">Add New Company</h3>
+              <h3 className="text-lg font-semibold text-white">{editingCompany ? 'Edit Company' : 'Add New Company'}</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-neutral-400 hover:text-white">
                 <XCircle className="w-5 h-5" />
               </button>
@@ -240,7 +271,7 @@ export default function CompaniesPage() {
                   disabled={isSubmitting}
                   className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
                 >
-                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Create Company'}
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : editingCompany ? 'Save Changes' : 'Create Company'}
                 </button>
               </div>
             </form>

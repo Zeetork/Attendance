@@ -40,6 +40,18 @@ export class LeaveBalanceEngine {
       needsUpdate = true;
     }
 
+    // Sync gender-based leaves in case gender was updated
+    if (user.gender === 'male' && user.leaveBalance.paternityLeave.total === 0) {
+      user.leaveBalance.paternityLeave.total = 2;
+      user.leaveBalance.paternityLeave.available = 2 - user.leaveBalance.paternityLeave.taken;
+      needsUpdate = true;
+    }
+    if (user.gender === 'female' && user.leaveBalance.maternityLeave.total === 0) {
+      user.leaveBalance.maternityLeave.total = 60;
+      user.leaveBalance.maternityLeave.available = 60 - user.leaveBalance.maternityLeave.taken;
+      needsUpdate = true;
+    }
+
     // CL Increment logic
     if (isEligibleForCL) {
       const completedYears = Math.floor(monthsOfService / 12);

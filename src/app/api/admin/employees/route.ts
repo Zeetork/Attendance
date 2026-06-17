@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     const data = await req.json();
     const {
-      employeeId, name, email, password, department, designation, shiftId, joiningDate, monthlySalary, phoneNumber, profileImage, isActive, bankName, accountNumber, ifscCode
+      employeeId, name, email, password, department, designation, shiftId, joiningDate, monthlySalary, phoneNumber, profileImage, isActive, bankName, accountNumber, ifscCode, gender, role
     } = data;
 
     await dbConnect();
@@ -58,12 +58,13 @@ export async function POST(req: NextRequest) {
       shiftId: shiftId || undefined,
       joiningDate: new Date(joiningDate),
       monthlySalary: Number(monthlySalary),
-      role: 'employee',
+      role: role || 'employee',
       phoneNumber,
       profileImage,
       bankName,
       accountNumber,
       ifscCode,
+      gender: gender || undefined,
       isActive: isActive !== undefined ? isActive : true,
       companyId: companyId,
       companyIds: companyId ? [companyId] : []
