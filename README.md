@@ -13,6 +13,9 @@ attendance
 ├─ src
 │  ├─ app
 │  │  ├─ admin
+│  │  │  ├─ approvals
+│  │  │  │  ├─ AdminApprovalClient.tsx
+│  │  │  │  └─ page.tsx
 │  │  │  ├─ attendance
 │  │  │  │  ├─ AttendanceClient.tsx
 │  │  │  │  └─ page.tsx
@@ -60,6 +63,8 @@ attendance
 │  │  │     └─ page.tsx
 │  │  ├─ api
 │  │  │  ├─ admin
+│  │  │  │  ├─ approvals
+│  │  │  │  │  └─ route.ts
 │  │  │  │  ├─ attendance
 │  │  │  │  │  ├─ [id]
 │  │  │  │  │  │  └─ route.ts
@@ -70,6 +75,8 @@ attendance
 │  │  │  │  │  └─ export
 │  │  │  │  │     └─ route.ts
 │  │  │  │  ├─ companies
+│  │  │  │  │  ├─ [id]
+│  │  │  │  │  │  └─ route.ts
 │  │  │  │  │  └─ route.ts
 │  │  │  │  ├─ dashboard
 │  │  │  │  │  └─ route.ts
@@ -159,7 +166,8 @@ attendance
 │  │  │  │     │  └─ route.ts
 │  │  │  │     └─ route.ts
 │  │  │  ├─ notifications
-│  │  │  │  └─ route.ts
+│  │  │  │  ├─ route.ts
+│  │  │  │  └─ subscribe
 │  │  │  ├─ payroll
 │  │  │  │  ├─ generate
 │  │  │  │  │  └─ route.ts
@@ -241,6 +249,9 @@ attendance
 │  │  ├─ SystemAuditLog.ts
 │  │  ├─ User.ts
 │  │  └─ WFHRequest.ts
+│  ├─ pages
+│  │  └─ api
+│  │     └─ socket
 │  ├─ scripts
 │  │  └─ seed.ts
 │  ├─ services

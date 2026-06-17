@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     await dbConnect();
 
     const User = (await import('@/models/User')).default;
+    await import('@/models/Shift'); // Ensure Shift model is registered before population
     const user = await User.findById(userId).populate('shiftId');
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
