@@ -120,8 +120,8 @@ export default function LeavesClient() {
                         {leave.leaveType}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">{format(new Date(leave.fromDate), 'MMM dd')} - {format(new Date(leave.toDate), 'MMM dd')}</div>
-                        <div className="text-xs text-neutral-500">{days} Day{days !== 1 && 's'}</div>
+                        <div className="text-sm text-white">{format(new Date(leave.fromDate), 'MMM dd')} {leave.duration === 'multiple_days' ? `- ${format(new Date(leave.toDate), 'MMM dd')}` : ''}</div>
+                        <div className="text-xs text-neutral-500">{leave.numberOfDays || days} Day{(leave.numberOfDays || days) !== 1 && 's'} {leave.duration === 'half_day' && `(${leave.halfDaySession === 'first_half' ? 'First Half' : 'Second Half'})`}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-neutral-300 max-w-xs truncate" title={leave.reason}>{leave.reason}</div>

@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     if (status === 'approved') {
       if (requestType === 'LEAVE') {
         const { LeaveBalanceEngine } = await import('@/services/LeaveBalanceEngine');
-        await LeaveBalanceEngine.syncLeaveBalance(request.userId);
+        await LeaveBalanceEngine.syncLeaveBalance(request.userId.toString());
         const user = await User.findById(request.userId);
 
         if (user && user.leaveBalance) {
@@ -150,10 +150,17 @@ export async function POST(req: NextRequest) {
       newValue: status
     });
 
+    let message = `Your ${requestType.replace('_', ' ').toLowerCase()} request has been ${status.toLowerCase()}.`;
+    if (requestType === 'LEAVE' && request.duration === 'half_day') {
+      message = `Your Half Day (${request.halfDaySession === 'first_half' ? 'First Half' : 'Second Half'}) ${request.leaveType} request has been ${status.toLowerCase()}.`;
+    } else if (requestType === 'LEAVE') {
+      message = `Your ${request.leaveType} request has been ${status.toLowerCase()}.`;
+    }
+
     await Notification.create({
       recipientId: employeeId,
       type: `${requestType}_UPDATE`,
-      message: `Your ${requestType.replace('_', ' ').toLowerCase()} request has been ${status.toLowerCase()}.`,
+      message,
       link: `/employee/dashboard`,
     });
 

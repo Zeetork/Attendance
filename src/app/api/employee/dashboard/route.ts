@@ -57,11 +57,27 @@ export async function GET() {
 
     // Leaves
     const leaves = await Leave.find({ userId: session.user.id, status: 'approved' });
-    const takenLeaves = leaves.reduce((acc, l) => {
-      const days = Math.ceil((new Date(l.toDate).getTime() - new Date(l.fromDate).getTime()) / (1000 * 3600 * 24)) + 1;
-      return acc + days;
-    }, 0);
-    const leaveBalance = 24 - takenLeaves; // Assuming 24 annual leaves
+    let takenLeaves = 0;
+    let halfDayCount = 0;
+
+    leaves.forEach(l => {
+      takenLeaves += l.numberOfDays || 0;
+      if (l.duration === 'half_day') {
+        halfDayCount += 1;
+      }
+    });
+
+    // Use the actual leaveBalance from user if available, otherwise fallback
+    let availableLeave = 0;
+    if (user.leaveBalance) {
+      availableLeave = 
+        (user.leaveBalance.casualLeave?.available || 0) + 
+        (user.leaveBalance.sickLeave?.available || 0) + 
+        (user.leaveBalance.restrictedLeave?.available || 0) + 
+        (user.leaveBalance.compensatoryOff?.available || 0);
+    } else {
+      availableLeave = 24 - takenLeaves;
+    }
 
     // Recent
     const recentAttendances = attendances.slice(0, 5).map(a => ({
@@ -84,7 +100,10 @@ export async function GET() {
       attendancePercentage,
       presentDays,
       workingDays,
-      leaveBalance,
+      leaveBalance: availableLeave, // Keep for backward compatibility
+      availableLeave,
+      takenLeaves,
+      halfDayCount,
       recentAttendances,
       upcomingLeaves,
       manager: user?.reportsTo || null,

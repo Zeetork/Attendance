@@ -34,7 +34,7 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
   // Edit Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [editData, setEditData] = useState({ status: 'present', loginTime: '', logoutTime: '' });
+  const [editData, setEditData] = useState({ status: 'present', loginTime: '', logoutTime: '', duration: 'full_day', halfDaySession: 'first_half' });
   const [isSaving, setIsSaving] = useState(false);
 
   // Fetch employees list if admin
@@ -133,16 +133,20 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
       setEditData({
         status: attendance.status,
         loginTime: attendance.loginTime ? format(new Date(attendance.loginTime), 'HH:mm') : '',
-        logoutTime: attendance.logoutTime ? format(new Date(attendance.logoutTime), 'HH:mm') : ''
+        logoutTime: attendance.logoutTime ? format(new Date(attendance.logoutTime), 'HH:mm') : '',
+        duration: 'full_day',
+        halfDaySession: 'first_half'
       });
     } else if (leave) {
       setEditData({
         status: leave.leaveType,
         loginTime: '',
-        logoutTime: ''
+        logoutTime: '',
+        duration: leave.duration || 'full_day',
+        halfDaySession: leave.halfDaySession || 'first_half'
       });
     } else {
-      setEditData({ status: 'present', loginTime: '09:00', logoutTime: '18:00' });
+      setEditData({ status: 'present', loginTime: '09:00', logoutTime: '18:00', duration: 'full_day', halfDaySession: 'first_half' });
     }
   };
 
@@ -397,24 +401,58 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
                   </optgroup>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Login Time</label>
-                <input 
-                  type="time" 
-                  className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 [color-scheme:dark] focus:ring-blue-500 focus:border-blue-500"
-                  value={editData.loginTime}
-                  onChange={e => setEditData({...editData, loginTime: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Logout Time</label>
-                <input 
-                  type="time" 
-                  className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 [color-scheme:dark] focus:ring-blue-500 focus:border-blue-500"
-                  value={editData.logoutTime}
-                  onChange={e => setEditData({...editData, logoutTime: e.target.value})}
-                />
-              </div>
+
+              {!['present', 'absent', 'half-day', 'late'].includes(editData.status) && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-1">Leave Duration</label>
+                    <select 
+                      className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={editData.duration}
+                      onChange={e => setEditData({...editData, duration: e.target.value})}
+                    >
+                      <option value="full_day">Full Day</option>
+                      <option value="half_day">Half Day</option>
+                    </select>
+                  </div>
+                  {editData.duration === 'half_day' && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-400 mb-1">Half Day Session</label>
+                      <select 
+                        className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500"
+                        value={editData.halfDaySession}
+                        onChange={e => setEditData({...editData, halfDaySession: e.target.value})}
+                      >
+                        <option value="first_half">First Half (Morning)</option>
+                        <option value="second_half">Second Half (Afternoon)</option>
+                      </select>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {['present', 'late', 'half-day'].includes(editData.status) && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-1">Login Time</label>
+                    <input 
+                      type="time" 
+                      className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 [color-scheme:dark] focus:ring-blue-500 focus:border-blue-500"
+                      value={editData.loginTime}
+                      onChange={e => setEditData({...editData, loginTime: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-400 mb-1">Logout Time</label>
+                    <input 
+                      type="time" 
+                      className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 [color-scheme:dark] focus:ring-blue-500 focus:border-blue-500"
+                      value={editData.logoutTime}
+                      onChange={e => setEditData({...editData, logoutTime: e.target.value})}
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button 

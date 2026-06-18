@@ -58,7 +58,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const links = ['admin', 'super_admin'].includes(role as string) ? adminLinks : employeeLinks;
 
   return (
-    <div className="flex flex-col w-64 h-[100dvh] bg-neutral-900 border-r border-neutral-800 transition-all duration-300">
+    <div className="flex flex-col w-55 h-[100dvh] bg-neutral-900 border-r border-neutral-800 transition-all duration-300">
       <div className="flex items-center justify-between h-16 border-b border-neutral-800 px-4">
         <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent flex-1 text-center lg:text-left">
           HRMS Portal

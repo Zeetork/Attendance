@@ -29,8 +29,8 @@ export default function EmployeeDashboardClient() {
   const stats = [
     { name: 'Today Attendance', value: isLoading ? '...' : getStatusDisplay(), icon: Clock, color: 'text-green-500', bg: 'bg-green-500/10' },
     { name: 'Monthly Attendance', value: isLoading ? '...' : `${data?.attendancePercentage}% (${data?.presentDays}/${data?.workingDays} Days)`, icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { name: 'Leave Balance', value: isLoading ? '...' : `${data?.leaveBalance} Days`, icon: FileText, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-    { name: 'Shift Details', value: isLoading ? '...' : getShiftDisplay(), icon: CheckCircle2, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { name: 'Leaves (Available / Used)', value: isLoading ? '...' : `${data?.availableLeave ?? 0} / ${data?.takenLeaves ?? 0}`, icon: FileText, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { name: 'Half Day Leaves', value: isLoading ? '...' : `${data?.halfDayCount ?? 0} Taken`, icon: FileText, color: 'text-purple-500', bg: 'bg-purple-500/10' },
   ];
 
   return (

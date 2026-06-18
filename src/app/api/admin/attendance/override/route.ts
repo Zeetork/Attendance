@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await req.json();
-    const { userId, date, status, loginTime, logoutTime } = data; // date should be "YYYY-MM-DD", loginTime "HH:mm"
+    const { userId, date, status, loginTime, logoutTime, duration = 'full_day', halfDaySession = null } = data; // date should be "YYYY-MM-DD", loginTime "HH:mm"
 
     if (!userId || !date || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -57,8 +57,11 @@ export async function POST(req: NextRequest) {
     const attendanceTypes = ['present', 'absent', 'half-day', 'late'];
 
     if (!attendanceTypes.includes(status)) {
+      const isHalfDay = duration === 'half_day';
+      const deductAmount = isHalfDay ? 0.5 : 1;
+
       // It's a leave override
-      const eligibility = await LeaveBalanceEngine.checkEligibility(userId, status, 1);
+      const eligibility = await LeaveBalanceEngine.checkEligibility(userId, status, deductAmount);
       if (!eligibility.eligible) {
         return NextResponse.json({ error: eligibility.reason || 'Not eligible for this leave type' }, { status: 400 });
       }
@@ -69,7 +72,7 @@ export async function POST(req: NextRequest) {
       const CompOffCredit = (await import('@/models/CompOffCredit')).default;
       await CompOffCredit.findOneAndDelete({ employeeId: userId, attendanceDate });
 
-      // Create or update a 1-day approved leave record
+      // Create or update an approved leave record
       const existingLeave = await Leave.findOne({ userId, fromDate: attendanceDate, toDate: attendanceDate });
 
       const leave = await Leave.findOneAndUpdate(
@@ -77,7 +80,9 @@ export async function POST(req: NextRequest) {
         {
           $set: {
             leaveType: status,
-            numberOfDays: 1,
+            numberOfDays: deductAmount,
+            duration,
+            halfDaySession: isHalfDay ? halfDaySession : null,
             reason: 'Admin Calendar Override',
             status: 'approved'
           }
@@ -93,61 +98,64 @@ export async function POST(req: NextRequest) {
         if (user && user.leaveBalance) {
           // Refund old leave if changing types
           if (existingLeave) {
+            const oldDeductAmount = existingLeave.numberOfDays || 1;
             if (existingLeave.leaveType === 'Casual Leave') {
-              user.leaveBalance.casualLeave.taken -= 1;
-              user.leaveBalance.casualLeave.available += 1;
+              user.leaveBalance.casualLeave.taken -= oldDeductAmount;
+              user.leaveBalance.casualLeave.available += oldDeductAmount;
             } else if (existingLeave.leaveType === 'Sick Leave') {
-              user.leaveBalance.sickLeave.taken -= 1;
-              user.leaveBalance.sickLeave.available += 1;
+              user.leaveBalance.sickLeave.taken -= oldDeductAmount;
+              user.leaveBalance.sickLeave.available += oldDeductAmount;
             } else if (existingLeave.leaveType === 'Restricted Holiday') {
-              user.leaveBalance.restrictedLeave.taken -= 1;
-              user.leaveBalance.restrictedLeave.available += 1;
+              user.leaveBalance.restrictedLeave.taken -= oldDeductAmount;
+              user.leaveBalance.restrictedLeave.available += oldDeductAmount;
             } else if (existingLeave.leaveType === 'Maternity Leave') {
-              user.leaveBalance.maternityLeave.taken -= 1;
-              user.leaveBalance.maternityLeave.available += 1;
+              user.leaveBalance.maternityLeave.taken -= oldDeductAmount;
+              user.leaveBalance.maternityLeave.available += oldDeductAmount;
             } else if (existingLeave.leaveType === 'Paternity Leave') {
-              user.leaveBalance.paternityLeave.taken -= 1;
-              user.leaveBalance.paternityLeave.available += 1;
+              user.leaveBalance.paternityLeave.taken -= oldDeductAmount;
+              user.leaveBalance.paternityLeave.available += oldDeductAmount;
             } else if (existingLeave.leaveType === 'Leave Without Pay') {
-              user.leaveBalance.leaveWithoutPay.taken -= 1;
+              user.leaveBalance.leaveWithoutPay.taken -= oldDeductAmount;
             } else if (existingLeave.leaveType === 'Compensatory Off') {
               const credit = await CompOffCredit.findOne({ usedAgainstLeave: existingLeave._id });
               if (credit) {
                 credit.isUsed = false;
                 credit.usedAgainstLeave = undefined;
                 await credit.save();
-                user.leaveBalance.compensatoryOff.taken -= 1;
-                user.leaveBalance.compensatoryOff.available += 1;
+                user.leaveBalance.compensatoryOff.taken -= oldDeductAmount;
+                user.leaveBalance.compensatoryOff.available += oldDeductAmount;
               }
             }
           }
 
           // Deduct new leave
           if (status === 'Casual Leave') {
-            user.leaveBalance.casualLeave.taken += 1;
-            user.leaveBalance.casualLeave.available -= 1;
+            user.leaveBalance.casualLeave.taken += deductAmount;
+            user.leaveBalance.casualLeave.available -= deductAmount;
           } else if (status === 'Sick Leave') {
-            user.leaveBalance.sickLeave.taken += 1;
-            user.leaveBalance.sickLeave.available -= 1;
+            user.leaveBalance.sickLeave.taken += deductAmount;
+            user.leaveBalance.sickLeave.available -= deductAmount;
           } else if (status === 'Restricted Holiday') {
-            user.leaveBalance.restrictedLeave.taken += 1;
-            user.leaveBalance.restrictedLeave.available -= 1;
+            user.leaveBalance.restrictedLeave.taken += deductAmount;
+            user.leaveBalance.restrictedLeave.available -= deductAmount;
           } else if (status === 'Maternity Leave') {
-            user.leaveBalance.maternityLeave.taken += 1;
-            user.leaveBalance.maternityLeave.available -= 1;
+            user.leaveBalance.maternityLeave.taken += deductAmount;
+            user.leaveBalance.maternityLeave.available -= deductAmount;
           } else if (status === 'Paternity Leave') {
-            user.leaveBalance.paternityLeave.taken += 1;
-            user.leaveBalance.paternityLeave.available -= 1;
+            user.leaveBalance.paternityLeave.taken += deductAmount;
+            user.leaveBalance.paternityLeave.available -= deductAmount;
           } else if (status === 'Leave Without Pay') {
-            user.leaveBalance.leaveWithoutPay.taken += 1;
+            user.leaveBalance.leaveWithoutPay.taken += deductAmount;
           } else if (status === 'Compensatory Off') {
-            const credits = await CompOffCredit.find({ employeeId: userId, isUsed: false }).sort({ earnedDate: 1 }).limit(1);
+            const credits = await CompOffCredit.find({ employeeId: userId, isUsed: false }).sort({ earnedDate: 1 }).limit(Math.ceil(deductAmount));
+            for (const credit of credits) {
+              credit.isUsed = true;
+              credit.usedAgainstLeave = leave._id;
+              await credit.save();
+            }
             if (credits.length > 0) {
-              credits[0].isUsed = true;
-              credits[0].usedAgainstLeave = leave._id;
-              await credits[0].save();
-              user.leaveBalance.compensatoryOff.taken += 1;
-              user.leaveBalance.compensatoryOff.available -= 1;
+              user.leaveBalance.compensatoryOff.taken += deductAmount;
+              user.leaveBalance.compensatoryOff.available -= deductAmount;
             }
           }
           user.markModified('leaveBalance');
@@ -167,23 +175,24 @@ export async function POST(req: NextRequest) {
          await LeaveBalanceEngine.syncLeaveBalance(userId);
          const user = await User.findById(userId);
          if (user && user.leaveBalance) {
+            const oldDeductAmount = existingLeave.numberOfDays || 1;
             if (existingLeave.leaveType === 'Casual Leave') {
-              user.leaveBalance.casualLeave.taken -= 1;
-              user.leaveBalance.casualLeave.available += 1;
+              user.leaveBalance.casualLeave.taken -= oldDeductAmount;
+              user.leaveBalance.casualLeave.available += oldDeductAmount;
             } else if (existingLeave.leaveType === 'Sick Leave') {
-              user.leaveBalance.sickLeave.taken -= 1;
-              user.leaveBalance.sickLeave.available += 1;
+              user.leaveBalance.sickLeave.taken -= oldDeductAmount;
+              user.leaveBalance.sickLeave.available += oldDeductAmount;
             } else if (existingLeave.leaveType === 'Restricted Holiday') {
-              user.leaveBalance.restrictedLeave.taken -= 1;
-              user.leaveBalance.restrictedLeave.available += 1;
+              user.leaveBalance.restrictedLeave.taken -= oldDeductAmount;
+              user.leaveBalance.restrictedLeave.available += oldDeductAmount;
             } else if (existingLeave.leaveType === 'Maternity Leave') {
-              user.leaveBalance.maternityLeave.taken -= 1;
-              user.leaveBalance.maternityLeave.available += 1;
+              user.leaveBalance.maternityLeave.taken -= oldDeductAmount;
+              user.leaveBalance.maternityLeave.available += oldDeductAmount;
             } else if (existingLeave.leaveType === 'Paternity Leave') {
-              user.leaveBalance.paternityLeave.taken -= 1;
-              user.leaveBalance.paternityLeave.available += 1;
+              user.leaveBalance.paternityLeave.taken -= oldDeductAmount;
+              user.leaveBalance.paternityLeave.available += oldDeductAmount;
             } else if (existingLeave.leaveType === 'Leave Without Pay') {
-              user.leaveBalance.leaveWithoutPay.taken -= 1;
+              user.leaveBalance.leaveWithoutPay.taken -= oldDeductAmount;
             } else if (existingLeave.leaveType === 'Compensatory Off') {
                const CompOffCredit = (await import('@/models/CompOffCredit')).default;
                const credit = await CompOffCredit.findOne({ usedAgainstLeave: existingLeave._id });
@@ -191,8 +200,8 @@ export async function POST(req: NextRequest) {
                  credit.isUsed = false;
                  credit.usedAgainstLeave = undefined;
                  await credit.save();
-                 user.leaveBalance.compensatoryOff.taken -= 1;
-                 user.leaveBalance.compensatoryOff.available += 1;
+                 user.leaveBalance.compensatoryOff.taken -= oldDeductAmount;
+                 user.leaveBalance.compensatoryOff.available += oldDeductAmount;
                }
             }
             user.markModified('leaveBalance');

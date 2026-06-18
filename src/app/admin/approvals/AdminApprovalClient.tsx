@@ -69,7 +69,8 @@ export default function AdminApprovalClient() {
         return (
           <>
             <p className="text-sm text-neutral-300">Type: {req.leaveType}</p>
-            <p className="text-sm text-neutral-400">Date: {format(new Date(req.fromDate), 'MMM dd')} - {format(new Date(req.toDate), 'MMM dd, yyyy')}</p>
+            <p className="text-sm text-neutral-400">Date: {format(new Date(req.fromDate), 'MMM dd, yyyy')} {req.duration === 'multiple_days' ? `- ${format(new Date(req.toDate), 'MMM dd, yyyy')}` : ''}</p>
+            <p className="text-xs text-neutral-500">Duration: {req.duration === 'half_day' ? `Half Day (${req.halfDaySession === 'first_half' ? 'First Half' : 'Second Half'})` : req.duration === 'multiple_days' ? 'Multiple Days' : 'Full Day'} • {req.numberOfDays} Day(s)</p>
             {req.attachments && req.attachments.length > 0 && (
               <div className="mt-2">
                 <p className="text-xs text-neutral-500 mb-1">Supporting Documents:</p>

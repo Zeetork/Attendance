@@ -17,6 +17,8 @@ export default function EmployeeLeavesClient() {
     leaveType: '',
     fromDate: '',
     toDate: '',
+    duration: 'full_day',
+    halfDaySession: '',
     reason: '',
     attachments: [] as string[]
   });
@@ -26,7 +28,7 @@ export default function EmployeeLeavesClient() {
     setIsSubmitting(true);
     
     try {
-      const res = await fetch('/api/employee/leaves', {
+      const res = await fetch('/api/leaves/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -39,7 +41,7 @@ export default function EmployeeLeavesClient() {
       
       mutate();
       setIsModalOpen(false);
-      setFormData({ leaveType: '', fromDate: '', toDate: '', reason: '', attachments: [] });
+      setFormData({ leaveType: '', fromDate: '', toDate: '', duration: 'full_day', halfDaySession: '', reason: '', attachments: [] });
       toast.success('Leave applied successfully');
     } catch (err: any) {
       toast.error(err.message || 'Error applying for leave');
@@ -170,8 +172,8 @@ export default function EmployeeLeavesClient() {
                         {leave.leaveType}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-neutral-300">{format(new Date(leave.fromDate), 'MMM dd, yyyy')} - {format(new Date(leave.toDate), 'MMM dd, yyyy')}</div>
-                        <div className="text-xs text-neutral-500">{leave.numberOfDays || days} Day{(leave.numberOfDays || days) !== 1 && 's'}</div>
+                        <div className="text-sm text-neutral-300">{format(new Date(leave.fromDate), 'MMM dd, yyyy')} {leave.duration === 'multiple_days' ? `- ${format(new Date(leave.toDate), 'MMM dd, yyyy')}` : ''}</div>
+                        <div className="text-xs text-neutral-500">{leave.numberOfDays || days} Day{(leave.numberOfDays || days) !== 1 && 's'} {leave.duration === 'half_day' && `(${leave.halfDaySession === 'first_half' ? 'First Half' : 'Second Half'})`}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-neutral-300 max-w-xs truncate" title={leave.reason}>{leave.reason}</div>
@@ -233,7 +235,14 @@ export default function EmployeeLeavesClient() {
                       min={format(new Date(), 'yyyy-MM-dd')}
                       className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500 [color-scheme:dark]"
                       value={formData.fromDate}
-                      onChange={(e) => setFormData({...formData, fromDate: e.target.value})}
+                      onChange={(e) => {
+                        const newFromDate = e.target.value;
+                        setFormData(prev => ({
+                          ...prev, 
+                          fromDate: newFromDate,
+                          toDate: prev.duration === 'half_day' || prev.duration === 'full_day' ? newFromDate : prev.toDate
+                        }));
+                      }}
                     />
                   </div>
                   <div>
@@ -241,12 +250,52 @@ export default function EmployeeLeavesClient() {
                     <input
                       type="date"
                       required
+                      disabled={formData.duration === 'half_day' || formData.duration === 'full_day'}
                       min={formData.fromDate || format(new Date(), 'yyyy-MM-dd')}
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500 [color-scheme:dark]"
-                      value={formData.toDate}
+                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500 [color-scheme:dark] disabled:opacity-50"
+                      value={formData.duration === 'half_day' || formData.duration === 'full_day' ? formData.fromDate : formData.toDate}
                       onChange={(e) => setFormData({...formData, toDate: e.target.value})}
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-300 mb-1">Duration</label>
+                    <select
+                      required
+                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      value={formData.duration}
+                      onChange={(e) => {
+                        const dur = e.target.value;
+                        setFormData(prev => ({
+                          ...prev, 
+                          duration: dur, 
+                          halfDaySession: dur === 'half_day' ? 'first_half' : '',
+                          toDate: dur === 'half_day' || dur === 'full_day' ? prev.fromDate : prev.toDate
+                        }));
+                      }}
+                    >
+                      <option value="full_day">Full Day</option>
+                      <option value="half_day">Half Day</option>
+                      <option value="multiple_days">Multiple Days</option>
+                    </select>
+                  </div>
+
+                  {formData.duration === 'half_day' && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-300 mb-1">Session</label>
+                      <select
+                        required
+                        className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        value={formData.halfDaySession}
+                        onChange={(e) => setFormData({...formData, halfDaySession: e.target.value})}
+                      >
+                        <option value="first_half">First Half (Morning)</option>
+                        <option value="second_half">Second Half (Afternoon)</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -259,6 +308,17 @@ export default function EmployeeLeavesClient() {
                     onChange={(e) => setFormData({...formData, reason: e.target.value})}
                     placeholder="Briefly describe the reason for your leave..."
                   ></textarea>
+                </div>
+
+                <div className="bg-neutral-800/50 p-3 rounded-md border border-neutral-700/50">
+                  <div className="text-sm text-neutral-400">Total Leave Count:</div>
+                  <div className="text-lg font-semibold text-white">
+                    {formData.duration === 'half_day' 
+                      ? '0.5 Day' 
+                      : (formData.fromDate && (formData.duration === 'full_day' ? formData.fromDate : formData.toDate) && new Date(formData.duration === 'full_day' ? formData.fromDate : formData.toDate) >= new Date(formData.fromDate) 
+                          ? `${Math.ceil((new Date(formData.duration === 'full_day' ? formData.fromDate : formData.toDate).getTime() - new Date(formData.fromDate).getTime()) / (1000 * 60 * 60 * 24)) + 1} Day(s)` 
+                          : '0 Day')}
+                  </div>
                 </div>
 
                 <div>

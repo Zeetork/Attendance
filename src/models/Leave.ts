@@ -9,6 +9,8 @@ export interface ILeave extends Document {
   numberOfDays: number;
   reason: string;
   status: 'pending' | 'approved' | 'rejected';
+  duration?: 'full_day' | 'half_day' | 'multiple_days';
+  halfDaySession?: 'first_half' | 'second_half' | null;
   currentApprover?: mongoose.Types.ObjectId;
   approvedBy?: mongoose.Types.ObjectId;
   attachments?: string[];
@@ -25,6 +27,16 @@ const LeaveSchema: Schema = new Schema(
     fromDate: { type: Date, required: true },
     toDate: { type: Date, required: true },
     numberOfDays: { type: Number, required: true },
+    duration: {
+      type: String,
+      enum: ['full_day', 'half_day', 'multiple_days'],
+      default: 'full_day'
+    },
+    halfDaySession: {
+      type: String,
+      enum: ['first_half', 'second_half', null],
+      default: null
+    },
     reason: { type: String, required: true },
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
     currentApprover: { type: Schema.Types.ObjectId, ref: 'User' },

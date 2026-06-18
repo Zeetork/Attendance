@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Network, User as UserIcon, ChevronDown, ChevronRight, GripVertical, Search, Loader2 } from 'lucide-react';
+import { Network, User as UserIcon, ChevronDown, ChevronRight, GripVertical, Search, Loader2, Menu, X } from 'lucide-react';
 import clsx from 'clsx';
 
 interface EmployeeNode {
@@ -18,6 +18,7 @@ export default function HierarchyBuilderClient() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const fetchTree = async () => {
     setLoading(true);
@@ -68,55 +69,83 @@ export default function HierarchyBuilderClient() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row w-full h-full">
+    <div className="flex flex-col md:flex-row w-full h-full relative overflow-hidden">
       {/* Sidebar for Unassigned / Search */}
-      <div className="w-full md:w-80 bg-neutral-900 border-b md:border-b-0 md:border-r border-neutral-800 flex flex-col shrink-0">
-        <div className="p-4 border-b border-neutral-800">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <input 
-              type="text" 
-              placeholder="Search employees..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-neutral-800 border border-neutral-700 rounded-md py-2 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-blue-500"
-            />
+      <div className={clsx(
+        "bg-neutral-900 border-b md:border-b-0 md:border-r border-neutral-800 flex flex-col shrink-0 transition-all duration-300 z-20 absolute md:relative h-full overflow-hidden",
+        isSidebarOpen ? "w-80 translate-x-0" : "-translate-x-full md:w-0 md:border-none"
+      )}>
+        <div className="w-80 h-full flex flex-col">
+          <div className="p-4 border-b border-neutral-800 flex items-center justify-between">
+            <div className="relative flex-1 mr-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <input 
+                type="text" 
+                placeholder="Search employees..." 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-neutral-800 border border-neutral-700 rounded-md py-2 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <button 
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-2 text-neutral-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4">
-          <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Admin / Top Level</h3>
-          <div 
-            className="min-h-[100px] border-2 border-dashed border-neutral-700 rounded-lg p-2"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault();
-              const id = e.dataTransfer.getData('text/plain');
-              if (id) handleDrop(id, null);
-            }}
-          >
-            {tree.map(node => (
-               <TreeNode 
-                 key={node._id} 
-                 node={node} 
-                 search={search} 
-                 onDragStart={() => setDraggingId(node._id)}
-                 onDragEnd={() => setDraggingId(null)}
-                 onDropNode={handleDrop}
-               />
-            ))}
-            {tree.length === 0 && (
-              <div className="text-neutral-500 text-sm text-center mt-4">
-                No employees found
-              </div>
-            )}
+          <div className="flex-1 overflow-y-auto p-4">
+            <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Admin / Top Level</h3>
+            <div 
+              className="min-h-[100px] border-2 border-dashed border-neutral-700 rounded-lg p-2"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const id = e.dataTransfer.getData('text/plain');
+                if (id) handleDrop(id, null);
+              }}
+            >
+              {tree.map(node => (
+                 <TreeNode 
+                   key={node._id} 
+                   node={node} 
+                   search={search} 
+                   onDragStart={() => setDraggingId(node._id)}
+                   onDragEnd={() => setDraggingId(null)}
+                   onDropNode={handleDrop}
+                 />
+              ))}
+              {tree.length === 0 && (
+                <div className="text-neutral-500 text-sm text-center mt-4">
+                  No employees found
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main visual canvas */}
-      <div className="flex-1 bg-neutral-950 overflow-auto p-4 md:p-8">
-        <div className="w-fit mx-auto min-h-full">
-           <OrgChart nodes={tree} />
+      <div 
+        className="flex-1 bg-neutral-950 overflow-auto p-4 md:p-8 relative"
+        onClick={() => setIsSidebarOpen(false)}
+      >
+        {!isSidebarOpen && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setIsSidebarOpen(true); }}
+            className="absolute top-4 left-4 z-10 p-2 bg-neutral-800 border border-neutral-700 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-700 shadow-md"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+        <div className="w-fit mx-auto min-h-full pt-10 md:pt-0">
+           <OrgChart 
+             nodes={tree} 
+             onNodeClick={(e) => {
+               e.stopPropagation();
+               setIsSidebarOpen(true);
+             }} 
+           />
         </div>
       </div>
     </div>
@@ -188,26 +217,29 @@ function TreeNode({ node, search, onDragStart, onDragEnd, onDropNode }: any) {
   );
 }
 
-function OrgChart({ nodes }: { nodes: EmployeeNode[] }) {
+function OrgChart({ nodes, onNodeClick }: { nodes: EmployeeNode[], onNodeClick?: (e: React.MouseEvent) => void }) {
   if (!nodes || nodes.length === 0) return null;
 
   return (
     <div className="flex gap-12">
       {nodes.map(node => (
-        <OrgChartNode key={node._id} node={node} />
+        <OrgChartNode key={node._id} node={node} onNodeClick={onNodeClick} />
       ))}
     </div>
   );
 }
 
-function OrgChartNode({ node }: { node: EmployeeNode }) {
+function OrgChartNode({ node, onNodeClick }: { node: EmployeeNode, onNodeClick?: (e: React.MouseEvent) => void }) {
   return (
     <div className="flex flex-col items-center">
       {/* Node Card */}
-      <div className="bg-neutral-900 border border-neutral-700 shadow-xl rounded-xl p-4 w-48 relative group z-10 hover:border-blue-500 transition-colors">
+      <div 
+        className="bg-neutral-900 border border-neutral-700 shadow-xl rounded-xl p-4 w-48 relative group z-10 hover:border-blue-500 transition-colors cursor-pointer"
+        onClick={onNodeClick}
+      >
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
            <span className={clsx(
-             "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+             "px-2 py-0.5 rounded-full  text-[10px] font-bold uppercase tracking-wider",
              node.role === 'admin' ? "bg-red-500/20 text-red-400 border border-red-500/30" :
              node.role === 'director' ? "bg-purple-500/20 text-purple-400 border border-purple-500/30" :
              node.role === 'department_head' ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" :
@@ -251,7 +283,7 @@ function OrgChartNode({ node }: { node: EmployeeNode }) {
                <div key={child._id} className="relative flex flex-col items-center px-4">
                  {/* Vertical line connecting to child */}
                  <div className="w-px h-8 bg-neutral-700"></div>
-                 <OrgChartNode node={child} />
+                 <OrgChartNode node={child} onNodeClick={onNodeClick} />
                </div>
              ))}
           </div>

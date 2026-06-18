@@ -36,22 +36,59 @@ export async function POST(req: NextRequest) {
     let expectedLoginTime = new Date(now);
     let shiftId = user.shiftId?._id;
     let graceTime = 15;
+    let isHalfDayLeave = false;
+    let halfDaySession = null;
+
+    // Check for approved leave today
+    const Leave = (await import('@/models/Leave')).default;
+    const activeLeave = await Leave.findOne({
+      userId,
+      status: 'approved',
+      fromDate: { $lte: todayEnd },
+      toDate: { $gte: todayStart }
+    });
+
+    if (activeLeave && activeLeave.duration === 'half_day') {
+      isHalfDayLeave = true;
+      halfDaySession = activeLeave.halfDaySession;
+    } else if (activeLeave && activeLeave.duration !== 'half_day') {
+      return Response.json({ error: 'You are on full day leave today' }, { status: 400 });
+    }
 
     if (user.shiftId) {
       const shift = user.shiftId as any;
-      const [hours, minutes] = shift.startTime.split(':');
-      expectedLoginTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      const [startHours, startMinutes] = shift.startTime.split(':');
+      const [endHours, endMinutes] = shift.endTime.split(':');
+      
+      let finalStartHours = parseInt(startHours);
+      let finalStartMinutes = parseInt(startMinutes);
+
+      if (isHalfDayLeave && halfDaySession === 'first_half') {
+        // First Half Leave -> work second half. So expected login is midway
+        const totalMinutes = (parseInt(endHours) * 60 + parseInt(endMinutes)) - (parseInt(startHours) * 60 + parseInt(startMinutes));
+        const midPointMinutes = (parseInt(startHours) * 60 + parseInt(startMinutes)) + (totalMinutes / 2);
+        finalStartHours = Math.floor(midPointMinutes / 60);
+        finalStartMinutes = midPointMinutes % 60;
+      }
+      
+      expectedLoginTime.setHours(finalStartHours, finalStartMinutes, 0, 0);
       graceTime = shift.graceTime || 15;
     } else {
-      expectedLoginTime.setHours(9, 0, 0, 0); // Default if no shift
+      let defaultStart = 9;
+      if (isHalfDayLeave && halfDaySession === 'first_half') {
+        defaultStart = 14; // 2 PM
+      }
+      expectedLoginTime.setHours(defaultStart, 0, 0, 0); // Default if no shift
     }
 
-    let status: 'present' | 'late' = 'present';
+    let status: 'present' | 'late' | 'half-day' = isHalfDayLeave ? 'half-day' : 'present';
     let lateMinutes = 0;
 
     const diffMins = differenceInMinutes(now, expectedLoginTime);
-    if (diffMins > graceTime) {
+    if (diffMins > graceTime && !isHalfDayLeave) { // if half-day leave, keep status as half-day
       status = 'late';
+      lateMinutes = diffMins;
+    } else if (diffMins > graceTime && isHalfDayLeave) {
       lateMinutes = diffMins;
     }
 

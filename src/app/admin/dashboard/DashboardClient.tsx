@@ -21,6 +21,7 @@ export default function DashboardClient() {
     { name: 'Total CL Used', value: '-', icon: FileSpreadsheet, color: 'text-orange-500', bg: 'bg-orange-500/10' },
     { name: 'Total LWP Used', value: '-', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
     { name: 'Pending Leaves', value: '-', icon: Clock, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { name: 'Half Day Requests', value: '-', icon: Clock, color: 'text-pink-500', bg: 'bg-pink-500/10' },
   ];
 
   const stats = data ? [
@@ -31,6 +32,7 @@ export default function DashboardClient() {
     { name: 'Total CL Used', value: data.stats.totalCLUsed, icon: FileSpreadsheet, color: 'text-orange-500', bg: 'bg-orange-500/10' },
     { name: 'Total LWP Used', value: data.stats.totalLWPUsed, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
     { name: 'Pending Leaves', value: data.stats.pendingLeaves, icon: Clock, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { name: 'Half Day Requests', value: data.stats.halfDayRequests, icon: Clock, color: 'text-pink-500', bg: 'bg-pink-500/10' },
   ] : defaultStats;
 
   return (

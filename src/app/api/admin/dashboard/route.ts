@@ -26,6 +26,7 @@ export async function GET() {
     const lateEmployees = attendancesToday.filter(a => a.status === 'late').length;
 
     const pendingLeaves = await Leave.countDocuments({ status: 'pending' });
+    const halfDayRequests = await Leave.countDocuments({ status: 'pending', duration: 'half_day' });
 
     const allEmployees = await User.find({ role: 'employee', isActive: true, leaveBalance: { $exists: true } });
     let totalSLUsed = 0;
@@ -79,7 +80,8 @@ export async function GET() {
         pendingLeaves,
         totalSLUsed,
         totalCLUsed,
-        totalLWPUsed
+        totalLWPUsed,
+        halfDayRequests
       },
       activities,
       leaveRequests,
