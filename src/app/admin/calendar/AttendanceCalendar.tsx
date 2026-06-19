@@ -19,6 +19,7 @@ import {
 import { ChevronLeft, ChevronRight, Loader2, Calendar as CalendarIcon, User as UserIcon, Download } from 'lucide-react';
 import clsx from 'clsx';
 import * as ExcelJS from 'exceljs';
+import { toast } from 'react-hot-toast';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -81,7 +82,7 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
 
     // 2. Check Holidays
     const holiday = data.holidays?.find((h: any) => isSameDay(new Date(h.date), day));
-    if (holiday) return { type: 'holiday', label: holiday.holidayName, color: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' };
+    if (holiday) return { type: 'holiday', holidayType: holiday.holidayType, label: holiday.holidayName, color: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' };
 
     // 3. Check Leaves
     const leave = data.leaves?.find((l: any) => {
@@ -114,6 +115,11 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
 
   const handleDayClick = (day: Date, status: any) => {
     if (!isAdmin || !selectedUser) return;
+    
+    if (status?.type === 'holiday' && ['public', 'company'].includes(status.holidayType)) {
+      toast.error('Cannot mark attendance on a Public or Company Holiday. It is a mandatory paid leave.');
+      return;
+    }
     
     setSelectedDate(day);
     setIsEditModalOpen(true);
@@ -171,7 +177,7 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
       setIsEditModalOpen(false);
     } catch (error: any) {
       console.error(error);
-      alert(error.message || 'Error updating attendance');
+      toast.error(error.message || 'Error updating attendance');
     } finally {
       setIsSaving(false);
     }

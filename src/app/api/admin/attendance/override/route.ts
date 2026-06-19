@@ -14,7 +14,8 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await req.json();
-    const { userId, date, status, loginTime, logoutTime, duration = 'full_day', halfDaySession = null } = data; // date should be "YYYY-MM-DD", loginTime "HH:mm"
+    const { userId, date, status, loginTime, logoutTime, duration = 'full_day', halfDaySession } = data; // date should be "YYYY-MM-DD", loginTime "HH:mm"
+    const finalHalfDaySession = (halfDaySession === '' || !halfDaySession) ? null : halfDaySession;
 
     if (!userId || !date || !status) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -66,6 +67,18 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: eligibility.reason || 'Not eligible for this leave type' }, { status: 400 });
       }
 
+      if (status === 'Restricted Holiday') {
+        const Holiday = (await import('@/models/Holiday')).default;
+        const isRH = await Holiday.exists({
+          date: attendanceDate,
+          holidayType: 'restricted'
+        });
+        if (!isRH) {
+          const dateStr = attendanceDate.toISOString().split('T')[0];
+          return NextResponse.json({ error: `Cannot override to Restricted Holiday. ${dateStr} is not a designated Restricted Holiday.` }, { status: 400 });
+        }
+      }
+
       // Remove existing attendance for this day so it doesn't conflict
       await Attendance.findOneAndDelete({ userId, date: attendanceDate });
       
@@ -82,7 +95,7 @@ export async function POST(req: NextRequest) {
             leaveType: status,
             numberOfDays: deductAmount,
             duration,
-            halfDaySession: isHalfDay ? halfDaySession : null,
+            halfDaySession: isHalfDay ? finalHalfDaySession : null,
             reason: 'Admin Calendar Override',
             status: 'approved'
           }
@@ -231,10 +244,15 @@ export async function POST(req: NextRequest) {
       const isWeeklyOff = shift && (!shift.workingDays || !shift.workingDays.includes(dayName));
       
       const Holiday = (await import('@/models/Holiday')).default;
-      const isHoliday = await Holiday.exists({
+      const holiday = await Holiday.findOne({
         date: attendanceDate,
         holidayType: { $in: ['public', 'company'] }
       });
+      const isHoliday = !!holiday;
+
+      if (isHoliday && ['present', 'half-day', 'late'].includes(status)) {
+        return NextResponse.json({ error: `Cannot mark attendance on a ${holiday.holidayType === 'public' ? 'Public' : 'Company'} Holiday. It is a mandatory paid leave.` }, { status: 400 });
+      }
 
       const CompOffCredit = (await import('@/models/CompOffCredit')).default;
       if (isWeeklyOff || isHoliday) {

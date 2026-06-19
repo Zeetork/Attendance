@@ -6,7 +6,7 @@ import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 const loginSchema = z.object({
@@ -17,6 +17,7 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -93,13 +94,26 @@ export default function LoginPage() {
                 Password
               </label>
               <div className="mt-1">
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  {...form.register('password')}
-                  className="appearance-none block w-full px-3 py-2 border border-neutral-700 bg-neutral-800 text-white rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    {...form.register('password')}
+                    className="appearance-none block w-full px-3 py-2 pr-10 border border-neutral-700 bg-neutral-800 text-white rounded-md shadow-sm placeholder-neutral-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-300 focus:outline-none"
+                  >
+                    {showPassword ? (
+                      <Eye className="h-5 w-5" aria-hidden="true" />
+                    ) : (
+                      <EyeOff className="h-5 w-5" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
                 {form.formState.errors.password && (
                   <p className="mt-1 text-sm text-red-500">{form.formState.errors.password.message}</p>
                 )}

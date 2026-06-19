@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { leaveType, fromDate, toDate, reason, attachments, duration = 'full_day', halfDaySession = null } = await req.json();
+    const { leaveType, fromDate, toDate, reason, attachments, duration = 'full_day', halfDaySession } = await req.json();
+    const finalHalfDaySession = (halfDaySession === '' || !halfDaySession) ? null : halfDaySession;
 
     // Calculate number of days
     const start = new Date(fromDate);
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
       if (numberOfDays !== 1) {
         return NextResponse.json({ error: 'Half day leave must be for a single date' }, { status: 400 });
       }
-      if (!halfDaySession) {
+      if (!finalHalfDaySession) {
         return NextResponse.json({ error: 'Session (First Half / Second Half) is required for half day leave' }, { status: 400 });
       }
       numberOfDays = 0.5;
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (overlappingLeave) {
-      if (duration === 'half_day' && overlappingLeave.duration === 'half_day' && overlappingLeave.fromDate.getTime() === start.getTime() && overlappingLeave.halfDaySession !== halfDaySession) {
+      if (duration === 'half_day' && overlappingLeave.duration === 'half_day' && overlappingLeave.fromDate.getTime() === start.getTime() && overlappingLeave.halfDaySession !== finalHalfDaySession) {
          // Allow first half and second half on same day? Wait, requirements say: "Cannot submit: First Half + Second Half separately for same date"
          return NextResponse.json({ error: 'Overlapping leave detected. You already have a half day leave on this date. Please apply for a full day leave instead.' }, { status: 400 });
       }
@@ -58,6 +59,29 @@ export async function POST(req: NextRequest) {
 
     if (!eligibility.eligible) {
       return NextResponse.json({ error: eligibility.reason }, { status: 400 });
+    }
+
+    if (leaveType === 'Restricted Holiday') {
+      const Holiday = (await import('@/models/Holiday')).default;
+      
+      // We need to check if every day in the range is a restricted holiday
+      const days = [];
+      let currentDate = new Date(start);
+      while (currentDate <= end) {
+        days.push(new Date(currentDate));
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      for (const day of days) {
+        const isRH = await Holiday.exists({
+          date: day,
+          holidayType: 'restricted'
+        });
+        if (!isRH) {
+          const dateStr = day.toISOString().split('T')[0];
+          return NextResponse.json({ error: `You can only apply for Restricted Holiday on designated restricted holidays. ${dateStr} is not a Restricted Holiday.` }, { status: 400 });
+        }
+      }
     }
 
     if (eligibility.requiresDocument && (!attachments || attachments.length === 0)) {
@@ -82,7 +106,7 @@ export async function POST(req: NextRequest) {
       toDate: new Date(toDate),
       numberOfDays,
       duration,
-      halfDaySession,
+      halfDaySession: finalHalfDaySession,
       attachments,
       reason,
       status: initialStatus as any,
@@ -92,7 +116,7 @@ export async function POST(req: NextRequest) {
     if (currentApprover) {
       let leaveDesc = 'leave';
       if (duration === 'half_day') {
-         leaveDesc = halfDaySession === 'first_half' ? 'First Half Leave' : 'Second Half Leave';
+         leaveDesc = finalHalfDaySession === 'first_half' ? 'First Half Leave' : 'Second Half Leave';
       }
 
       await Notification.create({
