@@ -148,14 +148,12 @@ export default function ProfileClient() {
               >
                 Personal Details
               </button>
-              {user.role === 'admin' && (
-                <button 
-                  className={`flex-1 py-4 text-sm font-medium transition-colors ${activeTab === 'security' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-400 hover:text-white'}`}
-                  onClick={() => setActiveTab('security')}
-                >
-                  Security
-                </button>
-              )}
+              <button 
+                className={`flex-1 py-4 text-sm font-medium transition-colors ${activeTab === 'security' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-400 hover:text-white'}`}
+                onClick={() => setActiveTab('security')}
+              >
+                Security
+              </button>
             </div>
 
             <div className="p-6">

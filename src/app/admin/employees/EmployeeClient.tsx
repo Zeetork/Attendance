@@ -12,6 +12,14 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const [editingBalanceId, setEditingBalanceId] = useState<string | null>(null);
+  const [isSavingBalance, setIsSavingBalance] = useState(false);
+  const [balanceForm, setBalanceForm] = useState({
+    casualLeave: 0,
+    sickLeave: 0,
+    restrictedLeave: 0,
+    compensatoryOff: 0
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
@@ -160,6 +168,56 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
     }
   };
 
+  const handleEditBalance = (employee: any) => {
+    setEditingBalanceId(employee._id);
+    setBalanceForm({
+      casualLeave: employee.leaveBalance.casualLeave.available,
+      sickLeave: employee.leaveBalance.sickLeave.available,
+      restrictedLeave: employee.leaveBalance.restrictedLeave.available,
+      compensatoryOff: employee.leaveBalance.compensatoryOff.available,
+    });
+  };
+
+  const handleSaveBalance = async (employeeId: string) => {
+    setIsSavingBalance(true);
+    try {
+      const response = await fetch(`/api/admin/employees/${employeeId}/leave-balance`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(balanceForm),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.error || 'Failed to update balance');
+        return;
+      }
+
+      const updatedEmployees = employees.map(emp => {
+        if (emp._id === employeeId) {
+          return {
+            ...emp,
+            leaveBalance: {
+              ...emp.leaveBalance,
+              casualLeave: { ...emp.leaveBalance.casualLeave, available: balanceForm.casualLeave },
+              sickLeave: { ...emp.leaveBalance.sickLeave, available: balanceForm.sickLeave },
+              restrictedLeave: { ...emp.leaveBalance.restrictedLeave, available: balanceForm.restrictedLeave },
+              compensatoryOff: { ...emp.leaveBalance.compensatoryOff, available: balanceForm.compensatoryOff },
+            }
+          };
+        }
+        return emp;
+      });
+      setEmployees(updatedEmployees);
+      setEditingBalanceId(null);
+    } catch (error) {
+      console.error(error);
+      alert('An error occurred');
+    } finally {
+      setIsSavingBalance(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -298,46 +356,77 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                   {expandedRowId === employee._id && employee.leaveBalance && (
                     <tr className="bg-neutral-800/30">
                       <td colSpan={6} className="px-6 py-4">
+                        <div className="flex justify-between items-center mb-4">
+                          <h4 className="text-sm font-medium text-white">Leave Balance</h4>
+                          {editingBalanceId === employee._id ? (
+                            <div className="flex gap-2">
+                              <button onClick={() => setEditingBalanceId(null)} className="px-3 py-1 text-xs text-neutral-400 hover:text-white transition-colors border border-neutral-700 rounded-md">Cancel</button>
+                              <button onClick={() => handleSaveBalance(employee._id)} disabled={isSavingBalance} className="px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50">
+                                {isSavingBalance ? 'Saving...' : 'Save Balance'}
+                              </button>
+                            </div>
+                          ) : (
+                            <button onClick={() => handleEditBalance(employee)} className="text-xs flex items-center text-blue-400 hover:text-blue-300 transition-colors">
+                              <Edit className="w-3 h-3 mr-1" /> Edit Balance
+                            </button>
+                          )}
+                        </div>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg">
-                            <div className="text-xs text-neutral-400 mb-1">Casual Leave</div>
-                            <div className="flex justify-between items-baseline">
-                              <span className="text-lg font-semibold text-white">
-                                {employee.leaveBalance.casualLeave.available} <span className="text-xs text-neutral-500 font-normal">avail</span>
-                              </span>
+                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg flex flex-col justify-between">
+                            <div className="text-xs text-neutral-400 mb-2">Casual Leave</div>
+                            <div className="flex justify-between items-end">
+                              {editingBalanceId === employee._id ? (
+                                <input type="number" min="0" step="0.5" className="w-16 bg-neutral-800 border border-neutral-600 rounded text-white px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 outline-none" value={balanceForm.casualLeave} onChange={e => setBalanceForm({...balanceForm, casualLeave: Number(e.target.value)})} />
+                              ) : (
+                                <span className="text-lg font-semibold text-white">
+                                  {employee.leaveBalance.casualLeave.available} <span className="text-[10px] text-neutral-500 font-normal">avail</span>
+                                </span>
+                              )}
                               <span className="text-xs text-neutral-500">{employee.leaveBalance.casualLeave.taken} booked</span>
                             </div>
                           </div>
-                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg">
-                            <div className="text-xs text-neutral-400 mb-1">Sick Leave</div>
-                            <div className="flex justify-between items-baseline">
-                              <span className="text-lg font-semibold text-white">
-                                {employee.leaveBalance.sickLeave.available} <span className="text-xs text-neutral-500 font-normal">avail</span>
-                              </span>
+                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg flex flex-col justify-between">
+                            <div className="text-xs text-neutral-400 mb-2">Sick Leave</div>
+                            <div className="flex justify-between items-end">
+                              {editingBalanceId === employee._id ? (
+                                <input type="number" min="0" step="0.5" className="w-16 bg-neutral-800 border border-neutral-600 rounded text-white px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 outline-none" value={balanceForm.sickLeave} onChange={e => setBalanceForm({...balanceForm, sickLeave: Number(e.target.value)})} />
+                              ) : (
+                                <span className="text-lg font-semibold text-white">
+                                  {employee.leaveBalance.sickLeave.available} <span className="text-[10px] text-neutral-500 font-normal">avail</span>
+                                </span>
+                              )}
                               <span className="text-xs text-neutral-500">{employee.leaveBalance.sickLeave.taken} booked</span>
                             </div>
                           </div>
-                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg">
-                            <div className="text-xs text-neutral-400 mb-1">Restricted Holiday</div>
-                            <div className="flex justify-between items-baseline">
-                              <span className="text-lg font-semibold text-white">
-                                {employee.leaveBalance.restrictedLeave.available} <span className="text-xs text-neutral-500 font-normal">avail</span>
-                              </span>
+                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg flex flex-col justify-between">
+                            <div className="text-xs text-neutral-400 mb-2">Restricted Holiday</div>
+                            <div className="flex justify-between items-end">
+                              {editingBalanceId === employee._id ? (
+                                <input type="number" min="0" step="0.5" className="w-16 bg-neutral-800 border border-neutral-600 rounded text-white px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 outline-none" value={balanceForm.restrictedLeave} onChange={e => setBalanceForm({...balanceForm, restrictedLeave: Number(e.target.value)})} />
+                              ) : (
+                                <span className="text-lg font-semibold text-white">
+                                  {employee.leaveBalance.restrictedLeave.available} <span className="text-[10px] text-neutral-500 font-normal">avail</span>
+                                </span>
+                              )}
                               <span className="text-xs text-neutral-500">{employee.leaveBalance.restrictedLeave.taken} booked</span>
                             </div>
                           </div>
-                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg">
-                            <div className="text-xs text-neutral-400 mb-1">Compensatory Off</div>
-                            <div className="flex justify-between items-baseline">
-                              <span className="text-lg font-semibold text-white">
-                                {employee.leaveBalance.compensatoryOff.available} <span className="text-xs text-neutral-500 font-normal">avail</span>
-                              </span>
+                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg flex flex-col justify-between">
+                            <div className="text-xs text-neutral-400 mb-2">Compensatory Off</div>
+                            <div className="flex justify-between items-end">
+                              {editingBalanceId === employee._id ? (
+                                <input type="number" min="0" step="0.5" className="w-16 bg-neutral-800 border border-neutral-600 rounded text-white px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 outline-none" value={balanceForm.compensatoryOff} onChange={e => setBalanceForm({...balanceForm, compensatoryOff: Number(e.target.value)})} />
+                              ) : (
+                                <span className="text-lg font-semibold text-white">
+                                  {employee.leaveBalance.compensatoryOff.available} <span className="text-[10px] text-neutral-500 font-normal">avail</span>
+                                </span>
+                              )}
                               <span className="text-xs text-neutral-500">{employee.leaveBalance.compensatoryOff.taken} booked</span>
                             </div>
                           </div>
-                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg">
-                            <div className="text-xs text-neutral-400 mb-1">Leave Without Pay</div>
-                            <div className="flex justify-between items-baseline">
+                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg flex flex-col justify-between">
+                            <div className="text-xs text-neutral-400 mb-2">Leave Without Pay</div>
+                            <div className="flex justify-end items-end h-full pb-1">
                               <span className="text-xs text-neutral-500">{employee.leaveBalance.leaveWithoutPay.taken} booked</span>
                             </div>
                           </div>

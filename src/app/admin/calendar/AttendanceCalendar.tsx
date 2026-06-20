@@ -80,11 +80,7 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
       }
     }
 
-    // 2. Check Holidays
-    const holiday = data.holidays?.find((h: any) => isSameDay(new Date(h.date), day));
-    if (holiday) return { type: 'holiday', holidayType: holiday.holidayType, label: holiday.holidayName, color: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' };
-
-    // 3. Check Leaves
+    // 2. Check Leaves
     const leave = data.leaves?.find((l: any) => {
       const from = new Date(l.fromDate);
       const to = new Date(l.toDate);
@@ -97,6 +93,10 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
     });
     
     if (leave) return { type: 'leave', label: 'Absent', subLabel: leave.leaveType, color: 'bg-red-500/10 text-red-500 border-red-500/20' };
+
+    // 3. Check Holidays
+    const holiday = data.holidays?.find((h: any) => isSameDay(new Date(h.date), day));
+    if (holiday) return { type: 'holiday', holidayType: holiday.holidayType, label: holiday.holidayName, color: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' };
 
     // 4. Default for past weekdays
     const isPast = day < new Date(new Date().setHours(0,0,0,0));
@@ -232,13 +232,13 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
             else if (att.status === 'half-day') status = 'Half Day';
             else if (att.status === 'late') status = 'Late';
             else if (att.status === 'absent') status = 'Absent';
-          } else if (isHoliday) {
-            status = 'Holiday';
           } else if (leave) {
             const type = leave.leaveType || 'Leave';
             if (type.toLowerCase().includes('sick')) status = 'SL';
             else if (type.toLowerCase().includes('casual')) status = 'CL';
             else status = type.split(' ').map((w: string) => w[0]).join('').toUpperCase();
+          } else if (isHoliday) {
+            status = 'Holiday';
           } else {
             if (day.getDay() === 0 || day.getDay() === 6) {
               status = 'WO'; 
