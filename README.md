@@ -82,6 +82,8 @@ attendance
 │  │  │  │  │  └─ route.ts
 │  │  │  │  ├─ employees
 │  │  │  │  │  ├─ [id]
+│  │  │  │  │  │  ├─ leave-balance
+│  │  │  │  │  │  │  └─ route.ts
 │  │  │  │  │  │  └─ route.ts
 │  │  │  │  │  └─ route.ts
 │  │  │  │  ├─ holidays
@@ -220,6 +222,7 @@ attendance
 │  │  ├─ NotificationSlide.tsx
 │  │  ├─ ProfileClient.tsx
 │  │  ├─ Sidebar.tsx
+│  │  ├─ ThemeToggle.tsx
 │  │  └─ TopNav.tsx
 │  ├─ lib
 │  │  ├─ bulkEmailService.ts
@@ -238,6 +241,7 @@ attendance
 │  │  ├─ GeneratedLetter.ts
 │  │  ├─ Holiday.ts
 │  │  ├─ Leave.ts
+│  │  ├─ LeavePolicy.ts
 │  │  ├─ LetterAuditLog.ts
 │  │  ├─ LetterEmailLog.ts
 │  │  ├─ LetterTemplate.ts
