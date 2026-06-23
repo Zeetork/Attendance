@@ -57,7 +57,7 @@ export default function DashboardLayoutClient({ children }: { children: ReactNod
 
   return (
     <div
-      className="flex h-[100dvh] overflow-hidden bg-neutral-950"
+      className="flex h-[100dvh] overflow-hidden bg-background"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

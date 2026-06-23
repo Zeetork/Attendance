@@ -140,19 +140,19 @@ export default function AttendanceClient() {
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      present: 'bg-green-500/10 text-green-500 border-green-500/20',
-      absent: 'bg-red-500/10 text-red-500 border-red-500/20',
-      'half-day': 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-      late: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-      'Weekly Off': 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20',
-      'Work From Home': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      present: 'bg-success/10 text-success border-success/20',
+      absent: 'bg-destructive/10 text-destructive border-destructive/20',
+      'half-day': 'bg-primary/10 text-primary border-primary/20',
+      late: 'bg-warning/10 text-warning border-warning/20',
+      'Weekly Off': 'bg-muted text-muted-foreground border-border',
+      'Work From Home': 'bg-primary/10 text-primary border-primary/20',
       'On Duty': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
       'Restricted Holiday': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
       'Leave': 'bg-pink-500/10 text-pink-400 border-pink-500/20',
       'Holiday': 'bg-teal-500/10 text-teal-400 border-teal-500/20',
     };
     return (
-      <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${styles[status] || 'bg-neutral-800 text-neutral-400'}`}>
+      <span className={`px-2.5 py-1 text-xs font-bold rounded-full border ${styles[status] || 'bg-muted text-muted-foreground border-border'}`}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
@@ -161,10 +161,10 @@ export default function AttendanceClient() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold tracking-tight text-white">Attendance Log</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Attendance Log</h1>
         <button 
           onClick={handleExport}
-          className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-neutral-800 border border-neutral-700 text-white rounded-md hover:bg-neutral-700 transition-colors shadow-sm text-sm"
+          className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-primary text-primary-foreground min-h-[44px] rounded-xl hover:bg-primary/90 transition-colors shadow-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Download className="h-4 w-4 mr-2" />
           Export Excel
@@ -172,14 +172,14 @@ export default function AttendanceClient() {
       </div>
 
       {/* Filters */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+      <div className="bg-card border border-border rounded-2xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-center">
         <div className="relative w-full md:w-64">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-neutral-500" />
+            <Search className="h-4 w-4 text-muted-foreground" />
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-neutral-700 rounded-md leading-5 bg-neutral-800 text-neutral-300 placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full pl-10 pr-3 py-2 border border-border bg-background text-foreground font-bold placeholder-muted-foreground min-h-[44px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm rounded-xl"
             placeholder="Search name or ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -188,13 +188,13 @@ export default function AttendanceClient() {
         
         <input 
           type="date"
-          className="w-full md:w-48 bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+          className="w-full md:w-48 bg-background border border-border rounded-xl px-3 py-2 text-sm font-bold min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
           value={dateFilter}
           onChange={(e) => setDateFilter(e.target.value)}
         />
 
         <select 
-          className="w-full md:w-48 bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+          className="w-full md:w-48 bg-background border border-border rounded-xl px-3 py-2 text-sm font-bold min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -212,7 +212,7 @@ export default function AttendanceClient() {
         </select>
 
         <select 
-          className="w-full md:w-48 bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+          className="w-full md:w-48 bg-background border border-border rounded-xl px-3 py-2 text-sm font-bold min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
           value={shiftFilter}
           onChange={(e) => setShiftFilter(e.target.value)}
         >
@@ -223,7 +223,7 @@ export default function AttendanceClient() {
         </select>
 
         <select 
-          className="w-full md:w-32 bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+          className="w-full md:w-32 bg-background border border-border rounded-xl px-3 py-2 text-sm font-bold min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
           value={limit}
           onChange={(e) => setLimit(e.target.value)}
         >
@@ -236,85 +236,85 @@ export default function AttendanceClient() {
       </div>
 
       {/* Table */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-neutral-800">
-            <thead className="bg-neutral-800/50 sticky top-0">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted/30 sticky top-0">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Employee</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Shift</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Date</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">In/Out Time</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Hours</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Late</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Status</th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-neutral-400 uppercase tracking-wider">Actions</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Employee</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Shift</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Date</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">In/Out Time</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Hours</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Late</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Status</th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-bold text-muted-foreground uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-neutral-900 divide-y divide-neutral-800">
+            <tbody className="divide-y divide-border">
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-neutral-800 rounded w-3/4"></div></td>
-                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-neutral-800 rounded w-1/2"></div></td>
-                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-neutral-800 rounded w-1/2"></div></td>
-                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-neutral-800 rounded w-1/2"></div></td>
-                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-neutral-800 rounded w-1/4"></div></td>
-                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-neutral-800 rounded w-1/4"></div></td>
-                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-neutral-800 rounded w-1/2"></div></td>
+                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-muted rounded w-3/4"></div></td>
+                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-muted rounded w-1/2"></div></td>
+                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-muted rounded w-1/2"></div></td>
+                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-muted rounded w-1/2"></div></td>
+                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-muted rounded w-1/4"></div></td>
+                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-muted rounded w-1/4"></div></td>
+                    <td className="px-6 py-4 whitespace-nowrap"><div className="h-4 bg-muted rounded w-1/2"></div></td>
                     <td className="px-6 py-4 whitespace-nowrap"></td>
                   </tr>
                 ))
               ) : data?.attendances?.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-10 text-center text-neutral-500">No attendance records found.</td>
+                  <td colSpan={8} className="px-6 py-10 text-center text-muted-foreground font-bold">No attendance records found.</td>
                 </tr>
               ) : (
                 data?.attendances?.map((record: any) => (
-                  <tr key={record._id} className="hover:bg-neutral-800/30 transition-colors">
+                  <tr key={record._id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden">
+                        <div className="flex-shrink-0 h-10 w-10 bg-muted rounded-full flex items-center justify-center overflow-hidden">
                           {record.userId?.profileImage ? (
                             <img src={record.userId.profileImage} alt="" className="h-full w-full object-cover" />
                           ) : (
-                            <User className="h-5 w-5 text-neutral-500" />
+                            <User className="h-5 w-5 text-muted-foreground" />
                           )}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-white">{record.userId?.name}</div>
-                          <div className="text-xs text-neutral-500">{record.userId?.employeeId}</div>
+                          <div className="text-sm font-bold text-card-foreground">{record.userId?.name}</div>
+                          <div className="text-xs font-bold text-muted-foreground">{record.userId?.employeeId}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 bg-neutral-800 text-neutral-300 text-xs rounded block w-max mb-1">
+                      <span className="px-2 py-1 bg-muted text-muted-foreground font-bold text-xs rounded block w-max mb-1">
                         {record.userId?.shiftId?.shiftName || 'N/A'}
                       </span>
-                      <div className="text-[10px] text-neutral-500">
+                      <div className="text-[10px] font-bold text-muted-foreground">
                         {record.userId?.shiftId?.workingDays?.map((d: string) => d.slice(0, 3)).join('-') || 'N/A'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-card-foreground">
                       {format(new Date(record.date), 'MMM dd, yyyy')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-white">In: {record.loginTime ? format(new Date(record.loginTime), 'hh:mm a') : '--:--'}</div>
-                      <div className="text-sm text-neutral-500">Out: {record.logoutTime ? format(new Date(record.logoutTime), 'hh:mm a') : '--:--'}</div>
+                      <div className="text-sm font-bold text-card-foreground">In: {record.loginTime ? format(new Date(record.loginTime), 'hh:mm a') : '--:--'}</div>
+                      <div className="text-sm font-bold text-muted-foreground">Out: {record.logoutTime ? format(new Date(record.logoutTime), 'hh:mm a') : '--:--'}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-card-foreground">
                       {record.totalHours ? `${record.totalHours.toFixed(1)}h` : '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
-                      {record.lateMinutes > 0 ? <span className="text-amber-500">{record.lateMinutes}m</span> : '-'}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-card-foreground">
+                      {record.lateMinutes > 0 ? <span className="text-warning">{record.lateMinutes}m</span> : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(record.status)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold">
                       <button 
                         onClick={() => openEditModal(record)}
-                        className="text-neutral-400 hover:text-white transition-colors p-1"
+                        className="text-muted-foreground hover:text-foreground font-bold min-h-[44px] px-2 rounded-xl transition-colors"
                         title="Edit Attendance"
                       >
                         <Edit className="h-4 w-4" />
@@ -329,22 +329,22 @@ export default function AttendanceClient() {
         
         {/* Pagination */}
         {data?.pagination && data.pagination.totalPages > 1 && (
-          <div className="bg-neutral-900 px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-neutral-800">
-            <div className="text-sm text-neutral-400 text-center sm:text-left">
-              Showing <span className="font-medium text-white">{(page - 1) * parseInt(limit) + 1}</span> to <span className="font-medium text-white">{Math.min(page * parseInt(limit), data.pagination.total)}</span> of <span className="font-medium text-white">{data.pagination.total}</span> results
+          <div className="bg-muted/30 px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border">
+            <div className="text-sm font-bold text-muted-foreground text-center sm:text-left">
+              Showing <span className="font-bold text-foreground">{(page - 1) * parseInt(limit) + 1}</span> to <span className="font-bold text-foreground">{Math.min(page * parseInt(limit), data.pagination.total)}</span> of <span className="font-bold text-foreground">{data.pagination.total}</span> results
             </div>
             <div className="flex gap-2">
               <button 
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1 bg-neutral-800 border border-neutral-700 text-white rounded text-sm disabled:opacity-50"
+                className="px-3 py-1 bg-background border border-border text-foreground font-bold rounded-xl min-h-[44px] text-sm disabled:opacity-50"
               >
                 Previous
               </button>
               <button 
                 onClick={() => setPage(p => Math.min(data.pagination.totalPages, p + 1))}
                 disabled={page === data.pagination.totalPages}
-                className="px-3 py-1 bg-neutral-800 border border-neutral-700 text-white rounded text-sm disabled:opacity-50"
+                className="px-3 py-1 bg-background border border-border text-foreground font-bold rounded-xl min-h-[44px] text-sm disabled:opacity-50"
               >
                 Next
               </button>
@@ -357,32 +357,32 @@ export default function AttendanceClient() {
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity bg-neutral-950/75 backdrop-blur-sm z-0" onClick={() => setIsEditModalOpen(false)} />
+            <div className="fixed inset-0 transition-opacity bg-black/80 backdrop-blur-sm z-0" onClick={() => setIsEditModalOpen(false)} />
 
-            <div className="relative z-10 inline-block w-full max-w-md px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl sm:my-8 sm:align-middle sm:p-6">
-              <div className="flex justify-between items-center mb-5 border-b border-neutral-800 pb-4">
-                <h3 className="text-lg font-medium text-white">Edit Attendance</h3>
-                <button onClick={() => setIsEditModalOpen(false)} className="text-neutral-400 hover:text-white">
+            <div className="relative z-10 inline-block w-full max-w-md px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-card border border-border rounded-2xl shadow-sm sm:my-8 sm:align-middle sm:p-6">
+              <div className="flex justify-between items-center mb-5 border-b border-border pb-4">
+                <h3 className="text-lg font-bold tracking-tight text-card-foreground">Edit Attendance</h3>
+                <button onClick={() => setIsEditModalOpen(false)} className="text-muted-foreground hover:text-foreground font-bold min-h-[44px] px-2 rounded-xl">
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               <form onSubmit={handleEditSubmit} className="space-y-4">
-                <div className="bg-neutral-800/50 p-3 rounded-lg mb-4 text-sm">
+                <div className="bg-muted/30 p-3 rounded-xl mb-4 text-sm">
                   <div className="flex justify-between mb-1">
-                    <span className="text-neutral-400">Employee:</span>
-                    <span className="text-white font-medium">{editingRecord?.userId?.name}</span>
+                    <span className="text-muted-foreground font-bold">Employee:</span>
+                    <span className="text-card-foreground font-bold">{editingRecord?.userId?.name}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Date:</span>
-                    <span className="text-white">{editingRecord?.date ? format(new Date(editingRecord.date), 'MMM dd, yyyy') : ''}</span>
+                    <span className="text-muted-foreground font-bold">Date:</span>
+                    <span className="text-card-foreground font-bold">{editingRecord?.date ? format(new Date(editingRecord.date), 'MMM dd, yyyy') : ''}</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">Status</label>
+                  <label className="block text-sm font-bold text-card-foreground mb-1">Status</label>
                   <select
-                    className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-xl text-foreground font-bold min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
                     value={editFormData.status}
                     onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
                   >
@@ -401,37 +401,37 @@ export default function AttendanceClient() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Check In Time</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1">Check In Time</label>
                     <input
                       type="time"
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500 [color-scheme:dark]"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl text-foreground font-bold min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none [color-scheme:dark]"
                       value={editFormData.loginTime}
                       onChange={(e) => setEditFormData({...editFormData, loginTime: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Check Out Time</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1">Check Out Time</label>
                     <input
                       type="time"
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500 [color-scheme:dark]"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl text-foreground font-bold min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none [color-scheme:dark]"
                       value={editFormData.logoutTime}
                       onChange={(e) => setEditFormData({...editFormData, logoutTime: e.target.value})}
                     />
                   </div>
                 </div>
 
-                <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse border-t border-neutral-800 pt-4">
+                <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse border-t border-border pt-4">
                   <button
                     type="submit"
                     disabled={isUpdating}
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                    className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-bold text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 min-h-[44px]"
                   >
                     {isUpdating ? <Loader2 className="animate-spin h-5 w-5" /> : 'Save Changes'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-neutral-700 shadow-sm px-4 py-2 bg-neutral-800 text-base font-medium text-neutral-300 hover:bg-neutral-700 hover:text-white focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
+                    className="mt-3 w-full inline-flex justify-center rounded-xl border border-border shadow-sm px-4 py-2 bg-muted/30 text-base font-bold text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none sm:mt-0 sm:w-auto sm:text-sm min-h-[44px]"
                   >
                     Cancel
                   </button>

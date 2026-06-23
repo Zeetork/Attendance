@@ -222,27 +222,27 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Employees</h1>
-          <p className="text-sm text-neutral-400 mt-1">Manage your workforce here.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Employees</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage your workforce here.</p>
         </div>
         <button 
           onClick={() => openModal()}
-          className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm font-medium"
+          className="w-full sm:w-auto flex justify-center items-center px-4 py-2 min-h-[44px] bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors shadow-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Employee
         </button>
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="relative max-w-md w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-neutral-500" />
+              <Search className="h-5 w-5 text-muted-foreground" />
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-neutral-700 rounded-md leading-5 bg-neutral-800 text-neutral-300 placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
+              className="block w-full pl-10 pr-3 py-2 min-h-[44px] border border-border rounded-xl leading-5 bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors"
               placeholder="Search employees..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -251,22 +251,22 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-neutral-800">
-            <thead className="bg-neutral-900/50">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted/30">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Employee
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Employee ID
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Department
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Shift
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Status
                 </th>
                 <th scope="col" className="relative px-6 py-3">
@@ -274,20 +274,20 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-neutral-900 divide-y divide-neutral-800">
+            <tbody className="bg-card divide-y divide-border">
               {filteredEmployees.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-neutral-500">
+                  <td colSpan={6} className="px-6 py-10 text-center text-muted-foreground font-bold">
                     No employees found.
                   </td>
                 </tr>
               ) : (
                 filteredEmployees.map((employee) => (
                   <React.Fragment key={employee._id}>
-                  <tr className="hover:bg-neutral-800/50 transition-colors cursor-pointer" onClick={() => setExpandedRowId(expandedRowId === employee._id ? null : employee._id)}>
+                  <tr className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setExpandedRowId(expandedRowId === employee._id ? null : employee._id)}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-400 font-bold overflow-hidden">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground font-bold overflow-hidden">
                           {employee.profileImage ? (
                             <img src={employee.profileImage} alt="" className="h-full w-full object-cover" />
                           ) : (
@@ -295,58 +295,58 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                           )}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-white">{employee.name}</div>
-                          <div className="text-sm text-neutral-500">{employee.email}</div>
-                          {employee.phoneNumber && <div className="text-xs text-neutral-500">{employee.phoneNumber}</div>}
+                          <div className="text-sm font-bold text-card-foreground">{employee.name}</div>
+                          <div className="text-sm text-muted-foreground">{employee.email}</div>
+                          {employee.phoneNumber && <div className="text-xs text-muted-foreground">{employee.phoneNumber}</div>}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-neutral-300">{employee.employeeId}</div>
+                      <div className="text-sm font-medium text-card-foreground">{employee.employeeId}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-neutral-300">{employee.department}</div>
-                      <div className="text-xs text-neutral-500">
+                      <div className="text-sm font-medium text-card-foreground">{employee.department}</div>
+                      <div className="text-xs text-muted-foreground">
                         {employee.designation}
                         {employee.role && employee.role !== 'employee' && (
-                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-800 text-neutral-300 capitalize border border-neutral-700">
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-muted text-muted-foreground capitalize border border-border">
                             {employee.role.replace('_', ' ')}
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                      <span className="px-2 inline-flex text-xs leading-5 font-bold rounded-full bg-primary/10 text-primary border border-primary/20">
                         {employee.shiftId ? employee.shiftId.shiftName : 'N/A'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {employee.isActive ? (
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                        <span className="px-2 inline-flex text-xs leading-5 font-bold rounded-full bg-success/10 text-success border border-success/20">
                           Active
                         </span>
                       ) : (
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+                        <span className="px-2 inline-flex text-xs leading-5 font-bold rounded-full bg-destructive/10 text-destructive border border-destructive/20">
                           Inactive
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold">
                       <div className="flex items-center justify-end space-x-2">
                         <button 
                           onClick={(e) => { e.stopPropagation(); openModal(employee); }}
-                          className="text-neutral-400 hover:text-white transition-colors p-1"
+                          className="text-muted-foreground hover:text-foreground transition-colors p-1"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleDelete(employee._id); }}
-                          className="text-neutral-400 hover:text-red-500 transition-colors p-1"
+                          className="text-muted-foreground hover:text-destructive transition-colors p-1"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
                         <button 
-                          className="text-neutral-400 hover:text-white transition-colors p-1"
+                          className="text-muted-foreground hover:text-foreground transition-colors p-1"
                         >
                           {expandedRowId === employee._id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </button>
@@ -354,80 +354,80 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                     </td>
                   </tr>
                   {expandedRowId === employee._id && employee.leaveBalance && (
-                    <tr className="bg-neutral-800/30">
+                    <tr className="bg-muted/20">
                       <td colSpan={6} className="px-6 py-4">
                         <div className="flex justify-between items-center mb-4">
-                          <h4 className="text-sm font-medium text-white">Leave Balance</h4>
+                          <h4 className="text-sm font-bold text-card-foreground">Leave Balance</h4>
                           {editingBalanceId === employee._id ? (
                             <div className="flex gap-2">
-                              <button onClick={() => setEditingBalanceId(null)} className="px-3 py-1 text-xs text-neutral-400 hover:text-white transition-colors border border-neutral-700 rounded-md">Cancel</button>
-                              <button onClick={() => handleSaveBalance(employee._id)} disabled={isSavingBalance} className="px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50">
+                              <button onClick={() => setEditingBalanceId(null)} className="px-4 py-2 min-h-[44px] text-xs font-bold text-muted-foreground hover:text-foreground transition-colors border border-border rounded-xl">Cancel</button>
+                              <button onClick={() => handleSaveBalance(employee._id)} disabled={isSavingBalance} className="px-4 py-2 min-h-[44px] text-xs font-bold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                 {isSavingBalance ? 'Saving...' : 'Save Balance'}
                               </button>
                             </div>
                           ) : (
-                            <button onClick={() => handleEditBalance(employee)} className="text-xs flex items-center text-blue-400 hover:text-blue-300 transition-colors">
+                            <button onClick={() => handleEditBalance(employee)} className="text-xs font-bold flex items-center text-primary hover:text-primary/80 transition-colors">
                               <Edit className="w-3 h-3 mr-1" /> Edit Balance
                             </button>
                           )}
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg flex flex-col justify-between">
-                            <div className="text-xs text-neutral-400 mb-2">Casual Leave</div>
+                          <div className="bg-background border border-border p-3 rounded-xl flex flex-col justify-between">
+                            <div className="text-xs font-bold text-muted-foreground mb-2">Casual Leave</div>
                             <div className="flex justify-between items-end">
                               {editingBalanceId === employee._id ? (
-                                <input type="number" min="0" step="0.5" className="w-16 bg-neutral-800 border border-neutral-600 rounded text-white px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 outline-none" value={balanceForm.casualLeave} onChange={e => setBalanceForm({...balanceForm, casualLeave: Number(e.target.value)})} />
+                                <input type="number" min="0" step="0.5" className="w-16 bg-muted border border-border rounded-xl text-foreground px-2 py-1 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none" value={balanceForm.casualLeave} onChange={e => setBalanceForm({...balanceForm, casualLeave: Number(e.target.value)})} />
                               ) : (
-                                <span className="text-lg font-semibold text-white">
-                                  {employee.leaveBalance.casualLeave.available} <span className="text-[10px] text-neutral-500 font-normal">avail</span>
+                                <span className="text-lg font-bold text-card-foreground">
+                                  {employee.leaveBalance.casualLeave.available} <span className="text-[10px] text-muted-foreground font-normal">avail</span>
                                 </span>
                               )}
-                              <span className="text-xs text-neutral-500">{employee.leaveBalance.casualLeave.taken} booked</span>
+                              <span className="text-xs text-muted-foreground">{employee.leaveBalance.casualLeave.taken} booked</span>
                             </div>
                           </div>
-                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg flex flex-col justify-between">
-                            <div className="text-xs text-neutral-400 mb-2">Sick Leave</div>
+                          <div className="bg-background border border-border p-3 rounded-xl flex flex-col justify-between">
+                            <div className="text-xs font-bold text-muted-foreground mb-2">Sick Leave</div>
                             <div className="flex justify-between items-end">
                               {editingBalanceId === employee._id ? (
-                                <input type="number" min="0" step="0.5" className="w-16 bg-neutral-800 border border-neutral-600 rounded text-white px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 outline-none" value={balanceForm.sickLeave} onChange={e => setBalanceForm({...balanceForm, sickLeave: Number(e.target.value)})} />
+                                <input type="number" min="0" step="0.5" className="w-16 bg-muted border border-border rounded-xl text-foreground px-2 py-1 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none" value={balanceForm.sickLeave} onChange={e => setBalanceForm({...balanceForm, sickLeave: Number(e.target.value)})} />
                               ) : (
-                                <span className="text-lg font-semibold text-white">
-                                  {employee.leaveBalance.sickLeave.available} <span className="text-[10px] text-neutral-500 font-normal">avail</span>
+                                <span className="text-lg font-bold text-card-foreground">
+                                  {employee.leaveBalance.sickLeave.available} <span className="text-[10px] text-muted-foreground font-normal">avail</span>
                                 </span>
                               )}
-                              <span className="text-xs text-neutral-500">{employee.leaveBalance.sickLeave.taken} booked</span>
+                              <span className="text-xs text-muted-foreground">{employee.leaveBalance.sickLeave.taken} booked</span>
                             </div>
                           </div>
-                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg flex flex-col justify-between">
-                            <div className="text-xs text-neutral-400 mb-2">Restricted Holiday</div>
+                          <div className="bg-background border border-border p-3 rounded-xl flex flex-col justify-between">
+                            <div className="text-xs font-bold text-muted-foreground mb-2">Restricted Holiday</div>
                             <div className="flex justify-between items-end">
                               {editingBalanceId === employee._id ? (
-                                <input type="number" min="0" step="0.5" className="w-16 bg-neutral-800 border border-neutral-600 rounded text-white px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 outline-none" value={balanceForm.restrictedLeave} onChange={e => setBalanceForm({...balanceForm, restrictedLeave: Number(e.target.value)})} />
+                                <input type="number" min="0" step="0.5" className="w-16 bg-muted border border-border rounded-xl text-foreground px-2 py-1 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none" value={balanceForm.restrictedLeave} onChange={e => setBalanceForm({...balanceForm, restrictedLeave: Number(e.target.value)})} />
                               ) : (
-                                <span className="text-lg font-semibold text-white">
-                                  {employee.leaveBalance.restrictedLeave.available} <span className="text-[10px] text-neutral-500 font-normal">avail</span>
+                                <span className="text-lg font-bold text-card-foreground">
+                                  {employee.leaveBalance.restrictedLeave.available} <span className="text-[10px] text-muted-foreground font-normal">avail</span>
                                 </span>
                               )}
-                              <span className="text-xs text-neutral-500">{employee.leaveBalance.restrictedLeave.taken} booked</span>
+                              <span className="text-xs text-muted-foreground">{employee.leaveBalance.restrictedLeave.taken} booked</span>
                             </div>
                           </div>
-                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg flex flex-col justify-between">
-                            <div className="text-xs text-neutral-400 mb-2">Compensatory Off</div>
+                          <div className="bg-background border border-border p-3 rounded-xl flex flex-col justify-between">
+                            <div className="text-xs font-bold text-muted-foreground mb-2">Compensatory Off</div>
                             <div className="flex justify-between items-end">
                               {editingBalanceId === employee._id ? (
-                                <input type="number" min="0" step="0.5" className="w-16 bg-neutral-800 border border-neutral-600 rounded text-white px-2 py-1 text-sm focus:ring-1 focus:ring-blue-500 outline-none" value={balanceForm.compensatoryOff} onChange={e => setBalanceForm({...balanceForm, compensatoryOff: Number(e.target.value)})} />
+                                <input type="number" min="0" step="0.5" className="w-16 bg-muted border border-border rounded-xl text-foreground px-2 py-1 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none" value={balanceForm.compensatoryOff} onChange={e => setBalanceForm({...balanceForm, compensatoryOff: Number(e.target.value)})} />
                               ) : (
-                                <span className="text-lg font-semibold text-white">
-                                  {employee.leaveBalance.compensatoryOff.available} <span className="text-[10px] text-neutral-500 font-normal">avail</span>
+                                <span className="text-lg font-bold text-card-foreground">
+                                  {employee.leaveBalance.compensatoryOff.available} <span className="text-[10px] text-muted-foreground font-normal">avail</span>
                                 </span>
                               )}
-                              <span className="text-xs text-neutral-500">{employee.leaveBalance.compensatoryOff.taken} booked</span>
+                              <span className="text-xs text-muted-foreground">{employee.leaveBalance.compensatoryOff.taken} booked</span>
                             </div>
                           </div>
-                          <div className="bg-neutral-900 border border-neutral-700 p-3 rounded-lg flex flex-col justify-between">
-                            <div className="text-xs text-neutral-400 mb-2">Leave Without Pay</div>
+                          <div className="bg-background border border-border p-3 rounded-xl flex flex-col justify-between">
+                            <div className="text-xs font-bold text-muted-foreground mb-2">Leave Without Pay</div>
                             <div className="flex justify-end items-end h-full pb-1">
-                              <span className="text-xs text-neutral-500">{employee.leaveBalance.leaveWithoutPay.taken} booked</span>
+                              <span className="text-xs text-muted-foreground">{employee.leaveBalance.leaveWithoutPay.taken} booked</span>
                             </div>
                           </div>
                         </div>
@@ -445,14 +445,14 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity bg-neutral-950/75 backdrop-blur-sm z-0" onClick={closeModal} />
+            <div className="fixed inset-0 transition-opacity bg-black/80 backdrop-blur-sm z-0" onClick={closeModal} />
 
-            <div className="relative z-10 inline-block w-full max-w-2xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl sm:my-8 sm:align-middle sm:p-6">
-              <div className="flex justify-between items-center mb-5 border-b border-neutral-800 pb-4">
-                <h3 className="text-lg font-medium text-white">
+            <div className="relative z-10 inline-block w-full max-w-2xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-card border border-border rounded-2xl shadow-xl sm:my-8 sm:align-middle sm:p-6 animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex justify-between items-center mb-5 border-b border-border pb-4">
+                <h3 className="text-lg font-bold text-card-foreground">
                   {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
                 </h3>
-                <button onClick={closeModal} className="text-neutral-400 hover:text-white">
+                <button onClick={closeModal} className="text-muted-foreground hover:text-foreground">
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -460,15 +460,15 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="flex justify-center mb-6">
                   <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                    <div className="h-20 w-20 rounded-full border-2 border-neutral-700 bg-neutral-800 overflow-hidden flex items-center justify-center">
+                    <div className="h-20 w-20 rounded-full border-2 border-border bg-muted overflow-hidden flex items-center justify-center">
                       {formData.profileImage ? (
                         <img src={formData.profileImage} alt="Profile" className="h-full w-full object-cover" />
                       ) : (
-                        <UserIcon className="h-8 w-8 text-neutral-500" />
+                        <UserIcon className="h-8 w-8 text-muted-foreground" />
                       )}
                     </div>
                     <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Camera className="h-5 w-5 text-white" />
+                      <Camera className="h-5 w-5 text-card-foreground" />
                     </div>
                     <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
                   </div>
@@ -476,61 +476,61 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Employee ID</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Employee ID</label>
                     <input
                       type="text"
                       required
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                       value={formData.employeeId}
                       onChange={(e) => setFormData({...formData, employeeId: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Full Name</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Full Name</label>
                     <input
                       type="text"
                       required
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Email</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Email</label>
                     <input
                       type="email"
                       required
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Phone Number</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Phone Number</label>
                     <input
                       type="text"
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                       value={formData.phoneNumber}
                       onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
                       placeholder="+1 234 567 8900"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">
-                      Password {editingEmployee && <span className="text-neutral-500 text-xs">(Leave blank to keep current)</span>}
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">
+                      Password {editingEmployee && <span className="text-muted-foreground font-normal text-xs">(Leave blank to keep current)</span>}
                     </label>
                     <input
                       type="password"
                       required={!editingEmployee}
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Gender</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Gender</label>
                     <select
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                       value={formData.gender}
                       onChange={(e) => setFormData({...formData, gender: e.target.value})}
                       required
@@ -542,9 +542,9 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Role</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Role</label>
                     <select
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                       value={formData.role}
                       onChange={(e) => setFormData({...formData, role: e.target.value})}
                       required
@@ -559,29 +559,29 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Department</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Department</label>
                     <input
                       type="text"
                       required
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                       value={formData.department}
                       onChange={(e) => setFormData({...formData, department: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Designation</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Designation</label>
                     <input
                       type="text"
                       required
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                       value={formData.designation}
                       onChange={(e) => setFormData({...formData, designation: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Shift</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Shift</label>
                     <select
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                       value={formData.shiftId}
                       onChange={(e) => setFormData({...formData, shiftId: e.target.value})}
                       required
@@ -593,51 +593,51 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Joining Date</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Joining Date</label>
                     <input
                       type="date"
                       required
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500 [color-scheme:dark]"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary [color-scheme:dark]"
                       value={formData.joiningDate}
                       onChange={(e) => setFormData({...formData, joiningDate: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-300 mb-1">Monthly Salary (₹)</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Monthly Salary (₹)</label>
                     <input
                       type="number"
                       required
-                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                       value={formData.monthlySalary}
                       onChange={(e) => setFormData({...formData, monthlySalary: e.target.value})}
                     />
                   </div>
-                  <div className="sm:col-span-2 pt-4 border-t border-neutral-800 mt-2">
-                    <h4 className="text-sm font-medium text-white mb-4">Bank Details (Optional)</h4>
+                  <div className="sm:col-span-2 pt-4 border-t border-border mt-2">
+                    <h4 className="text-sm font-bold text-card-foreground mb-4">Bank Details (Optional)</h4>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                       <div>
-                        <label className="block text-sm font-medium text-neutral-300 mb-1">Bank Name</label>
+                        <label className="block text-sm font-bold text-card-foreground mb-1.5">Bank Name</label>
                         <input
                           type="text"
-                          className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                           value={formData.bankName}
                           onChange={(e) => setFormData({...formData, bankName: e.target.value})}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-neutral-300 mb-1">Account Number</label>
+                        <label className="block text-sm font-bold text-card-foreground mb-1.5">Account Number</label>
                         <input
                           type="text"
-                          className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                           value={formData.accountNumber}
                           onChange={(e) => setFormData({...formData, accountNumber: e.target.value})}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-neutral-300 mb-1">IFSC Code</label>
+                        <label className="block text-sm font-bold text-card-foreground mb-1.5">IFSC Code</label>
                         <input
                           type="text"
-                          className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                           value={formData.ifscCode}
                           onChange={(e) => setFormData({...formData, ifscCode: e.target.value})}
                         />
@@ -648,28 +648,28 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                     <input
                       type="checkbox"
                       id="isActive"
-                      className="h-4 w-4 rounded border-neutral-700 bg-neutral-800 text-blue-600 focus:ring-blue-600"
+                      className="h-4 w-4 rounded border-border bg-background text-primary focus:ring-primary"
                       checked={formData.isActive}
                       onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
                     />
-                    <label htmlFor="isActive" className="ml-2 block text-sm text-neutral-300">
+                    <label htmlFor="isActive" className="ml-2 block text-sm font-bold text-card-foreground">
                       Active Employee
                     </label>
                   </div>
                 </div>
 
-                <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse border-t border-neutral-800 pt-4">
+                <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse border-t border-border pt-4">
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                    className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 min-h-[44px] bg-primary text-base font-bold text-primary-foreground hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
                   >
                     {isLoading ? <Loader2 className="animate-spin h-5 w-5" /> : 'Save Employee'}
                   </button>
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-neutral-700 shadow-sm px-4 py-2 bg-neutral-800 text-base font-medium text-neutral-300 hover:bg-neutral-700 hover:text-white focus:outline-none sm:mt-0 sm:w-auto sm:text-sm"
+                    className="mt-3 w-full inline-flex justify-center rounded-xl border border-border shadow-sm px-4 py-2 min-h-[44px] bg-secondary text-base font-bold text-secondary-foreground hover:bg-secondary/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card sm:mt-0 sm:w-auto sm:text-sm"
                   >
                     Cancel
                   </button>

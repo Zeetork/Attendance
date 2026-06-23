@@ -18,7 +18,7 @@ export default function AdminApprovalClient() {
   const [acting, setActing] = useState<string | null>(null);
   const [editedTimes, setEditedTimes] = useState<Record<string, { checkIn?: string, checkOut?: string }>>({});
 
-  if (error) return <div className="text-red-500">Failed to load approvals.</div>;
+  if (error) return <div className="text-destructive font-bold p-6">Failed to load approvals.</div>;
 
   const handleTimeChange = (id: string, field: 'checkIn' | 'checkOut', value: string) => {
     setEditedTimes(prev => ({
@@ -68,12 +68,12 @@ export default function AdminApprovalClient() {
       case 'LEAVE':
         return (
           <>
-            <p className="text-sm text-neutral-300">Type: {req.leaveType}</p>
-            <p className="text-sm text-neutral-400">Date: {format(new Date(req.fromDate), 'MMM dd, yyyy')} {req.duration === 'multiple_days' ? `- ${format(new Date(req.toDate), 'MMM dd, yyyy')}` : ''}</p>
-            <p className="text-xs text-neutral-500">Duration: {req.duration === 'half_day' ? `Half Day (${req.halfDaySession === 'first_half' ? 'First Half' : 'Second Half'})` : req.duration === 'multiple_days' ? 'Multiple Days' : 'Full Day'} • {req.numberOfDays} Day(s)</p>
+            <p className="text-sm font-bold text-card-foreground">Type: {req.leaveType}</p>
+            <p className="text-sm font-bold text-muted-foreground">Date: {format(new Date(req.fromDate), 'MMM dd, yyyy')} {req.duration === 'multiple_days' ? `- ${format(new Date(req.toDate), 'MMM dd, yyyy')}` : ''}</p>
+            <p className="text-xs font-bold text-muted-foreground">Duration: {req.duration === 'half_day' ? `Half Day (${req.halfDaySession === 'first_half' ? 'First Half' : 'Second Half'})` : req.duration === 'multiple_days' ? 'Multiple Days' : 'Full Day'} • {req.numberOfDays} Day(s)</p>
             {req.attachments && req.attachments.length > 0 && (
               <div className="mt-2">
-                <p className="text-xs text-neutral-500 mb-1">Supporting Documents:</p>
+                <p className="text-xs font-bold text-muted-foreground mb-1">Supporting Documents:</p>
                 <div className="flex flex-wrap gap-2">
                   {req.attachments.map((file: string, index: number) => (
                     <a
@@ -81,7 +81,7 @@ export default function AdminApprovalClient() {
                       href={file}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-500 hover:text-blue-400 hover:underline bg-blue-500/10 border border-blue-500/20 px-2 py-1 rounded transition-colors"
+                      className="text-xs font-bold text-primary hover:text-primary/80 hover:underline bg-primary/10 border border-primary/20 px-2 py-1 rounded transition-colors"
                     >
                       View Document {index + 1}
                     </a>
@@ -101,43 +101,43 @@ export default function AdminApprovalClient() {
 
         return (
           <>
-            <p className="text-sm text-neutral-300">{isMissPunch ? `Type: ${req.subType}` : 'Requested Correction'}</p>
-            <p className="text-sm text-neutral-400 mb-2">Date: {format(new Date(req.date || req.currentCheckIn || new Date()), 'MMM dd, yyyy')}</p>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-2 bg-neutral-800/80 p-3 rounded-lg border border-neutral-700 w-full sm:w-fit">
+            <p className="text-sm font-bold text-card-foreground">{isMissPunch ? `Type: ${req.subType}` : 'Requested Correction'}</p>
+            <p className="text-sm font-bold text-muted-foreground mb-2">Date: {format(new Date(req.date || req.currentCheckIn || new Date()), 'MMM dd, yyyy')}</p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-2 bg-muted/30 p-3 rounded-xl border border-border w-full sm:w-fit">
               <div className="flex-1">
-                <label className="block text-xs text-neutral-500 mb-1">Check In</label>
+                <label className="block text-xs font-bold text-muted-foreground mb-1">Check In</label>
                 <input 
                   type="time" 
-                  className="w-full bg-neutral-900 border border-neutral-700 text-white text-sm rounded px-2 py-1.5 focus:border-blue-500 focus:outline-none" 
+                  className="w-full bg-background border border-border text-foreground font-bold text-sm rounded-xl px-2 py-1.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none" 
                   value={currentCheckIn}
                   onChange={(e) => handleTimeChange(req._id, 'checkIn', e.target.value)}
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-neutral-500 mb-1">Check Out</label>
+                <label className="block text-xs font-bold text-muted-foreground mb-1">Check Out</label>
                 <input 
                   type="time" 
-                  className="w-full bg-neutral-900 border border-neutral-700 text-white text-sm rounded px-2 py-1.5 focus:border-blue-500 focus:outline-none" 
+                  className="w-full bg-background border border-border text-foreground font-bold text-sm rounded-xl px-2 py-1.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none" 
                   value={currentCheckOut}
                   onChange={(e) => handleTimeChange(req._id, 'checkOut', e.target.value)}
                 />
               </div>
             </div>
-            <p className="text-xs text-neutral-500 mt-1">* You can modify these times before approving.</p>
+            <p className="text-xs font-bold text-muted-foreground mt-1">* You can modify these times before approving.</p>
           </>
         );
       case 'OVERTIME':
         return (
           <>
-            <p className="text-sm text-neutral-300">Hours: {req.hours}</p>
-            <p className="text-sm text-neutral-400">Date: {format(new Date(req.date), 'MMM dd, yyyy')}</p>
+            <p className="text-sm font-bold text-card-foreground">Hours: {req.hours}</p>
+            <p className="text-sm font-bold text-muted-foreground">Date: {format(new Date(req.date), 'MMM dd, yyyy')}</p>
           </>
         );
       case 'WFH':
         return (
           <>
-            <p className="text-sm text-neutral-300">Work From Home</p>
-            <p className="text-sm text-neutral-400">Date: {format(new Date(req.fromDate), 'MMM dd')} - {format(new Date(req.toDate), 'MMM dd, yyyy')}</p>
+            <p className="text-sm font-bold text-card-foreground">Work From Home</p>
+            <p className="text-sm font-bold text-muted-foreground">Date: {format(new Date(req.fromDate), 'MMM dd')} - {format(new Date(req.toDate), 'MMM dd, yyyy')}</p>
           </>
         );
       default:
@@ -148,52 +148,52 @@ export default function AdminApprovalClient() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight text-white">Approval Center</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Approval Center</h1>
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-sm p-6">
-        <h2 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-amber-500" /> Pending Approvals
+      <div className="bg-card border border-border rounded-2xl shadow-sm p-6">
+        <h2 className="text-lg font-bold tracking-tight text-card-foreground mb-4 flex items-center gap-2">
+          <Clock className="w-5 h-5 text-warning" /> Pending Approvals
         </h2>
         
         {isLoading ? (
           <div className="space-y-4">
-            {[1, 2, 3].map(i => <div key={i} className="h-24 bg-neutral-800 animate-pulse rounded w-full"></div>)}
+            {[1, 2, 3].map(i => <div key={i} className="h-24 bg-muted animate-pulse rounded-xl w-full"></div>)}
           </div>
         ) : data?.approvals?.length === 0 ? (
-          <div className="text-center py-10 border-2 border-dashed border-neutral-800 rounded-xl">
-            <CheckCircle className="w-10 h-10 text-neutral-600 mx-auto mb-3" />
-            <h3 className="text-lg font-medium text-neutral-400">All caught up!</h3>
-            <p className="text-neutral-500">There are no pending requests to review.</p>
+          <div className="text-center py-10 border-2 border-dashed border-border rounded-2xl">
+            <CheckCircle className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <h3 className="text-lg font-bold text-muted-foreground">All caught up!</h3>
+            <p className="text-muted-foreground font-bold">There are no pending requests to review.</p>
           </div>
         ) : (
           <div className="grid gap-4">
             {data?.approvals?.map((req: any) => (
-              <div key={req._id} className="p-4 bg-neutral-800/40 rounded-lg border border-neutral-800/50 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <div key={req._id} className="p-4 bg-muted/30 rounded-xl border border-border flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <div className="w-full">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="font-semibold text-white">{req.employee?.name}</span>
-                    <span className="text-xs text-neutral-500">({req.employee?.employeeId})</span>
-                    <span className="px-2 py-0.5 text-[10px] sm:text-xs font-medium bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20 whitespace-nowrap">
+                    <span className="font-bold text-card-foreground">{req.employee?.name}</span>
+                    <span className="text-xs font-bold text-muted-foreground">({req.employee?.employeeId})</span>
+                    <span className="px-2 py-0.5 text-[10px] sm:text-xs font-bold bg-primary/20 text-primary rounded-full border border-primary/30 whitespace-nowrap">
                       {req.requestType.replace('_', ' ')}
                     </span>
                   </div>
                   {renderDetails(req)}
-                  <p className="text-sm text-neutral-400 mt-2"><span className="text-neutral-500">Reason:</span> {req.reason}</p>
+                  <p className="text-sm font-bold text-muted-foreground mt-2"><span className="text-muted-foreground">Reason:</span> {req.reason}</p>
                 </div>
                 
                 <div className="flex w-full sm:w-auto items-center gap-2 mt-4 sm:mt-0">
                   <button
                     onClick={() => handleAction(req._id, req.requestType, 'approved', req.date || req.currentCheckIn || req.requestedCheckIn)}
                     disabled={acting === req._id}
-                    className="flex-1 sm:flex-none justify-center px-4 py-2 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 text-sm font-medium"
+                    className="flex-1 sm:flex-none justify-center px-4 py-2 bg-success/10 text-success hover:bg-success/20 border border-success/20 rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 text-sm font-bold min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
                   >
                     <CheckCircle className="w-4 h-4" /> Approve
                   </button>
                   <button
                     onClick={() => handleAction(req._id, req.requestType, 'rejected')}
                     disabled={acting === req._id}
-                    className="flex-1 sm:flex-none justify-center px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 text-sm font-medium"
+                    className="flex-1 sm:flex-none justify-center px-4 py-2 bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20 rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 text-sm font-bold min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
                   >
                     <XCircle className="w-4 h-4" /> Reject
                   </button>

@@ -15,15 +15,30 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-neutral-950 text-white min-h-screen font-sans antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark')
+                } else {
+                  document.documentElement.classList.remove('dark')
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-screen font-sans antialiased bg-background text-foreground">
         <SessionProvider>
           <CompanyProvider>
             {children}
             <Toaster position="bottom-right" />
           </CompanyProvider>
         </SessionProvider>
-      </body >
+      </body>
     </html>
   );
 }

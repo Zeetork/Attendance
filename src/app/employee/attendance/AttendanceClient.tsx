@@ -5,7 +5,17 @@ import useSWR from 'swr';
 import { format, subMonths, isSameDay } from 'date-fns';
 import { Clock, Calendar as CalendarIcon, Filter, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+import { toast } from 'react-hot-toast';
+
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    const error = new Error('An error occurred while fetching the data.');
+    error.message = await res.json().catch(() => ({ message: 'API Error' })).then(data => data.message || 'API Error');
+    throw error;
+  }
+  return res.json();
+};
 
 export default function EmployeeAttendanceClient() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -24,10 +34,10 @@ export default function EmployeeAttendanceClient() {
 
     const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'present': return <span className="px-2 py-1 text-xs font-medium bg-green-500/10 text-green-500 border border-green-500/20 rounded-full flex items-center w-fit"><CheckCircle2 className="w-3 h-3 mr-1" /> Present</span>;
-      case 'late': return <span className="px-2 py-1 text-xs font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full flex items-center w-fit"><AlertCircle className="w-3 h-3 mr-1" /> Late</span>;
-      case 'half-day': return <span className="px-2 py-1 text-xs font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full flex items-center w-fit"><Clock className="w-3 h-3 mr-1" /> Half Day</span>;
-      default: return <span className="px-2 py-1 text-xs font-medium bg-red-500/10 text-red-500 border border-red-500/20 rounded-full flex items-center w-fit"><XCircle className="w-3 h-3 mr-1" /> Absent</span>;
+      case 'present': return <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success border border-success/20 rounded-md flex items-center w-fit"><CheckCircle2 className="w-3 h-3 mr-1.5" /> Present</span>;
+      case 'late': return <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-warning/10 text-warning border border-warning/20 rounded-md flex items-center w-fit"><AlertCircle className="w-3 h-3 mr-1.5" /> Late</span>;
+      case 'half-day': return <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 rounded-md flex items-center w-fit"><Clock className="w-3 h-3 mr-1.5" /> Half Day</span>;
+      default: return <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-destructive/10 text-destructive border border-destructive/20 rounded-md flex items-center w-fit"><XCircle className="w-3 h-3 mr-1.5" /> Absent</span>;
     }
   };
 
@@ -69,11 +79,15 @@ export default function EmployeeAttendanceClient() {
       });
 
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
-      alert('Request submitted successfully');
+      if (!res.ok) throw new Error(json.error || 'Failed to submit request');
+      toast.success('Request submitted successfully');
       setIsModalOpen(false);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error('An unknown error occurred');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -83,30 +97,33 @@ export default function EmployeeAttendanceClient() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Attendance History</h1>
-          <p className="text-sm text-neutral-400 mt-1">View your daily logs and monthly summaries.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Attendance History</h1>
+          <p className="text-sm text-muted-foreground mt-1">View your daily logs and monthly summaries.</p>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors whitespace-nowrap"
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold rounded-xl transition-all shadow-lg shadow-primary/20 whitespace-nowrap min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Request Correction
           </button>
-          <Filter className="w-4 h-4 text-neutral-400 shrink-0 ml-2" />
-          <select 
-            className="w-full sm:w-auto bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 shadow-sm"
-            onChange={(e) => setCurrentDate(new Date(e.target.value))}
-            value={currentDate.toISOString()}
-          >
-            {months.map((m, i) => (
-              <option key={i} value={m.toISOString()}>{format(m, 'MMMM yyyy')}</option>
-            ))}
-          </select>
+          <div className="relative flex-1 sm:flex-none">
+            <Filter className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <select 
+              className="w-full sm:w-auto bg-card border border-border rounded-xl pl-9 pr-3 py-2 text-sm text-card-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent shadow-sm min-h-[44px] appearance-none"
+              onChange={(e) => setCurrentDate(new Date(e.target.value))}
+              value={currentDate.toISOString()}
+              aria-label="Select month"
+            >
+              {months.map((m, i) => (
+                <option key={i} value={m.toISOString()}>{format(m, 'MMMM yyyy')}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-sm flex items-center">
           <div className="rounded-lg p-3 bg-green-500/10 mr-4">
             <CheckCircle2 className="h-6 w-6 text-green-500" />
@@ -134,46 +151,61 @@ export default function EmployeeAttendanceClient() {
             <div className="text-2xl font-bold text-white">{halfDayCount}</div>
           </div>
         </div>
-      </div>
+      </div> */}
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-neutral-800 flex justify-between items-center">
-          <h2 className="text-lg font-medium text-white flex items-center">
-            <CalendarIcon className="w-5 h-5 mr-2 text-blue-500" />
+      <div className="bg-card backdrop-blur border border-border rounded-2xl shadow-sm overflow-hidden">
+        <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-muted/30">
+          <h2 className="text-lg font-bold text-card-foreground flex items-center">
+            <CalendarIcon className="w-5 h-5 mr-2 text-primary" />
             {format(currentDate, 'MMMM yyyy')} Log
           </h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-neutral-800">
-            <thead className="bg-neutral-800/50">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Check In</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Check Out</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Work Hours</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-neutral-400 uppercase tracking-wider">Action</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Date</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Check In</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Check Out</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Work Hours</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Status</th>
+                <th scope="col" className="px-6 py-4 text-right text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Action</th>
               </tr>
             </thead>
-            <tbody className="bg-neutral-900 divide-y divide-neutral-800">
+            <tbody className="bg-transparent divide-y divide-border/50">
               {isLoading ? (
-                <tr><td colSpan={6} className="px-6 py-10 text-center text-neutral-500 animate-pulse">Loading attendance records...</td></tr>
+                <tr>
+                  <td colSpan={6} className="px-6 py-12">
+                    <div className="flex flex-col items-center justify-center space-y-4">
+                      <div className="h-4 w-1/3 bg-muted animate-pulse rounded"></div>
+                      <div className="h-4 w-1/2 bg-muted animate-pulse rounded"></div>
+                      <div className="h-4 w-1/4 bg-muted animate-pulse rounded"></div>
+                    </div>
+                  </td>
+                </tr>
               ) : attendances.length === 0 ? (
-                <tr><td colSpan={6} className="px-6 py-10 text-center text-neutral-500">No attendance records found for this month.</td></tr>
+                <tr>
+                  <td colSpan={6} className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center justify-center text-muted-foreground">
+                      <CalendarIcon className="w-10 h-10 mb-3 opacity-20" />
+                      <p className="text-sm font-medium">No attendance records found for this month.</p>
+                    </div>
+                  </td>
+                </tr>
               ) : (
-                attendances.map((att: any) => (
-                  <tr key={att._id} className="hover:bg-neutral-800/50 transition-colors">
+                attendances.map((att: { _id: string, date: string, loginTime?: string, logoutTime?: string, totalHours?: number, status: string }) => (
+                  <tr key={att._id} className="hover:bg-accent hover:text-accent-foreground transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">{format(new Date(att.date), 'MMM dd, yyyy')}</div>
-                      <div className="text-xs text-neutral-500">{format(new Date(att.date), 'EEEE')}</div>
+                      <div className="text-sm font-bold text-card-foreground group-hover:text-accent-foreground">{format(new Date(att.date), 'MMM dd, yyyy')}</div>
+                      <div className="text-[10px] font-bold text-muted-foreground group-hover:text-accent-foreground/70 uppercase tracking-wider mt-0.5">{format(new Date(att.date), 'EEEE')}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
-                      {att.loginTime ? format(new Date(att.loginTime), 'hh:mm a') : '--:--'}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground group-hover:text-accent-foreground/80 font-mono">
+                      {att.loginTime ? format(new Date(att.loginTime), 'HH:mm') : '--:--'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
-                      {att.logoutTime ? format(new Date(att.logoutTime), 'hh:mm a') : '--:--'}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground group-hover:text-accent-foreground/80 font-mono">
+                      {att.logoutTime ? format(new Date(att.logoutTime), 'HH:mm') : '--:--'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-400 font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground group-hover:text-accent-foreground/80 font-medium font-mono">
                       {att.totalHours ? `${att.totalHours.toFixed(2)} hrs` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -187,7 +219,8 @@ export default function EmployeeAttendanceClient() {
                           setIsModalOpen(true);
                           setRequestType('ATTENDANCE_CORRECTION');
                         }}
-                        className="text-blue-500 hover:text-blue-400"
+                        className="text-primary hover:text-primary-foreground bg-primary/10 hover:bg-primary px-3 py-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                        aria-label={`Request correction for ${format(new Date(att.date), 'MMM dd, yyyy')}`}
                       >
                         Request 
                       </button>
@@ -201,19 +234,23 @@ export default function EmployeeAttendanceClient() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 w-full max-w-md shadow-xl">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-white">Request Correction</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-neutral-400 hover:text-white">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 id="modal-title" className="text-lg font-bold text-card-foreground">Request Correction</h3>
+              <button 
+                onClick={() => setIsModalOpen(false)} 
+                className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Close modal"
+              >
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleSubmitRequest} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-1">Request Type</label>
+                <label className="block text-sm font-medium text-card-foreground mb-1.5">Request Type</label>
                 <select 
-                  className="w-full bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-white text-sm"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors min-h-[44px]"
                   value={requestType}
                   onChange={(e) => setRequestType(e.target.value)}
                 >
@@ -224,9 +261,9 @@ export default function EmployeeAttendanceClient() {
 
               {requestType === 'MISS_PUNCH' && (
                 <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">Sub Type</label>
+                  <label className="block text-sm font-medium text-card-foreground mb-1.5">Sub Type</label>
                   <select 
-                    className="w-full bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-white text-sm"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors min-h-[44px]"
                     value={subType}
                     onChange={(e) => setSubType(e.target.value)}
                   >
@@ -238,11 +275,11 @@ export default function EmployeeAttendanceClient() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-1">Date</label>
+                <label className="block text-sm font-medium text-card-foreground mb-1.5">Date</label>
                 <input 
                   type="date" 
                   required
-                  className="w-full bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-white text-sm"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors min-h-[44px]"
                   value={requestDate}
                   onChange={(e) => setRequestDate(e.target.value)}
                 />
@@ -250,19 +287,19 @@ export default function EmployeeAttendanceClient() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">Requested Check In</label>
+                  <label className="block text-sm font-medium text-card-foreground mb-1.5">Requested Check In</label>
                   <input 
                     type="time" 
-                    className="w-full bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-white text-sm"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors min-h-[44px]"
                     value={reqCheckIn}
                     onChange={(e) => setReqCheckIn(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">Requested Check Out</label>
+                  <label className="block text-sm font-medium text-card-foreground mb-1.5">Requested Check Out</label>
                   <input 
                     type="time" 
-                    className="w-full bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-white text-sm"
+                    className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors min-h-[44px]"
                     value={reqCheckOut}
                     onChange={(e) => setReqCheckOut(e.target.value)}
                   />
@@ -270,29 +307,29 @@ export default function EmployeeAttendanceClient() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-1">Reason / Explanation</label>
+                <label className="block text-sm font-medium text-card-foreground mb-1.5">Reason / Explanation</label>
                 <textarea 
                   required
                   rows={3}
-                  className="w-full bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-white text-sm"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Explain why you are requesting this correction..."
                 ></textarea>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6">
+              <div className="flex justify-end gap-3 mt-6 pt-2 border-t border-border">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-neutral-300 hover:text-white"
+                  className="px-4 py-2 text-sm font-medium text-secondary-foreground bg-secondary hover:bg-secondary/80 rounded-xl transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md disabled:opacity-50"
+                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold rounded-xl disabled:opacity-50 transition-colors shadow-lg shadow-primary/20 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Request'}
                 </button>

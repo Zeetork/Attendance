@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       attachments,
       reason,
       status: initialStatus as any,
-      currentApprover: undefined,
+      currentApprover,
     });
 
     if (currentApprover) {

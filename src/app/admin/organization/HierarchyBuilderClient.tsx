@@ -63,7 +63,7 @@ export default function HierarchyBuilderClient() {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </div>
     );
   }
@@ -72,32 +72,32 @@ export default function HierarchyBuilderClient() {
     <div className="flex flex-col md:flex-row w-full h-full relative overflow-hidden">
       {/* Sidebar for Unassigned / Search */}
       <div className={clsx(
-        "bg-neutral-900 border-b md:border-b-0 md:border-r border-neutral-800 flex flex-col shrink-0 transition-all duration-300 z-20 absolute md:relative h-full overflow-hidden",
+        "bg-card border-b md:border-b-0 md:border-r border-border flex flex-col shrink-0 transition-all duration-300 z-20 absolute md:relative h-full overflow-hidden",
         isSidebarOpen ? "w-80 translate-x-0" : "-translate-x-full md:w-0 md:border-none"
       )}>
         <div className="w-80 h-full flex flex-col">
-          <div className="p-4 border-b border-neutral-800 flex items-center justify-between">
+          <div className="p-4 border-b border-border flex items-center justify-between">
             <div className="relative flex-1 mr-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input 
                 type="text" 
                 placeholder="Search employees..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-md py-2 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-background border border-border rounded-xl py-2 pl-9 pr-4 text-sm font-bold text-foreground min-h-[44px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               />
             </div>
             <button 
               onClick={() => setIsSidebarOpen(false)}
-              className="p-2 text-neutral-400 hover:text-white"
+              className="p-2 text-muted-foreground hover:text-foreground"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4">
-            <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Admin / Top Level</h3>
+            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Admin / Top Level</h3>
             <div 
-              className="min-h-[100px] border-2 border-dashed border-neutral-700 rounded-lg p-2"
+              className="min-h-[100px] border-2 border-dashed border-border rounded-2xl p-2"
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 e.preventDefault();
@@ -116,7 +116,7 @@ export default function HierarchyBuilderClient() {
                  />
               ))}
               {tree.length === 0 && (
-                <div className="text-neutral-500 text-sm text-center mt-4">
+                <div className="text-muted-foreground font-bold text-sm text-center mt-4">
                   No employees found
                 </div>
               )}
@@ -127,13 +127,13 @@ export default function HierarchyBuilderClient() {
 
       {/* Main visual canvas */}
       <div 
-        className="flex-1 bg-neutral-950 overflow-auto p-4 md:p-8 relative"
+        className="flex-1 bg-background overflow-auto p-4 md:p-8 relative"
         onClick={() => setIsSidebarOpen(false)}
       >
         {!isSidebarOpen && (
           <button
             onClick={(e) => { e.stopPropagation(); setIsSidebarOpen(true); }}
-            className="absolute top-4 left-4 z-10 p-2 bg-neutral-800 border border-neutral-700 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-700 shadow-md"
+            className="absolute top-4 left-4 z-10 p-2 bg-card border border-border rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted shadow-md"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -179,28 +179,28 @@ function TreeNode({ node, search, onDragStart, onDragEnd, onDropNode }: any) {
           }
         }}
         className={clsx(
-          "flex items-center p-2 rounded-lg border transition-all cursor-grab active:cursor-grabbing group",
-          matchesSearch ? "bg-blue-500/10 border-blue-500/50" : "bg-neutral-800 border-neutral-700 hover:border-neutral-600"
+          "flex items-center p-2 rounded-xl border transition-all cursor-grab active:cursor-grabbing group",
+          matchesSearch ? "bg-primary/10 border-primary/50" : "bg-muted border-border hover:border-muted-foreground"
         )}
       >
         <button 
           onClick={() => setExpanded(!expanded)}
-          className={clsx("p-1 rounded-md hover:bg-neutral-700 text-neutral-400 mr-1", node.children.length === 0 && 'invisible')}
+          className={clsx("p-1 rounded-md hover:bg-background text-muted-foreground mr-1", node.children.length === 0 && 'invisible')}
         >
           {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
-        <div className="w-6 h-6 rounded-full bg-neutral-700 flex items-center justify-center mr-3 flex-shrink-0">
-          <UserIcon className="w-3 h-3 text-neutral-300" />
+        <div className="w-6 h-6 rounded-full bg-background flex items-center justify-center mr-3 flex-shrink-0">
+          <UserIcon className="w-3 h-3 text-muted-foreground" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-white truncate">{node.name}</div>
-          <div className="text-xs text-neutral-400 truncate">{node.designation}</div>
+          <div className="text-sm font-bold text-foreground truncate">{node.name}</div>
+          <div className="text-xs font-bold text-muted-foreground truncate">{node.designation}</div>
         </div>
-        <GripVertical className="w-4 h-4 text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <GripVertical className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
       
       {expanded && node.children.length > 0 && (
-        <div className="border-l border-neutral-700 ml-4 mt-1 pl-2">
+        <div className="border-l border-border ml-4 mt-1 pl-2">
           {node.children.map((child: any) => (
             <TreeNode 
               key={child._id} 
@@ -234,29 +234,29 @@ function OrgChartNode({ node, onNodeClick }: { node: EmployeeNode, onNodeClick?:
     <div className="flex flex-col items-center">
       {/* Node Card */}
       <div 
-        className="bg-neutral-900 border border-neutral-700 shadow-xl rounded-xl p-4 w-48 relative group z-10 hover:border-blue-500 transition-colors cursor-pointer"
+        className="bg-card border border-border shadow-sm rounded-2xl p-4 w-48 relative group z-10 hover:border-primary transition-colors cursor-pointer"
         onClick={onNodeClick}
       >
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
            <span className={clsx(
-             "px-2 py-0.5 rounded-full  text-[10px] font-bold uppercase tracking-wider",
+             "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
              node.role === 'admin' ? "bg-red-500/20 text-red-400 border border-red-500/30" :
              node.role === 'director' ? "bg-purple-500/20 text-purple-400 border border-purple-500/30" :
              node.role === 'department_head' ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" :
              node.role === 'manager' ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
              node.role === 'team_head' ? "bg-teal-500/20 text-teal-400 border border-teal-500/30" :
-             "bg-neutral-700 text-neutral-300 border border-neutral-600"
+             "bg-muted text-muted-foreground border border-border"
            )}>
              {node.role.replace('_', ' ')}
            </span>
         </div>
         <div className="flex flex-col items-center mt-3">
-          <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center mb-2 border border-neutral-600">
-             <UserIcon className="w-6 h-6 text-neutral-400" />
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-2 border border-border">
+             <UserIcon className="w-6 h-6 text-muted-foreground" />
           </div>
-          <div className="text-sm font-semibold text-white text-center truncate w-full">{node.name}</div>
-          <div className="text-xs text-neutral-400 text-center truncate w-full mt-0.5">{node.designation}</div>
-          <div className="text-[10px] text-neutral-500 mt-2">{node.department}</div>
+          <div className="text-sm font-bold text-card-foreground text-center truncate w-full">{node.name}</div>
+          <div className="text-xs font-bold text-muted-foreground text-center truncate w-full mt-0.5">{node.designation}</div>
+          <div className="text-[10px] font-bold text-muted-foreground mt-2">{node.department}</div>
         </div>
       </div>
 
@@ -264,13 +264,13 @@ function OrgChartNode({ node, onNodeClick }: { node: EmployeeNode, onNodeClick?:
       {node.children && node.children.length > 0 && (
         <>
           {/* Vertical line down from current node */}
-          <div className="w-px h-8 bg-neutral-700"></div>
+          <div className="w-px h-8 bg-border"></div>
           
           <div className="flex relative mt-0">
              {/* Horizontal connecting line for siblings */}
              {node.children.length > 1 && (
                 <div 
-                  className="absolute top-0 h-px bg-neutral-700"
+                  className="absolute top-0 h-px bg-border"
                   style={{
                     left: `calc(100% / ${node.children.length * 2})`,
                     right: `calc(100% / ${node.children.length * 2})`
@@ -282,7 +282,7 @@ function OrgChartNode({ node, onNodeClick }: { node: EmployeeNode, onNodeClick?:
              {node.children.map((child, index) => (
                <div key={child._id} className="relative flex flex-col items-center px-4">
                  {/* Vertical line connecting to child */}
-                 <div className="w-px h-8 bg-neutral-700"></div>
+                 <div className="w-px h-8 bg-border"></div>
                  <OrgChartNode node={child} onNodeClick={onNodeClick} />
                </div>
              ))}

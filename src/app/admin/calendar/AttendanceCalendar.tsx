@@ -67,16 +67,16 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
     if (attendance) {
       if (attendance.status === 'present') {
         const hours = attendance.totalHours ? `${attendance.totalHours.toFixed(2)} Hrs` : (attendance.loginTime && !attendance.logoutTime) ? 'Working' : '';
-        return { type: 'present', label: 'Present', subLabel: hours, color: 'bg-green-500/10 text-green-500 border-green-500/20' };
+        return { type: 'present', label: 'Present', subLabel: hours, color: 'bg-success/10 text-success border-success/20' };
       }
       if (attendance.status === 'half-day') {
-        return { type: 'half-day', label: 'Half Day', subLabel: attendance.totalHours ? `${attendance.totalHours.toFixed(2)} Hrs` : '', color: 'bg-amber-500/10 text-amber-500 border-amber-500/20' };
+        return { type: 'half-day', label: 'Half Day', subLabel: attendance.totalHours ? `${attendance.totalHours.toFixed(2)} Hrs` : '', color: 'bg-warning/10 text-warning border-warning/20' };
       }
       if (attendance.status === 'absent') {
-        return { type: 'absent', label: 'Absent', color: 'bg-red-500/10 text-red-500 border-red-500/20' };
+        return { type: 'absent', label: 'Absent', color: 'bg-destructive/10 text-destructive border-destructive/20' };
       }
       if (attendance.status === 'late') {
-        return { type: 'late', label: 'Late', subLabel: `${attendance.lateMinutes}m late`, color: 'bg-orange-500/10 text-orange-500 border-orange-500/20' };
+        return { type: 'late', label: 'Late', subLabel: `${attendance.lateMinutes}m late`, color: 'bg-warning/10 text-warning border-warning/20' };
       }
     }
 
@@ -92,11 +92,11 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
       return current >= from && current <= to;
     });
     
-    if (leave) return { type: 'leave', label: 'Absent', subLabel: leave.leaveType, color: 'bg-red-500/10 text-red-500 border-red-500/20' };
+    if (leave) return { type: 'leave', label: 'Absent', subLabel: leave.leaveType, color: 'bg-destructive/10 text-destructive border-destructive/20' };
 
     // 3. Check Holidays
     const holiday = data.holidays?.find((h: any) => isSameDay(new Date(h.date), day));
-    if (holiday) return { type: 'holiday', holidayType: holiday.holidayType, label: holiday.holidayName, color: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' };
+    if (holiday) return { type: 'holiday', holidayType: holiday.holidayType, label: holiday.holidayName, color: 'bg-primary/10 text-primary border-primary/20' };
 
     // 4. Default for past weekdays
     const isPast = day < new Date(new Date().setHours(0,0,0,0));
@@ -105,9 +105,9 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
     if (isPast && !isWeekend) {
         // If they joined after this day, don't mark as absent
         if (data.user?.joiningDate && day < new Date(data.user.joiningDate)) {
-            return { type: 'not-joined', label: '-', color: 'bg-neutral-800/50 text-neutral-500 border-transparent' };
+            return { type: 'not-joined', label: '-', color: 'bg-muted/50 text-muted-foreground border-transparent' };
         }
-        return { type: 'unmarked', label: 'Absent', subLabel: 'No punch', color: 'bg-red-500/10 text-red-500 border-red-500/20' };
+        return { type: 'unmarked', label: 'Absent', subLabel: 'No punch', color: 'bg-destructive/10 text-destructive border-destructive/20' };
     }
 
     return null; // Future or weekend
@@ -272,17 +272,17 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-neutral-900 p-4 rounded-xl border border-neutral-800 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card p-4 rounded-2xl border border-border shadow-sm">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <button onClick={prevMonth} className="p-1.5 rounded-md hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors">
+            <button onClick={prevMonth} className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
               <ChevronLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2 min-w-[140px] justify-center">
-              <CalendarIcon className="w-4 h-4 text-blue-500" />
-              <span className="font-semibold text-white">{format(currentDate, 'MMMM yyyy')}</span>
+              <CalendarIcon className="w-4 h-4 text-primary" />
+              <span className="font-bold text-card-foreground">{format(currentDate, 'MMMM yyyy')}</span>
             </div>
-            <button onClick={nextMonth} className="p-1.5 rounded-md hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors">
+            <button onClick={nextMonth} className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -293,14 +293,14 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
             <button 
               onClick={handleExport}
               disabled={isExporting}
-              className="flex items-center justify-center px-4 py-2 bg-neutral-800 border border-neutral-700 text-white rounded-md hover:bg-neutral-700 transition-colors shadow-sm text-sm disabled:opacity-50 mr-2"
+              className="flex items-center justify-center px-4 py-2 min-h-[44px] bg-secondary border border-border text-secondary-foreground rounded-xl hover:bg-secondary/80 transition-colors shadow-sm text-sm font-bold disabled:opacity-50 mr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
               Export Excel
             </button>
-            <UserIcon className="w-4 h-4 text-neutral-400" />
+            <UserIcon className="w-4 h-4 text-muted-foreground" />
             <select
-              className="bg-neutral-800 border border-neutral-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-64 p-2"
+              className="bg-background border border-border text-foreground text-sm rounded-xl focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none block w-full sm:w-64 p-2.5 min-h-[44px]"
               value={selectedUser || ''}
               onChange={(e) => setSelectedUser(e.target.value)}
             >
@@ -313,80 +313,84 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
         )}
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-sm overflow-hidden">
-        {/* Calendar Header */}
-        <div className="grid grid-cols-7 border-b border-neutral-800">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <div key={day} className="py-3 text-center text-xs font-medium text-neutral-400 uppercase tracking-wider">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Calendar Grid */}
-        <div className="relative">
-          {isLoading && (
-            <div className="absolute inset-0 z-10 bg-neutral-900/50 backdrop-blur-sm flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-            </div>
-          )}
-          {data?.error && (
-            <div className="absolute inset-0 z-10 bg-neutral-900/50 backdrop-blur-sm flex items-center justify-center">
-              <div className="text-red-500 bg-red-500/10 p-4 rounded-lg border border-red-500/20">{data.error}</div>
-            </div>
-          )}
-          <div className="grid grid-cols-7 auto-rows-fr bg-neutral-800 gap-[1px]">
-            {daysInMonth.map((day, idx) => {
-              const status = getDayStatus(day);
-              const isCurrentMonth = isSameMonth(day, currentDate);
-              const today = isToday(day);
-              
-              return (
-                <div 
-                  key={day.toString()} 
-                  onClick={() => handleDayClick(day, status)}
-                  className={clsx(
-                    "min-h-[120px] bg-neutral-900 p-2 transition-colors",
-                    !isCurrentMonth && "bg-neutral-900/50 opacity-50",
-                    today && "ring-1 ring-inset ring-blue-500/50 bg-blue-500/5",
-                    isAdmin && selectedUser && "cursor-pointer hover:bg-neutral-800"
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={clsx(
-                      "text-sm font-medium w-6 h-6 flex items-center justify-center rounded-full",
-                      today ? "bg-blue-600 text-white" : isCurrentMonth ? "text-neutral-300" : "text-neutral-600",
-                      (day.getDay() === 0 || day.getDay() === 6) && isCurrentMonth && !today && "text-red-400"
-                    )}>
-                      {format(day, 'd')}
-                    </span>
-                  </div>
-                  
-                  {status && (
-                    <div className={clsx("px-2 py-1.5 rounded-md border text-xs", status.color)}>
-                      <div className="font-semibold">{status.label}</div>
-                      {status.subLabel && <div className="text-[10px] opacity-80 mt-0.5 truncate">{status.subLabel}</div>}
-                    </div>
-                  )}
+      <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <div className="min-w-[700px] lg:min-w-full">
+            {/* Calendar Header */}
+            <div className="grid grid-cols-7 border-b border-border bg-muted/30">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <div key={day} className="py-3 text-center text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                  {day}
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="relative">
+              {isLoading && (
+                <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-sm flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                </div>
+              )}
+              {data?.error && (
+                <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-sm flex items-center justify-center">
+                  <div className="text-destructive bg-destructive/10 p-4 rounded-xl border border-destructive/20 font-bold">{data.error}</div>
+                </div>
+              )}
+              <div className="grid grid-cols-7 auto-rows-fr bg-border gap-[1px]">
+                {daysInMonth.map((day, idx) => {
+                  const status = getDayStatus(day);
+                  const isCurrentMonth = isSameMonth(day, currentDate);
+                  const today = isToday(day);
+                  
+                  return (
+                    <div 
+                      key={day.toString()} 
+                      onClick={() => handleDayClick(day, status)}
+                      className={clsx(
+                        "min-h-[100px] sm:min-h-[120px] bg-card p-1.5 sm:p-2 transition-colors relative group",
+                        !isCurrentMonth && "bg-card/50 opacity-50",
+                        today && "ring-1 ring-inset ring-primary/50 bg-primary/5",
+                        isAdmin && selectedUser && "cursor-pointer hover:bg-accent"
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                        <span className={clsx(
+                          "text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full",
+                          today ? "bg-primary text-primary-foreground" : isCurrentMonth ? "text-card-foreground" : "text-muted-foreground/50",
+                          (day.getDay() === 0 || day.getDay() === 6) && isCurrentMonth && !today && "text-destructive"
+                        )}>
+                          {format(day, 'd')}
+                        </span>
+                      </div>
+                      
+                      {status && (
+                        <div className={clsx("px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-md border text-xs", status.color)}>
+                          <div className="font-semibold text-[11px] sm:text-xs truncate">{status.label}</div>
+                          {status.subLabel && <div className="text-[9px] sm:text-[10px] opacity-80 mt-0.5 truncate">{status.subLabel}</div>}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Edit Modal */}
       {isEditModalOpen && selectedDate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h3 className="text-lg font-semibold text-white mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-xl animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-card-foreground mb-4 border-b border-border pb-4">
               Edit Attendance - {format(selectedDate, 'MMM d, yyyy')}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Status</label>
+                <label className="block text-sm font-bold text-card-foreground mb-1.5">Status</label>
                 <select 
-                  className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
                   value={editData.status}
                   onChange={e => setEditData({...editData, status: e.target.value})}
                 >
@@ -411,9 +415,9 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
               {!['present', 'absent', 'half-day', 'late'].includes(editData.status) && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-400 mb-1">Leave Duration</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Leave Duration</label>
                     <select 
-                      className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
                       value={editData.duration}
                       onChange={e => setEditData({...editData, duration: e.target.value})}
                     >
@@ -423,9 +427,9 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
                   </div>
                   {editData.duration === 'half_day' && (
                     <div>
-                      <label className="block text-sm font-medium text-neutral-400 mb-1">Half Day Session</label>
+                      <label className="block text-sm font-bold text-card-foreground mb-1.5">Half Day Session</label>
                       <select 
-                        className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
                         value={editData.halfDaySession}
                         onChange={e => setEditData({...editData, halfDaySession: e.target.value})}
                       >
@@ -440,19 +444,19 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
               {['present', 'late', 'half-day'].includes(editData.status) && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-400 mb-1">Login Time</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Login Time</label>
                     <input 
                       type="time" 
-                      className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 [color-scheme:dark] focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
                       value={editData.loginTime}
                       onChange={e => setEditData({...editData, loginTime: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-400 mb-1">Logout Time</label>
+                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Logout Time</label>
                     <input 
                       type="time" 
-                      className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 [color-scheme:dark] focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
                       value={editData.logoutTime}
                       onChange={e => setEditData({...editData, logoutTime: e.target.value})}
                     />
@@ -460,17 +464,17 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
                 </>
               )}
             </div>
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
               <button 
                 onClick={() => setIsEditModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors"
+                className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors p-2 rounded-xl hover:bg-accent min-h-[44px]"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleSaveEdit}
                 disabled={isSaving}
-                className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="px-6 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </button>

@@ -182,16 +182,16 @@ export default function CreateLetterPage() {
       {/* LEFT PANEL */}
       <div className="w-1/2 flex flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar">
         {/* Template Selection */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 shadow-sm">
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <FileText className="w-5 h-5 mr-2 text-blue-500" />
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+          <h2 className="text-lg font-bold tracking-tight text-card-foreground mb-4 flex items-center">
+            <FileText className="w-5 h-5 mr-2 text-primary" />
             Letter Details
           </h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-1">Select Template</label>
+              <label className="block text-sm font-bold text-card-foreground mb-1">Select Template</label>
               <select
-                className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                className="w-full bg-background border border-border text-foreground font-bold rounded-xl px-4 py-2 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary outline-none"
                 value={selectedTemplateId}
                 onChange={(e) => setSelectedTemplateId(e.target.value)}
               >
@@ -203,19 +203,19 @@ export default function CreateLetterPage() {
             </div>
             <div className="flex gap-4">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Date on Letter</label>
+                <label className="block text-sm font-bold text-card-foreground mb-1">Date on Letter</label>
                 <input
                   type="date"
-                  className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-background border border-border text-foreground font-bold rounded-xl px-4 py-2 min-h-[44px] outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                   value={letterDate}
                   onChange={(e) => setLetterDate(e.target.value)}
                 />
               </div>
               <div className="flex items-end pb-2">
-                <label className="flex items-center text-sm font-medium text-neutral-300 cursor-pointer">
+                <label className="flex items-center text-sm font-bold text-card-foreground cursor-pointer">
                   <input
                     type="checkbox"
-                    className="mr-2 rounded border-neutral-700 bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
+                    className="mr-2 rounded border-border bg-background text-primary focus:ring-primary focus:ring-offset-background h-4 w-4"
                     checked={useLetterhead}
                     onChange={(e) => setUseLetterhead(e.target.checked)}
                   />
@@ -228,35 +228,35 @@ export default function CreateLetterPage() {
 
         {/* Employee Selection */}
         {selectedTemplate && (
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 shadow-sm flex-1 flex flex-col min-h-[300px]">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center justify-between">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm flex-1 flex flex-col min-h-[300px]">
+            <h2 className="text-lg font-bold tracking-tight text-card-foreground mb-4 flex items-center justify-between">
               <div className="flex items-center">
-                <Users className="w-5 h-5 mr-2 text-indigo-500" />
+                <Users className="w-5 h-5 mr-2 text-primary" />
                 Select Employees
               </div>
-              <span className="text-xs bg-indigo-500/20 text-indigo-400 px-2 py-1 rounded-full">
+              <span className="text-xs font-bold bg-primary/20 text-primary px-2 py-1 rounded-full">
                 {selectedEmployees.length} selected
               </span>
             </h2>
             
             <div className="relative mb-4">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-neutral-500" />
+                <Search className="h-4 w-4 text-muted-foreground" />
               </div>
               <input
                 type="text"
                 placeholder="Search by name or department..."
-                className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg pl-10 pr-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="w-full bg-background border border-border text-foreground font-bold rounded-xl pl-10 pr-4 py-2 min-h-[44px] outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
                 value={employeeSearch}
                 onChange={(e) => setEmployeeSearch(e.target.value)}
               />
             </div>
 
             <div className="flex items-center justify-between mb-2 px-2">
-              <label className="flex items-center text-sm font-medium text-neutral-400 cursor-pointer">
+              <label className="flex items-center text-sm font-bold text-card-foreground cursor-pointer">
                 <input
                   type="checkbox"
-                  className="mr-2 rounded border-neutral-700 bg-neutral-800 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-neutral-900"
+                  className="mr-2 rounded border-border bg-background text-primary focus:ring-primary focus:ring-offset-background h-4 w-4"
                   checked={selectAll}
                   onChange={handleSelectAll}
                 />
@@ -264,31 +264,31 @@ export default function CreateLetterPage() {
               </label>
             </div>
 
-            <div className="flex-1 overflow-y-auto border border-neutral-800 rounded-lg bg-neutral-800/50">
+            <div className="flex-1 overflow-y-auto border border-border rounded-xl bg-muted/30">
               {employeesLoading ? (
-                <div className="p-4 text-center text-neutral-500 text-sm">Loading employees...</div>
+                <div className="p-4 text-center text-muted-foreground font-bold text-sm">Loading employees...</div>
               ) : filteredEmployees.length === 0 ? (
-                <div className="p-4 text-center text-neutral-500 text-sm">No employees found</div>
+                <div className="p-4 text-center text-muted-foreground font-bold text-sm">No employees found</div>
               ) : (
-                <ul className="divide-y divide-neutral-800">
+                <ul className="divide-y divide-border">
                   {filteredEmployees.map((emp: any) => (
-                    <li key={emp._id} className="flex items-center justify-between p-3 hover:bg-neutral-800 transition-colors">
+                    <li key={emp._id} className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center min-w-0">
                         <input
                           type="checkbox"
-                          className="mr-3 rounded border-neutral-700 bg-neutral-900 text-indigo-500 focus:ring-indigo-500"
+                          className="mr-3 rounded border-border bg-background text-primary focus:ring-primary h-4 w-4"
                           checked={!!selectedEmployees.find(e => e._id === emp._id)}
                           onChange={() => toggleEmployeeSelection(emp)}
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-white truncate">{emp.name}</p>
-                          <p className="text-xs text-neutral-500 truncate">{emp.designation} • {emp.department}</p>
+                          <p className="text-sm font-bold text-card-foreground truncate">{emp.name}</p>
+                          <p className="text-xs font-bold text-muted-foreground truncate">{emp.designation} • {emp.department}</p>
                         </div>
                       </div>
                       {selectedEmployees.find(e => e._id === emp._id) && previewEmployeeId !== emp._id && (
                         <button
                           onClick={() => setPreviewEmployeeId(emp._id)}
-                          className="text-xs text-blue-400 hover:text-blue-300 ml-2"
+                          className="text-xs font-bold text-primary hover:text-primary/80 ml-2"
                         >
                           Preview
                         </button>
@@ -303,22 +303,22 @@ export default function CreateLetterPage() {
 
         {/* Dynamic Variables Form */}
         {selectedTemplate && selectedEmployees.length > 0 && selectedTemplate.customVariables?.length > 0 && (
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-white mb-4">Set Variable Values</h2>
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+            <h2 className="text-lg font-bold tracking-tight text-card-foreground mb-4">Set Variable Values</h2>
             <div className="space-y-6">
               {selectedEmployees.map((emp) => (
-                <div key={emp._id} className="bg-neutral-800/50 p-4 rounded-lg border border-neutral-800">
-                  <h3 className="text-sm font-medium text-white mb-3 flex items-center">
-                    <span className="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+                <div key={emp._id} className="bg-muted/30 p-4 rounded-xl border border-border">
+                  <h3 className="text-sm font-bold text-card-foreground mb-3 flex items-center">
+                    <span className="w-2 h-2 rounded-full bg-primary mr-2"></span>
                     {emp.name}
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     {selectedTemplate.customVariables.map((cv: any) => (
                       <div key={cv.name}>
-                        <label className="block text-xs font-medium text-neutral-400 mb-1">{cv.name} ({cv.type})</label>
+                        <label className="block text-xs font-bold text-card-foreground mb-1">{cv.name} ({cv.type})</label>
                         <input
                           type={cv.type === 'Number' ? 'number' : cv.type === 'Date' ? 'date' : 'text'}
-                          className="w-full bg-neutral-900 border border-neutral-700 text-white rounded px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                          className="w-full bg-background border border-border text-foreground font-bold rounded-xl px-3 py-2 min-h-[44px] text-sm outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                           value={customVariables[emp._id]?.[cv.name] || ''}
                           onChange={(e) => updateCustomVariable(emp._id, cv.name, e.target.value)}
                           placeholder={`Enter ${cv.name}`}
@@ -348,7 +348,7 @@ export default function CreateLetterPage() {
           <button
             onClick={handleBulkSend}
             disabled={isSending || selectedEmployees.length === 0}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg shadow hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="flex items-center px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-xl min-h-[44px] shadow-sm hover:bg-primary/90 disabled:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card"
           >
             <Mail className="w-4 h-4 mr-2" />
             {isSending ? 'Processing...' : `Send to ${selectedEmployees.length}`}

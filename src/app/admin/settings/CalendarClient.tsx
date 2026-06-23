@@ -13,11 +13,11 @@ import * as ExcelJS from 'exceljs';
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 const HOLIDAY_COLORS = {
-  public: 'bg-red-500',
-  restricted: 'bg-orange-500',
-  company: 'bg-blue-500',
-  'half-day': 'bg-purple-500',
-  'working-day': 'bg-green-500'
+  public: 'bg-destructive/90',
+  restricted: 'bg-warning/90',
+  company: 'bg-primary/90',
+  'half-day': 'bg-purple-500/90',
+  'working-day': 'bg-success/90'
 };
 
 const HOLIDAY_LABELS = {
@@ -135,11 +135,11 @@ export default function CalendarClient() {
     const blanks = Array.from({ length: startingDayOfWeek });
 
     return (
-      <div key={monthDate.toISOString()} className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 shadow-sm">
-        <h3 className="font-medium text-white mb-3 text-center">{format(monthDate, 'MMMM')}</h3>
+      <div key={monthDate.toISOString()} className="bg-card border border-border rounded-2xl p-4 shadow-sm">
+        <h3 className="font-bold text-card-foreground mb-3 text-center">{format(monthDate, 'MMMM')}</h3>
         <div className="grid grid-cols-7 gap-1 text-center mb-2">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-            <div key={day} className="text-xs font-medium text-neutral-500">{day}</div>
+            <div key={day} className="text-xs font-bold text-muted-foreground">{day}</div>
           ))}
         </div>
         <div className="grid grid-cols-7 gap-1">
@@ -158,8 +158,8 @@ export default function CalendarClient() {
                 className={`
                   h-8 w-8 mx-auto flex items-center justify-center text-xs rounded-full cursor-pointer transition-colors
                   ${holiday ? HOLIDAY_COLORS[holiday.holidayType as keyof typeof HOLIDAY_COLORS] + ' text-white font-bold shadow-sm' 
-                    : isToday ? 'bg-neutral-800 text-blue-400 font-bold border border-blue-500/30' 
-                    : 'text-neutral-300 hover:bg-neutral-800'}
+                    : isToday ? 'bg-primary/20 text-primary font-bold border border-primary' 
+                    : 'text-card-foreground font-bold hover:bg-muted'}
                 `}
               >
                 {format(date, 'd')}
@@ -208,31 +208,31 @@ export default function CalendarClient() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Calendar Settings</h1>
-          <p className="text-sm text-neutral-400 mt-1">Manage public and company holidays.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Calendar Settings</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage public and company holidays.</p>
         </div>
         <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
-          <button onClick={handleExport} className="w-full sm:w-auto justify-center flex items-center px-4 py-2 bg-neutral-800 border border-neutral-700 text-white rounded-md hover:bg-neutral-700 transition-colors shadow-sm text-sm font-medium">
+          <button onClick={handleExport} className="w-full sm:w-auto justify-center flex items-center px-4 py-2 bg-secondary border border-border text-secondary-foreground min-h-[44px] rounded-xl hover:bg-secondary/80 transition-colors shadow-sm text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Download className="h-4 w-4 mr-2" />
             Export
           </button>
-          <button onClick={() => openModal()} className="w-full sm:w-auto justify-center flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium">
+          <button onClick={() => openModal()} className="w-full sm:w-auto justify-center flex items-center px-4 py-2 bg-primary text-primary-foreground min-h-[44px] rounded-xl hover:bg-primary/90 transition-colors shadow-sm text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
             <Plus className="h-4 w-4 mr-2" />
             Add Holiday
           </button>
         </div>
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
+      <div className="bg-card border border-border rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
         <div className="flex items-center gap-4">
-          <button onClick={() => setCurrentYearDate(subYears(currentYearDate, 1))} className="p-2 text-neutral-400 hover:text-white bg-neutral-800 rounded-full">
+          <button onClick={() => setCurrentYearDate(subYears(currentYearDate, 1))} className="p-2 text-muted-foreground hover:text-foreground bg-muted rounded-full transition-colors">
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <h2 className="text-xl font-bold text-white flex items-center">
-            <CalendarIcon className="h-5 w-5 mr-2 text-blue-500" />
+          <h2 className="text-xl font-bold text-card-foreground flex items-center">
+            <CalendarIcon className="h-5 w-5 mr-2 text-primary" />
             {year}
           </h2>
-          <button onClick={() => setCurrentYearDate(addYears(currentYearDate, 1))} className="p-2 text-neutral-400 hover:text-white bg-neutral-800 rounded-full">
+          <button onClick={() => setCurrentYearDate(addYears(currentYearDate, 1))} className="p-2 text-muted-foreground hover:text-foreground bg-muted rounded-full transition-colors">
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
@@ -241,7 +241,7 @@ export default function CalendarClient() {
           {Object.entries(HOLIDAY_LABELS).map(([key, label]) => (
             <div key={key} className="flex items-center">
               <span className={`h-3 w-3 rounded-full mr-1.5 ${HOLIDAY_COLORS[key as keyof typeof HOLIDAY_COLORS]}`}></span>
-              <span className="text-neutral-300">{label}</span>
+              <span className="text-card-foreground font-bold">{label}</span>
             </div>
           ))}
         </div>
@@ -250,7 +250,7 @@ export default function CalendarClient() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({length: 12}).map((_, i) => (
-            <div key={i} className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 h-64 animate-pulse"></div>
+            <div key={i} className="bg-card border border-border rounded-2xl p-4 h-64 animate-pulse"></div>
           ))}
         </div>
       ) : (
@@ -263,41 +263,41 @@ export default function CalendarClient() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity bg-neutral-950/75 backdrop-blur-sm z-0" onClick={() => setIsModalOpen(false)} />
-            <div className="relative z-10 inline-block w-full max-w-md px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl sm:my-8 sm:align-middle sm:p-6">
-              <div className="flex justify-between items-center mb-5 border-b border-neutral-800 pb-4">
-                <h3 className="text-lg font-medium text-white">{editingHoliday ? 'Edit Holiday' : 'Add Holiday'}</h3>
-                <button onClick={() => setIsModalOpen(false)} className="text-neutral-400 hover:text-white">
+            <div className="fixed inset-0 transition-opacity bg-black/80 backdrop-blur-sm z-0" onClick={() => setIsModalOpen(false)} />
+            <div className="relative z-10 inline-block w-full max-w-md px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-card border border-border rounded-2xl shadow-xl sm:my-8 sm:align-middle sm:p-6 animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex justify-between items-center mb-5 border-b border-border pb-4">
+                <h3 className="text-lg font-bold text-card-foreground">{editingHoliday ? 'Edit Holiday' : 'Add Holiday'}</h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-muted-foreground hover:text-foreground">
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">Date</label>
+                  <label className="block text-sm font-bold text-card-foreground mb-1.5">Date</label>
                   <input
                     type="date"
                     required
-                    className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500 [color-scheme:dark]"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary [color-scheme:dark]"
                     value={formData.date}
                     onChange={(e) => setFormData({...formData, date: e.target.value})}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">Holiday Name</label>
+                  <label className="block text-sm font-bold text-card-foreground mb-1.5">Holiday Name</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. New Year's Day"
-                    className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                     value={formData.holidayName}
                     onChange={(e) => setFormData({...formData, holidayName: e.target.value})}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">Type</label>
+                  <label className="block text-sm font-bold text-card-foreground mb-1.5">Type</label>
                   <select
-                    className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                     value={formData.holidayType}
                     onChange={(e) => setFormData({...formData, holidayType: e.target.value})}
                   >
@@ -307,29 +307,29 @@ export default function CalendarClient() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-1">Description (Optional)</label>
+                  <label className="block text-sm font-bold text-card-foreground mb-1.5">Description (Optional)</label>
                   <textarea
                     rows={2}
-                    className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-none"
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                   ></textarea>
                 </div>
                 
                 <div className="flex items-center justify-between pt-2">
-                  <label className="flex items-center text-sm text-neutral-300">
+                  <label className="flex items-center text-sm font-bold text-card-foreground">
                     <input
                       type="checkbox"
-                      className="mr-2 h-4 w-4 rounded border-neutral-700 bg-neutral-800 text-blue-600 focus:ring-blue-600"
+                      className="mr-2 h-4 w-4 rounded border-border bg-background text-primary focus:ring-primary"
                       checked={formData.isPaid}
                       onChange={(e) => setFormData({...formData, isPaid: e.target.checked})}
                     />
                     Is Paid Holiday
                   </label>
-                  <label className="flex items-center text-sm text-neutral-300">
+                  <label className="flex items-center text-sm font-bold text-card-foreground">
                     <input
                       type="checkbox"
-                      className="mr-2 h-4 w-4 rounded border-neutral-700 bg-neutral-800 text-blue-600 focus:ring-blue-600"
+                      className="mr-2 h-4 w-4 rounded border-border bg-background text-primary focus:ring-primary"
                       checked={formData.isRecurring}
                       onChange={(e) => setFormData({...formData, isRecurring: e.target.checked})}
                     />
@@ -337,11 +337,11 @@ export default function CalendarClient() {
                   </label>
                 </div>
 
-                <div className="mt-6 flex flex-col sm:flex-row-reverse gap-3 w-full border-t border-neutral-800 pt-5">
+                <div className="mt-6 flex flex-col sm:flex-row-reverse gap-3 w-full border-t border-border pt-5">
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="flex-1 sm:flex-none inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none disabled:opacity-50 sm:text-sm"
+                    className="flex-1 sm:flex-none inline-flex justify-center rounded-xl min-h-[44px] border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-bold text-primary-foreground hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:opacity-50 sm:text-sm"
                   >
                     {isSaving ? <Loader2 className="animate-spin h-5 w-5" /> : 'Save'}
                   </button>
@@ -350,7 +350,7 @@ export default function CalendarClient() {
                       type="button"
                       onClick={handleDelete}
                       disabled={isSaving}
-                      className="flex-1 sm:flex-none inline-flex justify-center rounded-md border border-red-500/20 shadow-sm px-4 py-2 bg-red-500/10 text-base font-medium text-red-500 hover:bg-red-500/20 focus:outline-none disabled:opacity-50 sm:text-sm"
+                      className="flex-1 sm:flex-none inline-flex justify-center rounded-xl min-h-[44px] border border-destructive/20 shadow-sm px-4 py-2 bg-destructive/10 text-base font-bold text-destructive hover:bg-destructive/20 focus:outline-none disabled:opacity-50 sm:text-sm"
                     >
                       Delete
                     </button>
@@ -358,7 +358,7 @@ export default function CalendarClient() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-1 sm:flex-none inline-flex justify-center rounded-md border border-neutral-700 shadow-sm px-4 py-2 bg-neutral-800 text-base font-medium text-neutral-300 hover:bg-neutral-700 hover:text-white focus:outline-none sm:text-sm"
+                    className="flex-1 sm:flex-none inline-flex justify-center rounded-xl min-h-[44px] border border-border shadow-sm px-4 py-2 bg-secondary text-base font-bold text-secondary-foreground hover:bg-secondary/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card sm:text-sm"
                   >
                     Cancel
                   </button>

@@ -23,7 +23,7 @@ export default function CompanySwitcher() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-400">
+      <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground font-bold">
         <Loader2 className="w-4 h-4 animate-spin" />
         <span>Loading...</span>
       </div>
@@ -33,11 +33,11 @@ export default function CompanySwitcher() {
   if (!activeCompany || companies.length <= 1) {
     // If only one company or none, maybe don't show the switcher, or just show the name non-interactive
     return (
-      <div className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-300">
+      <div className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-muted-foreground">
         {activeCompany?.logo ? (
-           <Image src={activeCompany.logo} alt="Logo" width={24} height={24} className="rounded-full bg-neutral-800" />
+           <Image src={activeCompany.logo} alt="Logo" width={24} height={24} className="rounded-full bg-muted" />
         ) : (
-           <Building2 className="w-4 h-4 text-blue-500" />
+           <Building2 className="w-4 h-4 text-primary" />
         )}
         <span>{activeCompany?.companyName || 'No Company'}</span>
       </div>
@@ -48,21 +48,21 @@ export default function CompanySwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 border border-neutral-700/50 transition-colors text-sm font-medium text-white group"
+        className="flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-xl bg-muted/50 hover:bg-muted border border-border transition-colors text-sm font-bold text-foreground group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         {activeCompany.logo ? (
-           <Image src={activeCompany.logo} alt="Logo" width={20} height={20} className="rounded-full bg-neutral-900 object-cover" />
+           <Image src={activeCompany.logo} alt="Logo" width={20} height={20} className="rounded-full bg-card object-cover border border-border" />
         ) : (
-           <Building2 className="w-4 h-4 text-blue-400" />
+           <Building2 className="w-4 h-4 text-primary" />
         )}
         <span className="truncate max-w-[150px]">{activeCompany.companyName}</span>
-        <ChevronDown className={clsx("w-4 h-4 text-neutral-400 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown className={clsx("w-4 h-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 w-64 right-0 sm:left-0 sm:right-auto bg-neutral-900 border border-neutral-800 rounded-xl shadow-xl overflow-hidden z-50">
-          <div className="p-2 border-b border-neutral-800">
-            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-2">Switch Company</span>
+        <div className="absolute top-full mt-2 w-64 right-0 sm:left-0 sm:right-auto bg-card border border-border rounded-2xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+          <div className="p-2 border-b border-border bg-muted/30">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-2">Switch Company</span>
           </div>
           <div className="max-h-[300px] overflow-y-auto p-1">
             {companies.map((company) => (
@@ -73,23 +73,23 @@ export default function CompanySwitcher() {
                   setIsOpen(false);
                 }}
                 className={clsx(
-                  "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-sm transition-colors",
+                  "w-full flex items-center justify-between px-3 py-2.5 min-h-[44px] rounded-xl text-left text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
                   activeCompany._id === company._id 
-                    ? "bg-blue-600/10 text-blue-500" 
-                    : "text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                    ? "bg-primary/10 text-primary" 
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 <div className="flex items-center gap-3">
                   {company.logo ? (
-                     <Image src={company.logo} alt="Logo" width={24} height={24} className="rounded-full bg-neutral-800 object-cover" />
+                     <Image src={company.logo} alt="Logo" width={24} height={24} className="rounded-full bg-muted object-cover border border-border" />
                   ) : (
-                     <div className="w-6 h-6 rounded-full bg-neutral-800 flex items-center justify-center text-[10px] font-bold text-neutral-400">
+                     <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground border border-border">
                        {company.companyCode}
                      </div>
                   )}
                   <span className="truncate">{company.companyName}</span>
                 </div>
-                {activeCompany._id === company._id && <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+                {activeCompany._id === company._id && <Check className="w-4 h-4 text-primary flex-shrink-0" />}
               </button>
             ))}
           </div>

@@ -17,8 +17,8 @@ export default function LettersLayout({ children }: { children: React.ReactNode 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-xl md:text-2xl font-bold text-white mb-4">Letter Management</h1>
-        <div className="border-b border-neutral-800 overflow-x-auto hide-scrollbar">
+        <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight mb-4">Letter Management</h1>
+        <div className="border-b border-border overflow-x-auto hide-scrollbar">
           <nav className="-mb-px flex space-x-6 md:space-x-8 min-w-max px-1">
             {tabs.map((tab) => {
               const isActive = pathname?.startsWith(tab.href) ?? false;
@@ -28,9 +28,9 @@ export default function LettersLayout({ children }: { children: React.ReactNode 
                   href={tab.href}
                   className={clsx(
                     isActive
-                      ? 'border-blue-500 text-blue-500'
-                      : 'border-transparent text-neutral-400 hover:text-neutral-300 hover:border-neutral-300',
-                    'whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm transition-colors'
+                      ? 'border-primary text-primary font-bold'
+                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border font-bold',
+                    'whitespace-nowrap pb-4 px-1 border-b-2 text-sm transition-colors'
                   )}
                 >
                   {tab.name}

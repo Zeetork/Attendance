@@ -52,13 +52,13 @@ export default function ReportsClient() {
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-10 bg-neutral-900 rounded w-1/4"></div>
+        <div className="h-10 bg-card border border-border rounded-xl w-1/4"></div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[1,2,3,4].map(i => <div key={i} className="h-32 bg-neutral-900 rounded-xl"></div>)}
+          {[1,2,3,4].map(i => <div key={i} className="h-32 bg-card border border-border rounded-2xl"></div>)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-96 bg-neutral-900 rounded-xl"></div>
-          <div className="h-96 bg-neutral-900 rounded-xl"></div>
+          <div className="h-96 bg-card border border-border rounded-2xl"></div>
+          <div className="h-96 bg-card border border-border rounded-2xl"></div>
         </div>
       </div>
     );
@@ -74,12 +74,12 @@ export default function ReportsClient() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Analytics & Reports</h1>
-          <p className="text-sm text-neutral-400 mt-1">View comprehensive HR and payroll data.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Analytics & Reports</h1>
+          <p className="text-sm font-bold text-muted-foreground mt-1">View comprehensive HR and payroll data.</p>
         </div>
         <button 
           onClick={handleExport}
-          className="flex items-center px-4 py-2 bg-neutral-800 border border-neutral-700 text-white rounded-md hover:bg-neutral-700 transition-colors shadow-sm font-medium"
+          className="flex items-center px-4 py-2 bg-primary text-primary-foreground min-h-[44px] rounded-xl hover:bg-primary/90 transition-colors shadow-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Download className="h-4 w-4 mr-2" />
           Export Data (Excel)
@@ -87,47 +87,47 @@ export default function ReportsClient() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-sm flex items-center">
-          <div className="rounded-lg p-3 bg-blue-500/10 mr-4">
-            <Users className="h-6 w-6 text-blue-500" />
+        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex items-center">
+          <div className="rounded-lg p-3 bg-primary/10 mr-4">
+            <Users className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <div className="text-sm text-neutral-400 font-medium">Active Employees</div>
-            <div className="text-2xl font-bold text-white">{data?.employees}</div>
+            <div className="text-sm text-card-foreground font-bold">Active Employees</div>
+            <div className="text-2xl font-bold text-card-foreground">{data?.employees}</div>
           </div>
         </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-sm flex items-center">
-          <div className="rounded-lg p-3 bg-green-500/10 mr-4">
-            <DollarSign className="h-6 w-6 text-green-500" />
+        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex items-center">
+          <div className="rounded-lg p-3 bg-success/10 mr-4">
+            <DollarSign className="h-6 w-6 text-success" />
           </div>
           <div>
-            <div className="text-sm text-neutral-400 font-medium">Monthly Payout</div>
-            <div className="text-2xl font-bold text-white">₹{data?.payrollStats?.totalPayout?.toLocaleString() || 0}</div>
+            <div className="text-sm text-card-foreground font-bold">Monthly Payout</div>
+            <div className="text-2xl font-bold text-card-foreground">₹{data?.payrollStats?.totalPayout?.toLocaleString() || 0}</div>
           </div>
         </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-sm flex items-center">
-          <div className="rounded-lg p-3 bg-amber-500/10 mr-4">
-            <FileText className="h-6 w-6 text-amber-500" />
+        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex items-center">
+          <div className="rounded-lg p-3 bg-warning/10 mr-4">
+            <FileText className="h-6 w-6 text-warning" />
           </div>
           <div>
-            <div className="text-sm text-neutral-400 font-medium">Pending Leaves</div>
-            <div className="text-2xl font-bold text-white">{data?.leaveStats?.pending || 0}</div>
+            <div className="text-sm text-card-foreground font-bold">Pending Leaves</div>
+            <div className="text-2xl font-bold text-card-foreground">{data?.leaveStats?.pending || 0}</div>
           </div>
         </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-sm flex items-center">
-          <div className="rounded-lg p-3 bg-red-500/10 mr-4">
-            <Calendar className="h-6 w-6 text-red-500" />
+        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex items-center">
+          <div className="rounded-lg p-3 bg-destructive/10 mr-4">
+            <Calendar className="h-6 w-6 text-destructive" />
           </div>
           <div>
-            <div className="text-sm text-neutral-400 font-medium">Total Deductions</div>
-            <div className="text-2xl font-bold text-white">₹{data?.payrollStats?.totalDeductions?.toLocaleString() || 0}</div>
+            <div className="text-sm text-card-foreground font-bold">Total Deductions</div>
+            <div className="text-2xl font-bold text-card-foreground">₹{data?.payrollStats?.totalDeductions?.toLocaleString() || 0}</div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-sm p-6">
-          <h2 className="text-lg font-medium text-white mb-6">Attendance Overview (Last 7 Days)</h2>
+        <div className="bg-card border border-border rounded-2xl shadow-sm p-6">
+          <h2 className="text-lg font-bold tracking-tight text-card-foreground mb-6">Attendance Overview (Last 7 Days)</h2>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data?.attendanceStats || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -147,11 +147,11 @@ export default function ReportsClient() {
           </div>
         </div>
 
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-sm p-6">
-          <h2 className="text-lg font-medium text-white mb-6">Leave Requests Status</h2>
+        <div className="bg-card border border-border rounded-2xl shadow-sm p-6">
+          <h2 className="text-lg font-bold tracking-tight text-card-foreground mb-6">Leave Requests Status</h2>
           <div className="h-80 w-full flex justify-center items-center">
             {leavePieData.every(d => d.value === 0) ? (
-              <div className="text-neutral-500">No leave data available.</div>
+              <div className="text-muted-foreground font-bold">No leave data available.</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
