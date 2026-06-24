@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
+import { mutate } from 'swr';
 
 interface Employee {
   employeeId: string;
@@ -135,6 +136,7 @@ export default function ReportingStructure({ manager, currentUser, subordinates,
         toast.error(data.error || 'Action failed', { id: toastId });
       } else {
         toast.success(data.message || `Successfully ${confirmAction.replace('-', ' ')}ed`, { id: toastId });
+        await mutate('/api/employee/dashboard');
         router.refresh();
       }
     } catch (error) {

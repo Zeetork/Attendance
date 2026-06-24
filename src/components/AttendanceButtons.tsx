@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { mutate } from 'swr';
 
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, isLoading }: any) => {
   if (!isOpen) return null;
@@ -60,6 +61,7 @@ export default function AttendanceButtons() {
         toast.error(data.error || 'Action failed', { id: toastId });
       } else {
         toast.success(data.message || `Successfully ${confirmAction.replace('-', ' ')}ed`, { id: toastId });
+        await mutate('/api/employee/dashboard');
         router.refresh();
       }
     } catch (error) {

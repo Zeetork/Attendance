@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-/* Amber Gold Brand Palette */
---color-amber-gold-50: #fef8e6;
---color-amber-gold-100: #fef0cd;
---color-amber-gold-200: #fde19b;
---color-amber-gold-300: #fcd269;
---color-amber-gold-400: #fbc337;
---color-amber-gold-500: #fab505;
---color-amber-gold-600: #c89004;
---color-amber-gold-700: #966c03;
---color-amber-gold-800: #644802;
---color-amber-gold-900: #322401;
---color-amber-gold-950: #231901;
+  /* Amber Gold Brand Palette */
+  --color-amber-gold-50: #fef8e6;
+  --color-amber-gold-100: #fef0cd;
+  --color-amber-gold-200: #fde19b;
+  --color-amber-gold-300: #fcd269;
+  --color-amber-gold-400: #fbc337;
+  --color-amber-gold-500: #fab505;
+  --color-amber-gold-600: #c89004;
+  --color-amber-gold-700: #966c03;
+  --color-amber-gold-800: #644802;
+  --color-amber-gold-900: #322401;
+  --color-amber-gold-950: #231901;
 
-/* --color-amber-gold-50: #fde7fe;
+  /* --color-amber-gold-50: #fde7fe;
 --color-amber-gold-100: #fbcefd;
 --color-amber-gold-200: #f79efa;
 --color-amber-gold-300: #f36df8;
@@ -25,7 +25,7 @@
 --color-amber-gold-800: #5e0561;
 --color-amber-gold-900: #2f0231;
 --color-amber-gold-950: #210222; */
-/* 
+  /* 
 --color-lobster-pink-50: #fce8e8;
 --color-lobster-pink-100: #f9d2d2;
 --color-lobster-pink-200: #f3a5a5;
@@ -40,147 +40,156 @@
 
 
 
-/* Charcoal Palette */
---color-charcoal-50: #f3f2f2;
---color-charcoal-100: #e6e5e5;
---color-charcoal-200: #cdcbcc;
---color-charcoal-300: #b4b1b2;
---color-charcoal-400: #9b9798;
---color-charcoal-500: #827d7f;
---color-charcoal-600: #686465;
---color-charcoal-700: #4e4b4c;
---color-charcoal-800: #343233;
---color-charcoal-900: #1a1919;
---color-charcoal-950: #121112;
+  /* Charcoal Palette */
+  --color-charcoal-50: #f3f2f2;
+  --color-charcoal-100: #e6e5e5;
+  --color-charcoal-200: #cdcbcc;
+  --color-charcoal-300: #b4b1b2;
+  --color-charcoal-400: #9b9798;
+  --color-charcoal-500: #827d7f;
+  --color-charcoal-600: #686465;
+  --color-charcoal-700: #4e4b4c;
+  --color-charcoal-800: #343233;
+  --color-charcoal-900: #1a1919;
+  --color-charcoal-950: #121112;
 
---color-background: var(--background);
---color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 
---color-card: var(--card);
---color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
 
---color-popover: var(--popover);
---color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
 
---color-primary: var(--primary);
---color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
 
---color-secondary: var(--secondary);
---color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
 
---color-muted: var(--muted);
---color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 
---color-accent: var(--accent);
---color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
 
---color-border: var(--border);
---color-input: var(--input);
---color-ring: var(--ring);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 
---color-success: var(--success);
---color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
 
---color-warning: var(--warning);
---color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
 
---color-destructive: var(--destructive);
---color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 
---radius: 1rem;
+  --radius: 1rem;
 }
 
 @layer base {
-:root {
-/* LIGHT THEME */
+  :root {
+    /* LIGHT THEME */
 
---background: var(--color-amber-gold-50);
---foreground: var(--color-charcoal-950);
+    --background: var(--color-amber-gold-50);
+    --foreground: var(--color-charcoal-950);
 
---card: #ffffff;
---card-foreground: var(--color-charcoal-950);
+    --card: #ffffff;
+    --card-foreground: var(--color-charcoal-950);
 
---popover: #ffffff;
---popover-foreground: var(--color-charcoal-950);
+    --popover: #ffffff;
+    --popover-foreground: var(--color-charcoal-950);
 
---primary: var(--color-amber-gold-500);
---primary-foreground: var(--color-charcoal-950);
+    --primary: var(--color-amber-gold-500);
+    --primary-foreground: var(--color-charcoal-950);
 
---secondary: var(--color-amber-gold-100);
---secondary-foreground: var(--color-amber-gold-900);
+    --secondary: var(--color-amber-gold-100);
+    --secondary-foreground: var(--color-amber-gold-900);
 
---muted: var(--color-amber-gold-50);
---muted-foreground: var(--color-charcoal-600);
+    --muted: var(--color-amber-gold-50);
+    --muted-foreground: var(--color-charcoal-600);
 
---accent: var(--color-amber-gold-200);
---accent-foreground: var(--color-amber-gold-950);
+    --accent: var(--color-amber-gold-200);
+    --accent-foreground: var(--color-amber-gold-950);
 
---success: #10b981;
---success-foreground: #ffffff;
+    --success: #10b981;
+    --success-foreground: #ffffff;
 
---warning: var(--color-amber-gold-500);
---warning-foreground: var(--color-charcoal-950);
+    --warning: var(--color-amber-gold-500);
+    --warning-foreground: var(--color-charcoal-950);
 
---destructive: #ef4444;
---destructive-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
 
---border: var(--color-amber-gold-200);
---input: var(--color-amber-gold-200);
---ring: var(--color-amber-gold-500);
+    --border: var(--color-amber-gold-200);
+    --input: var(--color-amber-gold-200);
+    --ring: var(--color-amber-gold-500);
 
-}
-
-.dark {
-/* DARK THEME */
-
---background: var(--color-charcoal-950);
---foreground: var(--color-charcoal-50);
-
---card: var(--color-charcoal-900);
---card-foreground: var(--color-charcoal-50);
-
---popover: var(--color-charcoal-900);
---popover-foreground: var(--color-charcoal-50);
-
-/* Brand color stays amber */
---primary: var(--color-charcoal-400);
---primary-foreground: var(--color-charcoal-950);
-
-/* Neutral charcoal surfaces */
---secondary: var(--color-charcoal-800);
---secondary-foreground: var(--color-charcoal-100);
-
---muted: var(--color-charcoal-900);
---muted-foreground: var(--color-charcoal-400);
-
-/* Amber accents */
---accent: var(--color-charcoal-800);
---accent-foreground: var(--color-amber-gold-400);
-
---success: #10b981;
---success-foreground: #ffffff;
-
---warning: var(--color-amber-gold-500);
---warning-foreground: var(--color-charcoal-950);
-
---destructive: #ef4444;
---destructive-foreground: #ffffff;
-
---border: var(--color-charcoal-800);
---input: var(--color-charcoal-800);
---ring: var(--color-amber-gold-500);
-
-}
-
-* {
-  border-color: var(--border);
   }
 
-body {
-background-color: var(--background);
-color: var(--foreground);
-font-feature-settings: "rlig" 1, "calt" 1;
--webkit-font-smoothing: antialiased;
--moz-osx-font-smoothing: grayscale;
+  .dark {
+    /* DARK THEME */
+
+    --background: var(--color-charcoal-950);
+    --foreground: var(--color-charcoal-50);
+
+    --card: var(--color-charcoal-900);
+    --card-foreground: var(--color-charcoal-50);
+
+    --popover: var(--color-charcoal-900);
+    --popover-foreground: var(--color-charcoal-50);
+
+    /* Brand color stays amber */
+    --primary: var(--color-charcoal-400);
+    --primary-foreground: var(--color-charcoal-950);
+
+    /* Neutral charcoal surfaces */
+    --secondary: var(--color-charcoal-800);
+    --secondary-foreground: var(--color-charcoal-100);
+
+    --muted: var(--color-charcoal-900);
+    --muted-foreground: var(--color-charcoal-400);
+
+    /* Amber accents */
+    --accent: var(--color-charcoal-800);
+    --accent-foreground: var(--color-amber-gold-400);
+
+    --success: #10b981;
+    --success-foreground: #ffffff;
+
+    --warning: var(--color-amber-gold-500);
+    --warning-foreground: var(--color-charcoal-950);
+
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+
+    --border: var(--color-charcoal-800);
+    --input: var(--color-charcoal-800);
+    --ring: var(--color-amber-gold-500);
+
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
