@@ -1,4 +1,6 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
+import './Shift';
+import './Company';
 
 export interface IUser extends Document {
   companyId?: mongoose.Types.ObjectId;

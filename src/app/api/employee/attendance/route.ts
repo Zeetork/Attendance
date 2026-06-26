@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
 import Attendance from '@/models/Attendance';
+import AttendanceCorrection from '@/models/AttendanceCorrection';
+import MissPunch from '@/models/MissPunch';
 
 export async function GET(req: NextRequest) {
   try {
@@ -26,7 +28,26 @@ export async function GET(req: NextRequest) {
 
     const attendances = await Attendance.find(query).sort({ date: -1 }).lean();
 
-    return NextResponse.json({ attendances });
+    const corrections = await AttendanceCorrection.find({ employeeId: session.user.id }).sort({ createdAt: -1 }).lean();
+    const missPunches = await MissPunch.find({ employeeId: session.user.id }).sort({ createdAt: -1 }).lean();
+
+    const attendancesWithStatus = attendances.map((att: any) => {
+      const correction = corrections.find((c: any) => c.attendanceId?.toString() === att._id.toString());
+      const missPunch = missPunches.find((m: any) => {
+        if (!m.date || !att.date) return false;
+        return new Date(m.date).toISOString().split('T')[0] === new Date(att.date).toISOString().split('T')[0];
+      });
+
+      const request = correction || missPunch;
+
+      return {
+        ...att,
+        correctionStatus: request ? request.status : null,
+        correctionType: request ? (correction ? 'Attendance Correction' : 'Miss Punch') : null
+      };
+    });
+
+    return NextResponse.json({ attendances: attendancesWithStatus });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

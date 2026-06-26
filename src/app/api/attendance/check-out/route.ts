@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
 import Attendance from '@/models/Attendance';
+import Shift from '@/models/Shift';
 import { startOfDay, endOfDay, differenceInMinutes } from 'date-fns';
 
 export async function POST(req: NextRequest) {

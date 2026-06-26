@@ -22,7 +22,7 @@ export default function EmployeeAttendanceClient() {
   const month = currentDate.getMonth() + 1;
   const year = currentDate.getFullYear();
 
-  const { data, error, isLoading } = useSWR(`/api/employee/attendance?month=${month}&year=${year}`, fetcher);
+  const { data, error, isLoading, mutate } = useSWR(`/api/employee/attendance?month=${month}&year=${year}`, fetcher);
   const attendances = data?.attendances || [];
 
   const months = Array.from({ length: 12 }).map((_, i) => subMonths(new Date(), i));
@@ -82,6 +82,7 @@ export default function EmployeeAttendanceClient() {
       if (!res.ok) throw new Error(json.error || 'Failed to submit request');
       toast.success('Request submitted successfully');
       setIsModalOpen(false);
+      mutate();
     } catch (err: unknown) {
       if (err instanceof Error) {
         toast.error(err.message);
@@ -169,7 +170,7 @@ export default function EmployeeAttendanceClient() {
                 <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Check Out</th>
                 <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Work Hours</th>
                 <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Status</th>
-                <th scope="col" className="px-6 py-4 text-right text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Action</th>
+                <th scope="col" className="px-6 py-4 text-right text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Action / Status</th>
               </tr>
             </thead>
             <tbody className="bg-transparent divide-y divide-border/50">
@@ -193,7 +194,7 @@ export default function EmployeeAttendanceClient() {
                   </td>
                 </tr>
               ) : (
-                attendances.map((att: { _id: string, date: string, loginTime?: string, logoutTime?: string, totalHours?: number, status: string }) => (
+                attendances.map((att: { _id: string, date: string, loginTime?: string, logoutTime?: string, totalHours?: number, status: string, correctionStatus?: string }) => (
                   <tr key={att._id} className="hover:bg-accent hover:text-accent-foreground transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-bold text-card-foreground group-hover:text-accent-foreground">{format(new Date(att.date), 'MMM dd, yyyy')}</div>
@@ -212,18 +213,46 @@ export default function EmployeeAttendanceClient() {
                       {getStatusBadge(att.status)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button 
-                        onClick={() => {
-                          setRequestDate(format(new Date(att.date), 'yyyy-MM-dd'));
-                          setAttendanceId(att._id);
-                          setIsModalOpen(true);
-                          setRequestType('ATTENDANCE_CORRECTION');
-                        }}
-                        className="text-primary hover:text-primary-foreground bg-primary/10 hover:bg-primary px-3 py-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
-                        aria-label={`Request correction for ${format(new Date(att.date), 'MMM dd, yyyy')}`}
-                      >
-                        Request 
-                      </button>
+                      {att.correctionStatus === 'pending' ? (
+                        <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-warning/10 text-warning border border-warning/20 rounded-md">
+                          <Clock className="w-3 h-3 mr-1.5 animate-pulse" /> Requested
+                        </span>
+                      ) : att.correctionStatus === 'approved' ? (
+                        <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success border border-success/20 rounded-md">
+                          <CheckCircle2 className="w-3 h-3 mr-1.5" /> Corrected
+                        </span>
+                      ) : att.correctionStatus === 'rejected' ? (
+                        <div className="flex items-center justify-end gap-2">
+                          <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-destructive/10 text-destructive border border-destructive/20 rounded-md">
+                            <XCircle className="w-3 h-3 mr-1.5" /> Rejected
+                          </span>
+                          <button 
+                            onClick={() => {
+                              setRequestDate(format(new Date(att.date), 'yyyy-MM-dd'));
+                              setAttendanceId(att._id);
+                              setIsModalOpen(true);
+                              setRequestType('ATTENDANCE_CORRECTION');
+                            }}
+                            className="text-foreground hover:bg-primary px-2.5 py-1 text-xs rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring opacity-100"
+                            aria-label={`Request correction again for ${format(new Date(att.date), 'MMM dd, yyyy')}`}
+                          >
+                            Request Again
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => {
+                            setRequestDate(format(new Date(att.date), 'yyyy-MM-dd'));
+                            setAttendanceId(att._id);
+                            setIsModalOpen(true);
+                            setRequestType('ATTENDANCE_CORRECTION');
+                          }}
+                          className="text-foreground hover:bg-primary px-3 py-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
+                          aria-label={`Request correction for ${format(new Date(att.date), 'MMM dd, yyyy')}`}
+                        >
+                          Request 
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
