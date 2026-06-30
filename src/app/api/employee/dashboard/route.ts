@@ -94,6 +94,18 @@ export async function GET() {
       status: { $in: ['pending', 'approved'] }
     }).sort({ fromDate: 1 }).limit(3);
 
+    const activeDeductions = [];
+    if (user.salaryDeductions?.esi?.enabled) {
+      activeDeductions.push({ type: 'ESI', amount: user.salaryDeductions.esi.amount });
+    }
+    if (user.salaryDeductions?.loan?.enabled && user.salaryDeductions.loan.remainingMonths > 0) {
+      activeDeductions.push({ 
+        type: 'Loan', 
+        amount: user.salaryDeductions.loan.monthlyDeduction,
+        remainingMonths: user.salaryDeductions.loan.remainingMonths 
+      });
+    }
+
     return NextResponse.json({
       shift: user?.shiftId,
       todayAttendance,
@@ -115,7 +127,8 @@ export async function GET() {
         designation: user?.designation,
         department: user?.department,
         profileImage: user?.profileImage
-      }
+      },
+      activeDeductions
     });
 
   } catch (error) {

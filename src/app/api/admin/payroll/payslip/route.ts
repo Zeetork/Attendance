@@ -241,9 +241,13 @@ export async function GET(req: NextRequest) {
           <div class="row"><span>Bonus</span><span>₹0.00</span></div>
         </div>
         <div class="card deductions">
-          <div class="row"><span>Absence</span><span>₹${(payroll.deductions || 0).toFixed(2)}</span></div>
-          <div class="row"><span>Tax</span><span>₹0.00</span></div>
-          <div class="row"><span>Other</span><span>₹0.00</span></div>
+          <div class="row"><span>Absence (${payroll.deductionDays || 0} days)</span><span>₹${((payroll.deductions || payroll.deductionAmount || 0) - (payroll.salaryDeductionsSnapshot?.esi || 0) - (payroll.salaryDeductionsSnapshot?.loan || 0)).toFixed(2)}</span></div>
+          ${payroll.salaryDeductionsSnapshot?.esi ? `<div class="row"><span>ESI</span><span>₹${payroll.salaryDeductionsSnapshot.esi.toFixed(2)}</span></div>` : ''}
+          ${payroll.salaryDeductionsSnapshot?.loan ? `<div class="row"><span>Loan</span><span>₹${payroll.salaryDeductionsSnapshot.loan.toFixed(2)}</span></div>` : ''}
+          <div class="row" style="margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+            <span>Total Deductions</span>
+            <span>₹${(payroll.deductions || payroll.deductionAmount || 0).toFixed(2)}</span>
+          </div>
         </div>
       </div>
     </div>

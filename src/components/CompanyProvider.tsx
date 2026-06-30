@@ -9,6 +9,9 @@ interface Company {
   companyName: string;
   companyCode: string;
   logo: string;
+  address?: string;
+  email?: string;
+  phone?: string;
 }
 
 interface CompanyContextType {

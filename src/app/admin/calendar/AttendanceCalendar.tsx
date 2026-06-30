@@ -2,17 +2,17 @@
 
 import { useState, useMemo } from 'react';
 import useSWR from 'swr';
-import { 
-  format, 
-  addMonths, 
-  subMonths, 
-  startOfMonth, 
-  endOfMonth, 
-  eachDayOfInterval, 
-  isSameMonth, 
-  isSameDay, 
-  isToday, 
-  startOfWeek, 
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  isToday,
+  startOfWeek,
   endOfWeek,
   parseISO
 } from 'date-fns';
@@ -40,12 +40,12 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
 
   // Fetch employees list if admin
   const { data: employeesData } = useSWR(isAdmin ? '/api/admin/employees' : null, fetcher);
-  
+
   const [isExporting, setIsExporting] = useState(false);
 
   const monthStr = format(currentDate, 'yyyy-MM');
-  const queryUrl = selectedUser 
-    ? `/api/calendar?month=${monthStr}&userId=${selectedUser}` 
+  const queryUrl = selectedUser
+    ? `/api/calendar?month=${monthStr}&userId=${selectedUser}`
     : `/api/calendar?month=${monthStr}`;
 
   const { data, error, isLoading, mutate } = useSWR(queryUrl, fetcher);
@@ -85,13 +85,13 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
       const from = new Date(l.fromDate);
       const to = new Date(l.toDate);
       // Strip time
-      from.setHours(0,0,0,0);
-      to.setHours(0,0,0,0);
+      from.setHours(0, 0, 0, 0);
+      to.setHours(0, 0, 0, 0);
       const current = new Date(day);
-      current.setHours(0,0,0,0);
+      current.setHours(0, 0, 0, 0);
       return current >= from && current <= to;
     });
-    
+
     if (leave) return { type: 'leave', label: 'Absent', subLabel: leave.leaveType, color: 'bg-destructive/10 text-destructive border-destructive/20' };
 
     // 3. Check Holidays
@@ -99,15 +99,15 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
     if (holiday) return { type: 'holiday', holidayType: holiday.holidayType, label: holiday.holidayName, color: 'bg-primary/10 text-primary border-primary/20' };
 
     // 4. Default for past weekdays
-    const isPast = day < new Date(new Date().setHours(0,0,0,0));
+    const isPast = day < new Date(new Date().setHours(0, 0, 0, 0));
     const isWeekend = day.getDay() === 0 || day.getDay() === 6;
-    
+
     if (isPast && !isWeekend) {
-        // If they joined after this day, don't mark as absent
-        if (data.user?.joiningDate && day < new Date(data.user.joiningDate)) {
-            return { type: 'not-joined', label: '-', color: 'bg-muted/50 text-muted-foreground border-transparent' };
-        }
-        return { type: 'unmarked', label: 'Absent', subLabel: 'No punch', color: 'bg-destructive/10 text-destructive border-destructive/20' };
+      // If they joined after this day, don't mark as absent
+      if (data.user?.joiningDate && day < new Date(data.user.joiningDate)) {
+        return { type: 'not-joined', label: '-', color: 'bg-muted/50 text-muted-foreground border-transparent' };
+      }
+      return { type: 'unmarked', label: 'Absent', subLabel: 'No punch', color: 'bg-destructive/10 text-destructive border-destructive/20' };
     }
 
     return null; // Future or weekend
@@ -115,26 +115,26 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
 
   const handleDayClick = (day: Date, status: any) => {
     if (!isAdmin || !selectedUser) return;
-    
+
     if (status?.type === 'holiday' && ['public', 'company'].includes(status.holidayType)) {
       toast.error('Cannot mark attendance on a Public or Company Holiday. It is a mandatory paid leave.');
       return;
     }
-    
+
     setSelectedDate(day);
     setIsEditModalOpen(true);
-    
+
     const attendance = data?.attendances?.find((a: any) => isSameDay(new Date(a.date), day));
     const leave = data?.leaves?.find((l: any) => {
       const from = new Date(l.fromDate);
       const to = new Date(l.toDate);
-      from.setHours(0,0,0,0);
-      to.setHours(0,0,0,0);
+      from.setHours(0, 0, 0, 0);
+      to.setHours(0, 0, 0, 0);
       const current = new Date(day);
-      current.setHours(0,0,0,0);
+      current.setHours(0, 0, 0, 0);
       return current >= from && current <= to;
     });
-    
+
     if (attendance) {
       setEditData({
         status: attendance.status,
@@ -189,15 +189,15 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
       const res = await fetch(`/api/admin/calendar/export?month=${monthStr}`);
       if (!res.ok) throw new Error('Failed to fetch export data');
       const exportData = await res.json();
-      
+
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Monthly Attendance');
-      
+
       const daysInThisMonth = eachDayOfInterval({
         start: startOfMonth(currentDate),
         end: endOfMonth(currentDate)
       });
-      
+
       const headerRow = worksheet.getRow(1);
       headerRow.getCell(1).value = 'Employee Name';
       worksheet.getColumn(1).width = 25;
@@ -207,26 +207,26 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
         worksheet.getColumn(idx + 2).width = 12;
       });
       headerRow.font = { bold: true };
-      
+
       exportData.users.forEach((user: any, userIdx: number) => {
         const row = worksheet.getRow(2 + userIdx);
         row.getCell(1).value = user.name;
-        
+
         daysInThisMonth.forEach((day, dayIdx) => {
           let status = '';
-          const currentDay = new Date(day).setHours(0,0,0,0);
-          const now = new Date().setHours(0,0,0,0);
-          
+          const currentDay = new Date(day).setHours(0, 0, 0, 0);
+          const now = new Date().setHours(0, 0, 0, 0);
+
           const isHoliday = exportData.holidays?.some((h: any) => isSameDay(new Date(h.date), day));
-          
+
           const leave = exportData.leaves?.find((l: any) => {
-            const from = new Date(l.fromDate).setHours(0,0,0,0);
-            const to = new Date(l.toDate).setHours(0,0,0,0);
+            const from = new Date(l.fromDate).setHours(0, 0, 0, 0);
+            const to = new Date(l.toDate).setHours(0, 0, 0, 0);
             return l.userId === user._id && currentDay >= from && currentDay <= to;
           });
-          
+
           const att = exportData.attendances?.find((a: any) => a.userId === user._id && isSameDay(new Date(a.date), day));
-          
+
           if (att) {
             if (att.status === 'present') status = 'Present';
             else if (att.status === 'half-day') status = 'Half Day';
@@ -241,20 +241,20 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
             status = 'Holiday';
           } else {
             if (day.getDay() === 0 || day.getDay() === 6) {
-              status = 'WO'; 
+              status = 'WO';
             } else if (currentDay > now) {
-              status = ''; 
-            } else if (user.joiningDate && currentDay < new Date(user.joiningDate).setHours(0,0,0,0)) {
+              status = '';
+            } else if (user.joiningDate && currentDay < new Date(user.joiningDate).setHours(0, 0, 0, 0)) {
               status = '-';
             } else {
               status = 'Absent';
             }
           }
-          
+
           row.getCell(dayIdx + 2).value = status;
         });
       });
-      
+
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
@@ -290,7 +290,7 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
 
         {isAdmin && (
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            <button 
+            <button
               onClick={handleExport}
               disabled={isExporting}
               className="flex items-center justify-center px-4 py-2 min-h-[44px] bg-secondary border border-border text-secondary-foreground rounded-xl hover:bg-secondary/80 transition-colors shadow-sm text-sm font-bold disabled:opacity-50 mr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -342,10 +342,10 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
                   const status = getDayStatus(day);
                   const isCurrentMonth = isSameMonth(day, currentDate);
                   const today = isToday(day);
-                  
+
                   return (
-                    <div 
-                      key={day.toString()} 
+                    <div
+                      key={day.toString()}
                       onClick={() => handleDayClick(day, status)}
                       className={clsx(
                         "min-h-[100px] sm:min-h-[120px] bg-card p-1.5 sm:p-2 transition-colors relative group",
@@ -363,7 +363,7 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
                           {format(day, 'd')}
                         </span>
                       </div>
-                      
+
                       {status && (
                         <div className={clsx("px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-md border text-xs", status.color)}>
                           <div className="font-semibold text-[11px] sm:text-xs truncate">{status.label}</div>
@@ -389,10 +389,10 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-card-foreground mb-1.5">Status</label>
-                <select 
+                <select
                   className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
                   value={editData.status}
-                  onChange={e => setEditData({...editData, status: e.target.value})}
+                  onChange={e => setEditData({ ...editData, status: e.target.value })}
                 >
                   <optgroup label="Attendance">
                     <option value="present">Present</option>
@@ -416,10 +416,10 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
                 <>
                   <div>
                     <label className="block text-sm font-bold text-card-foreground mb-1.5">Leave Duration</label>
-                    <select 
+                    <select
                       className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
                       value={editData.duration}
-                      onChange={e => setEditData({...editData, duration: e.target.value})}
+                      onChange={e => setEditData({ ...editData, duration: e.target.value })}
                     >
                       <option value="full_day">Full Day</option>
                       <option value="half_day">Half Day</option>
@@ -428,10 +428,10 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
                   {editData.duration === 'half_day' && (
                     <div>
                       <label className="block text-sm font-bold text-card-foreground mb-1.5">Half Day Session</label>
-                      <select 
+                      <select
                         className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
                         value={editData.halfDaySession}
-                        onChange={e => setEditData({...editData, halfDaySession: e.target.value})}
+                        onChange={e => setEditData({ ...editData, halfDaySession: e.target.value })}
                       >
                         <option value="first_half">First Half (Morning)</option>
                         <option value="second_half">Second Half (Afternoon)</option>
@@ -445,33 +445,33 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
                 <>
                   <div>
                     <label className="block text-sm font-bold text-card-foreground mb-1.5">Login Time</label>
-                    <input 
-                      type="time" 
+                    <input
+                      type="time"
                       className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
                       value={editData.loginTime}
-                      onChange={e => setEditData({...editData, loginTime: e.target.value})}
+                      onChange={e => setEditData({ ...editData, loginTime: e.target.value })}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-card-foreground mb-1.5">Logout Time</label>
-                    <input 
-                      type="time" 
+                    <input
+                      type="time"
                       className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
                       value={editData.logoutTime}
-                      onChange={e => setEditData({...editData, logoutTime: e.target.value})}
+                      onChange={e => setEditData({ ...editData, logoutTime: e.target.value })}
                     />
                   </div>
                 </>
               )}
             </div>
             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
-              <button 
+              <button
                 onClick={() => setIsEditModalOpen(false)}
                 className="px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors p-2 rounded-xl hover:bg-accent min-h-[44px]"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleSaveEdit}
                 disabled={isSaving}
                 className="px-6 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"

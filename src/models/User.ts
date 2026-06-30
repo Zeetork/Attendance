@@ -34,6 +34,20 @@ export interface IUser extends Document {
     paternityLeave: { total: number; available: number; taken: number };
     leaveWithoutPay: { taken: number };
   };
+  salaryDeductions?: {
+    esi: { enabled: boolean; amount: number; };
+    loan: {
+      enabled: boolean;
+      principalAmount: number;
+      totalMonths: number;
+      monthlyDeduction: number;
+      remainingMonths: number;
+      totalPaid: number;
+      startDate: Date | null;
+      endDate: Date | null;
+      completed: boolean;
+    };
+  };
 }
 
 const UserSchema: Schema = new Schema(
@@ -97,6 +111,23 @@ const UserSchema: Schema = new Schema(
       },
       leaveWithoutPay: {
         taken: { type: Number, default: 0 }
+      }
+    },
+    salaryDeductions: {
+      esi: {
+        enabled: { type: Boolean, default: false },
+        amount: { type: Number, default: 0 }
+      },
+      loan: {
+        enabled: { type: Boolean, default: false },
+        principalAmount: { type: Number, default: 0 },
+        totalMonths: { type: Number, default: 0 },
+        monthlyDeduction: { type: Number, default: 0 },
+        remainingMonths: { type: Number, default: 0 },
+        totalPaid: { type: Number, default: 0 },
+        startDate: { type: Date, default: null },
+        endDate: { type: Date, default: null },
+        completed: { type: Boolean, default: false }
       }
     }
   },

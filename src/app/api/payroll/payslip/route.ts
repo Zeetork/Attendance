@@ -103,14 +103,30 @@ export async function GET(req: NextRequest) {
             <tr>
               <td>Basic Salary</td>
               <td>${(payroll.monthlySalary || 0).toFixed(2)}</td>
-              <td>Leave / Absent</td>
-              <td>${(payroll.deductions || 0).toFixed(2)}</td>
+              <td>Absence (${payroll.deductionDays || 0} days)</td>
+              <td>${((payroll.deductions || payroll.deductionAmount || 0) - (payroll.salaryDeductionsSnapshot?.esi || 0) - (payroll.salaryDeductionsSnapshot?.loan || 0)).toFixed(2)}</td>
             </tr>
+            ${payroll.salaryDeductionsSnapshot?.esi ? `
+            <tr>
+              <td></td>
+              <td></td>
+              <td>ESI</td>
+              <td>${payroll.salaryDeductionsSnapshot.esi.toFixed(2)}</td>
+            </tr>
+            ` : ''}
+            ${payroll.salaryDeductionsSnapshot?.loan ? `
+            <tr>
+              <td></td>
+              <td></td>
+              <td>Loan</td>
+              <td>${payroll.salaryDeductionsSnapshot.loan.toFixed(2)}</td>
+            </tr>
+            ` : ''}
             <tr class="total-row">
               <td>Total Earnings</td>
               <td>${(payroll.monthlySalary || 0).toFixed(2)}</td>
               <td>Total Deductions</td>
-              <td>${(payroll.deductions || 0).toFixed(2)}</td>
+              <td>${(payroll.deductions || payroll.deductionAmount || 0).toFixed(2)}</td>
             </tr>
           </tbody>
         </table>

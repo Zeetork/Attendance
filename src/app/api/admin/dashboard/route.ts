@@ -40,6 +40,17 @@ export async function GET() {
        }
     });
 
+    // Loan Stats
+    const usersWithLoans = await User.find({ 'salaryDeductions.loan.enabled': true, 'salaryDeductions.loan.remainingMonths': { $gt: 0 }, isActive: true });
+    let activeLoansCount = usersWithLoans.length;
+    let totalMonthlyLoanDeduction = 0;
+    let totalLoanRecovery = 0;
+
+    usersWithLoans.forEach(emp => {
+      totalMonthlyLoanDeduction += emp.salaryDeductions?.loan?.monthlyDeduction || 0;
+      totalLoanRecovery += emp.salaryDeductions?.loan?.totalPaid || 0;
+    });
+
     // Recent Activities (latest attendances today)
     const recentAttendances = await Attendance.find({ date: { $gte: today } })
       .sort({ updatedAt: -1 })
@@ -81,7 +92,10 @@ export async function GET() {
         totalSLUsed,
         totalCLUsed,
         totalLWPUsed,
-        halfDayRequests
+        halfDayRequests,
+        activeLoansCount,
+        totalMonthlyLoanDeduction,
+        totalLoanRecovery
       },
       activities,
       leaveRequests,

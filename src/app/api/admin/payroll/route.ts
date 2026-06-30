@@ -129,9 +129,52 @@ export async function POST(req: NextRequest) {
 
       // Deduction = Absent Days + Leave Days (Assuming leaves are unpaid, per instruction "Deduction Days = Absent Days + Unpaid Leave Days")
       const deductionDays = absentDays + leaveDays;
-      const deductionAmount = deductionDays * perDaySalary;
-      const netSalary = monthlySalary - deductionAmount;
+      let deductionAmount = deductionDays * perDaySalary;
       const paidDays = totalCalendarDays - deductionDays;
+
+      // New: Salary Deductions
+      let esiDeduction = 0;
+      let loanDeduction = 0;
+
+      if (user.salaryDeductions?.esi?.enabled) {
+        esiDeduction = user.salaryDeductions.esi.amount || 0;
+      }
+
+      if (user.salaryDeductions?.loan?.enabled && user.salaryDeductions.loan.remainingMonths > 0) {
+        let isWithinDates = true;
+        
+        if (user.salaryDeductions.loan.startDate && user.salaryDeductions.loan.endDate) {
+           const payrollYearMonth = year * 100 + month; 
+           const startD = new Date(user.salaryDeductions.loan.startDate);
+           const endD = new Date(user.salaryDeductions.loan.endDate);
+           const startYM = startD.getFullYear() * 100 + (startD.getMonth() + 1);
+           const endYM = endD.getFullYear() * 100 + (endD.getMonth() + 1);
+           
+           if (payrollYearMonth < startYM || payrollYearMonth > endYM) {
+             isWithinDates = false;
+           }
+        }
+
+        if (isWithinDates) {
+          loanDeduction = user.salaryDeductions.loan.monthlyDeduction || 0;
+
+          // Process Loan
+          user.salaryDeductions.loan.remainingMonths -= 1;
+          user.salaryDeductions.loan.totalPaid += loanDeduction;
+
+          if (user.salaryDeductions.loan.remainingMonths <= 0) {
+            user.salaryDeductions.loan.completed = true;
+            user.salaryDeductions.loan.enabled = false;
+            user.salaryDeductions.loan.remainingMonths = 0;
+          }
+
+          user.markModified('salaryDeductions');
+          await user.save();
+        }
+      }
+
+      deductionAmount += esiDeduction + loanDeduction;
+      const netSalary = monthlySalary - deductionAmount;
 
       // Upsert payroll
       const payroll = await Payroll.findOneAndUpdate(
@@ -153,6 +196,10 @@ export async function POST(req: NextRequest) {
           netSalary,
           generatedAt: new Date(),
           companyId: activeCompanyId,
+          salaryDeductionsSnapshot: {
+            esi: esiDeduction,
+            loan: loanDeduction
+          },
           // Legacy fields for backward compatibility
           deductions: deductionAmount,
           finalSalary: netSalary

@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import { format, subMonths } from 'date-fns';
 import { Search, Download, PlayCircle, FileText, Loader2, User as UserIcon, Mail, X } from 'lucide-react';
 import * as ExcelJS from 'exceljs';
+import { useCompany } from '@/components/CompanyProvider';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -12,6 +13,7 @@ export default function PayrollClient() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const month = currentDate.getMonth() + 1;
   const year = currentDate.getFullYear();
+  const { activeCompany } = useCompany();
 
   const { data, error, isLoading, mutate } = useSWR(`/api/admin/payroll?month=${month}&year=${year}`, fetcher);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -354,9 +356,9 @@ export default function PayrollClient() {
                     <p className="text-muted-foreground print:text-neutral-500 mt-1 font-bold">{format(new Date(selectedPayslip.year, selectedPayslip.month - 1), 'MMMM yyyy')}</p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <h2 className="text-xl font-bold text-foreground print:text-neutral-900">ACME Corporation</h2>
-                    <p className="text-sm font-bold text-muted-foreground print:text-neutral-500">123 Business Avenue, Tech Park</p>
-                    <p className="text-sm font-bold text-muted-foreground print:text-neutral-500">contact@acme.corp | +1 234 567 890</p>
+                    <h2 className="text-xl font-bold text-foreground print:text-neutral-900">{activeCompany?.companyName || 'Company Name'}</h2>
+                    <p className="text-sm font-bold text-muted-foreground print:text-neutral-500">{activeCompany?.address || 'Company Address'}</p>
+                    <p className="text-sm font-bold text-muted-foreground print:text-neutral-500">{activeCompany?.email || 'email@company.com'} | {activeCompany?.phone || 'Phone Number'}</p>
                   </div>
                 </div>
 
@@ -429,14 +431,32 @@ export default function PayrollClient() {
                         <td className="px-4 py-3 font-bold text-card-foreground">Basic Salary</td>
                         <td className="px-4 py-3 text-right font-bold text-card-foreground">₹{(selectedPayslip.grossSalary || selectedPayslip.monthlySalary).toLocaleString()}</td>
                         <td className="px-4 py-3 font-bold text-card-foreground">Loss of Pay (Absent & Unpaid Leave)</td>
-                        <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{(selectedPayslip.deductionAmount ?? selectedPayslip.deductions).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{((selectedPayslip.deductionAmount ?? selectedPayslip.deductions) - (selectedPayslip.salaryDeductionsSnapshot?.esi || 0) - (selectedPayslip.salaryDeductionsSnapshot?.loan || 0)).toLocaleString()}</td>
                       </tr>
-                      <tr className="border-b border-border print:border-neutral-200">
-                        <td className="px-4 py-3"></td>
-                        <td className="px-4 py-3 text-right"></td>
-                        <td className="px-4 py-3"></td>
-                        <td className="px-4 py-3 text-right"></td>
-                      </tr>
+                      {selectedPayslip.salaryDeductionsSnapshot?.esi ? (
+                        <tr className="border-b border-border print:border-neutral-200">
+                          <td className="px-4 py-3"></td>
+                          <td className="px-4 py-3 text-right"></td>
+                          <td className="px-4 py-3 font-bold text-card-foreground">ESI Deduction</td>
+                          <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{selectedPayslip.salaryDeductionsSnapshot.esi.toLocaleString()}</td>
+                        </tr>
+                      ) : null}
+                      {selectedPayslip.salaryDeductionsSnapshot?.loan ? (
+                        <tr className="border-b border-border print:border-neutral-200">
+                          <td className="px-4 py-3"></td>
+                          <td className="px-4 py-3 text-right"></td>
+                          <td className="px-4 py-3 font-bold text-card-foreground">Loan Repayment</td>
+                          <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{selectedPayslip.salaryDeductionsSnapshot.loan.toLocaleString()}</td>
+                        </tr>
+                      ) : null}
+                      {!selectedPayslip.salaryDeductionsSnapshot?.esi && !selectedPayslip.salaryDeductionsSnapshot?.loan && (
+                        <tr className="border-b border-border print:border-neutral-200">
+                          <td className="px-4 py-3"></td>
+                          <td className="px-4 py-3 text-right"></td>
+                          <td className="px-4 py-3"></td>
+                          <td className="px-4 py-3 text-right"></td>
+                        </tr>
+                      )}
                     </tbody>
                     <tfoot>
                       <tr className="bg-muted/30 print:bg-neutral-50 font-bold">

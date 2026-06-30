@@ -149,6 +149,12 @@ export default function ProfileClient() {
                 Personal Details
               </button>
               <button 
+                className={`flex-1 py-4 text-sm font-bold transition-colors ${activeTab === 'salary' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                onClick={() => setActiveTab('salary')}
+              >
+                Salary
+              </button>
+              <button 
                 className={`flex-1 py-4 text-sm font-bold transition-colors ${activeTab === 'security' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setActiveTab('security')}
               >
@@ -232,6 +238,71 @@ export default function ProfileClient() {
                       </button>
                     </div>
                   )}
+                </div>
+              )}
+
+              {activeTab === 'salary' && (
+                <div className="space-y-5 animate-in fade-in">
+                  <h3 className="text-sm font-bold text-card-foreground border-b border-border pb-2">Salary Deductions</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* ESI Card */}
+                    <div className="bg-background border border-border p-4 rounded-xl flex flex-col justify-between">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="text-sm font-bold text-card-foreground">ESI (Employee State Insurance)</div>
+                        <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${user.salaryDeductions?.esi?.enabled ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
+                          {user.salaryDeductions?.esi?.enabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-bold text-muted-foreground mb-1">Fixed Deduction Amount (₹)</label>
+                        <div className="text-lg font-bold text-card-foreground">
+                          ₹ {user.salaryDeductions?.esi?.amount || 0}
+                          <span className="text-[10px] text-muted-foreground font-normal ml-1">/ month</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Loan Card */}
+                    <div className="bg-background border border-border p-4 rounded-xl flex flex-col justify-between">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="text-sm font-bold text-card-foreground">Company Loan</div>
+                        <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${user.salaryDeductions?.loan?.enabled ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
+                          {user.salaryDeductions?.loan?.enabled ? 'Active' : (user.salaryDeductions?.loan?.completed ? 'Completed' : 'Disabled')}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Principal</div>
+                          <div className="text-sm font-bold text-card-foreground">₹ {user.salaryDeductions?.loan?.principalAmount || 0}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Total Months</div>
+                          <div className="text-sm font-bold text-card-foreground">{user.salaryDeductions?.loan?.totalMonths || 0}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-muted/50 rounded-lg p-2 mt-auto">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-bold text-muted-foreground">Monthly:</span>
+                          <span className="text-sm font-bold text-card-foreground">₹ {(user.salaryDeductions?.loan?.monthlyDeduction || 0).toFixed(0)}</span>
+                        </div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-bold text-muted-foreground">Remaining:</span>
+                          <span className="text-xs font-bold text-card-foreground">{user.salaryDeductions?.loan?.remainingMonths || 0} Months</span>
+                        </div>
+                        {user.salaryDeductions?.loan?.startDate && user.salaryDeductions?.loan?.endDate && (
+                          <div className="flex justify-between items-center pt-1 border-t border-border mt-1">
+                            <span className="text-[10px] text-muted-foreground">{new Date(user.salaryDeductions.loan.startDate).toLocaleDateString()}</span>
+                            <span className="text-[10px] text-muted-foreground">to</span>
+                            <span className="text-[10px] text-muted-foreground">{new Date(user.salaryDeductions.loan.endDate).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 

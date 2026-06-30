@@ -57,7 +57,7 @@ export default function DashboardLayoutClient({ children }: { children: ReactNod
 
   return (
     <div
-      className="flex h-[100dvh] overflow-hidden bg-background"
+      className="flex h-[100dvh] overflow-hidden bg-background print:h-auto print:block print:overflow-visible print:bg-white"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -74,20 +74,22 @@ export default function DashboardLayoutClient({ children }: { children: ReactNod
       <div className={`
         fixed inset-y-0 left-0 z-50 transform lg:transform-none lg:static lg:flex
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        transition duration-300 ease-in-out
+        transition duration-300 ease-in-out print:hidden
       `}>
         <Sidebar onClose={() => setSidebarOpen(false)} />
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-col flex-1 w-0 overflow-hidden min-w-0">
-        <TopNav
-          onMenuClick={() => setSidebarOpen(true)}
-          onNotificationClick={() => setNotificationOpen(true)}
-        />
-        <main className="flex-1 relative overflow-y-auto focus:outline-none scroll-smooth">
-          <div className="py-4 md:py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+      <div className="flex flex-col flex-1 w-0 overflow-hidden min-w-0 print:block print:overflow-visible print:h-auto print:w-full">
+        <div className="print:hidden">
+          <TopNav
+            onMenuClick={() => setSidebarOpen(true)}
+            onNotificationClick={() => setNotificationOpen(true)}
+          />
+        </div>
+        <main className="flex-1 relative overflow-y-auto focus:outline-none scroll-smooth print:static print:overflow-visible print:h-auto print:block">
+          <div className="py-4 md:py-6 print:py-0 print:p-0">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 print:px-0 print:max-w-none">
               {children}
             </div>
           </div>

@@ -24,6 +24,10 @@ export interface IPayroll extends Document {
   finalSalary?: number;
   payslipUrl?: string;
   generatedAt: Date;
+  salaryDeductionsSnapshot?: {
+    esi: number;
+    loan: number;
+  };
 }
 
 const PayrollSchema: Schema = new Schema(
@@ -51,6 +55,10 @@ const PayrollSchema: Schema = new Schema(
     finalSalary: { type: Number },
     payslipUrl: { type: String },
     generatedAt: { type: Date, default: Date.now },
+    salaryDeductionsSnapshot: {
+      esi: { type: Number, default: 0 },
+      loan: { type: Number, default: 0 }
+    }
   },
   { timestamps: true }
 );
