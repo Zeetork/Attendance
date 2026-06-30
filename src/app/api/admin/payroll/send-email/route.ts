@@ -3,9 +3,12 @@ import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
 import Payroll from '@/models/Payroll';
 import User from '@/models/User';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 import { format } from 'date-fns';
 import { sendEmail } from '@/lib/emailService';
+import { generatePayslipHtml } from '@/lib/payslipTemplate';
+import Company from '@/models/Company';
 
 export async function POST(req: NextRequest) {
   let browser;
@@ -37,267 +40,17 @@ export async function POST(req: NextRequest) {
     const user = payroll.userId as any;
     const monthName = format(new Date(payroll.year, payroll.month - 1), 'MMMM yyyy');
 
+    const company = await Company.findById(payroll.companyId) || null;
+    
     // ================= HTML =================
-    const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <title>Payslip - ${monthName}</title>
-
-  <style>
-    body {
-      font-family: 'Inter', Arial, sans-serif;
-      background: #f4f6f9;
-      padding: 30px;
-      color: #1f2937;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: #ffffff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    }
-
-    /* HEADER */
-    .header {
-      background: linear-gradient(135deg, #2563eb, #1e40af);
-      color: white;
-      padding: 25px 30px;
-      text-align: center;
-    }
-
-    .header .logo {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    .header .title {
-      margin-top: 8px;
-      font-size: 16px;
-      opacity: 0.9;
-    }
-
-    /* BODY */
-    .content {
-      padding: 25px 30px;
-    }
-
-    .section {
-      margin-bottom: 20px;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .section-header {
-      background: #f9fafb;
-      padding: 12px 15px;
-      font-weight: 600;
-      font-size: 14px;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .item {
-      padding: 12px 15px;
-      border-bottom: 1px solid #f1f5f9;
-      font-size: 14px;
-    }
-
-    .label {
-      font-size: 12px;
-      color: #6b7280;
-      margin-bottom: 3px;
-    }
-
-    .value {
-      font-weight: 600;
-    }
-
-    /* SALARY TABLE */
-    .salary-box {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-    }
-
-    .card {
-      border-radius: 10px;
-      padding: 15px;
-      border: 1px solid #e5e7eb;
-      background: #fff;
-    }
-
-    .earnings {
-      border-left: 4px solid #22c55e;
-    }
-
-    .deductions {
-      border-left: 4px solid #ef4444;
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      margin: 8px 0;
-      font-size: 14px;
-    }
-
-    .row span:first-child {
-      color: #6b7280;
-    }
-
-    .row span:last-child {
-      font-weight: 600;
-    }
-
-    /* NET PAY */
-    .net-pay {
-      margin-top: 20px;
-      padding: 18px;
-      background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-      border-left: 5px solid #22c55e;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: 700;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .net-pay span {
-      color: #065f46;
-    }
-
-    /* FOOTER */
-    .footer {
-      text-align: center;
-      font-size: 12px;
-      color: #9ca3af;
-      padding: 20px;
-      border-top: 1px solid #eee;
-      margin-top: 20px;
-    }
-
-    @media print {
-      body {
-        background: white;
-        padding: 0;
-      }
-      .container {
-        box-shadow: none;
-      }
-    }
-  </style>
-</head>
-
-<body>
-
-<div class="container">
-
-  <!-- HEADER -->
-  <div class="header">
-    <div class="logo">HRMS System</div>
-    <div class="title">Payslip for ${monthName}</div>
-  </div>
-
-  <div class="content">
-
-    <!-- EMPLOYEE INFO -->
-    <div class="section">
-      <div class="section-header">Employee Information</div>
-      <div class="grid">
-
-        <div class="item">
-          <div class="label">Name</div>
-          <div class="value">${user.name}</div>
-        </div>
-
-        <div class="item">
-          <div class="label">Employee ID</div>
-          <div class="value">${user.employeeId}</div>
-        </div>
-
-        <div class="item">
-          <div class="label">Department</div>
-          <div class="value">${user.department}</div>
-        </div>
-
-        <div class="item">
-          <div class="label">Designation</div>
-          <div class="value">${user.designation}</div>
-        </div>
-
-        <div class="item">
-          <div class="label">Working Days</div>
-          <div class="value">${payroll.totalWorkingDays}</div>
-        </div>
-
-        <div class="item">
-          <div class="label">Present Days</div>
-          <div class="value">${payroll.presentDays}</div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- SALARY -->
-    <div class="section">
-      <div class="section-header">Salary Details</div>
-
-      <div class="salary-box">
-
-        <div class="card earnings">
-          <div class="row"><span>Basic Salary</span><span>₹${(payroll.monthlySalary || 0).toFixed(2)}</span></div>
-          <div class="row"><span>Allowances</span><span>₹0.00</span></div>
-          <div class="row"><span>Bonus</span><span>₹0.00</span></div>
-        </div>
-
-        <div class="card deductions">
-          <div class="row"><span>Absence</span><span>₹${(payroll.deductions || 0).toFixed(2)}</span></div>
-          <div class="row"><span>Tax</span><span>₹0.00</span></div>
-          <div class="row"><span>Other</span><span>₹0.00</span></div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- NET PAY -->
-    <div class="net-pay">
-      <span>Net Payable</span>
-      <span>₹${(payroll.finalSalary || 0).toFixed(2)}</span>
-    </div>
-
-  </div>
-
-  <div class="footer">
-    This is a computer generated payslip and does not require signature.
-  </div>
-
-</div>
-
-</body>
-</html>
-`;
+    const htmlContent = generatePayslipHtml(payroll, user, company);
 
     // ================= PUPPETEER =================
     browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-      ],
+      args: chromium.args,
+      defaultViewport: (chromium as any).defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: (chromium as any).headless,
     });
 
     const page = await browser.newPage();

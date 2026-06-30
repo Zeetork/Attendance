@@ -1,16 +1,19 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 
 export async function generatePDF(htmlContent: string): Promise<Buffer> {
   const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: chromium.args,
+      defaultViewport: (chromium as any).defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: (chromium as any).headless,
   });
 
   const page = await browser.newPage();
   
   // Set content and wait for network idle to ensure fonts/images load
   await page.setContent(htmlContent, {
-    waitUntil: 'networkidle0' as any,
+    waitUntil: 'domcontentloaded',
   });
 
   const pdfBuffer = await page.pdf({
