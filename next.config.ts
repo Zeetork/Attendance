@@ -19,14 +19,14 @@ const nextConfig: NextConfig = {
     "@sparticuz/chromium",
     "puppeteer-core",
   ],
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./node_modules/@sparticuz/chromium/bin/**/*'],
+  },
   experimental: {
     serverComponentsExternalPackages: [
       "@sparticuz/chromium",
       "puppeteer-core",
     ],
-    outputFileTracingIncludes: {
-      '/api/**/*': ['./node_modules/@sparticuz/chromium/bin/**/*'],
-    },
   },
 };
 
