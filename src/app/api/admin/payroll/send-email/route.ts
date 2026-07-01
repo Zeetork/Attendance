@@ -49,8 +49,12 @@ export async function POST(req: NextRequest) {
     const htmlContent = generatePayslipHtml(payroll, user, company);
 
     // ================= PUPPETEER =================
+    const isLocal = process.env.NODE_ENV === 'development' || !process.env.VERCEL_ENV;
+    
     browser = await puppeteer.launch({
-      executablePath: await chromium.executablePath(),
+      executablePath: isLocal 
+        ? await chromium.executablePath() 
+        : await chromium.executablePath('https://github.com/Sparticuz/chromium/releases/download/v131.0.0/chromium-v131.0.0-pack.tar'),
 
       args: [
         ...chromium.args,
