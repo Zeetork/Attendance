@@ -3,11 +3,9 @@ import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
 import Payroll from '@/models/Payroll';
 import User from '@/models/User';
-import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
 import { format } from 'date-fns';
 import Company from '@/models/Company';
-import { generatePayslipHtml } from '@/lib/payslipTemplate';
+import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 
 export async function GET(req: NextRequest) {
   try {
@@ -44,25 +42,8 @@ export async function GET(req: NextRequest) {
     const monthName = format(new Date(payroll.year, payroll.month - 1), 'MMMM yyyy');
 
     const company = await Company.findById(payroll.companyId) || null;
-    const htmlContent = generatePayslipHtml(payroll, user, company);
-
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: (chromium as any).defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: (chromium as any).headless,
-    });
     
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
-    
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
-    });
-
-    await browser.close();
+    const pdfBuffer = await generatePayslipPdf(payroll, user, company);
 
     return new NextResponse(pdfBuffer as any, {
       status: 200,

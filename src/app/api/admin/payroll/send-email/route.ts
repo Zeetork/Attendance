@@ -3,19 +3,15 @@ import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
 import Payroll from '@/models/Payroll';
 import User from '@/models/User';
-import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
 import { format } from 'date-fns';
 import { sendEmail } from '@/lib/emailService';
-import { generatePayslipHtml } from '@/lib/payslipTemplate';
+import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 import Company from '@/models/Company';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
-  let browser;
-
   try {
     // ================= AUTH =================
     const session = await auth();
@@ -41,54 +37,16 @@ export async function POST(req: NextRequest) {
     }
 
     const user = payroll.userId as any;
+    
+    if (!user.email) {
+      return NextResponse.json({ error: 'Employee email not found' }, { status: 400 });
+    }
+    
     const monthName = format(new Date(payroll.year, payroll.month - 1), 'MMMM yyyy');
-
     const company = await Company.findById(payroll.companyId) || null;
 
-    // ================= HTML =================
-    const htmlContent = generatePayslipHtml(payroll, user, company);
-
-    // ================= PUPPETEER =================
-    const isLocal = process.env.NODE_ENV === 'development' || !process.env.VERCEL_ENV;
-    
-    browser = await puppeteer.launch({
-      executablePath: isLocal 
-        ? await chromium.executablePath() 
-        : await chromium.executablePath('https://github.com/Sparticuz/chromium/releases/download/v131.0.0/chromium-v131.0.0-pack.tar'),
-
-      args: [
-        ...chromium.args,
-        '--disable-dev-shm-usage',
-        '--no-sandbox',
-      ],
-
-      headless: true,
-
-      defaultViewport: {
-        width: 1280,
-        height: 1600,
-      },
-    });
-
-    const page = await browser.newPage();
-
-    await page.setContent(htmlContent, {
-      waitUntil: 'load',
-    });
-
-    await page.emulateMediaType('screen');
-
-    await page.evaluate(async () => {
-      if (document.fonts?.ready) {
-        await document.fonts.ready;
-      }
-    });
-
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      preferCSSPageSize: true,
-    });
+    // ================= GENERATE PDF =================
+    const pdfBuffer = await generatePayslipPdf(payroll, user, company);
 
     // ================= VALIDATION =================
     if (!pdfBuffer || pdfBuffer.length < 1000) {
@@ -126,7 +84,5 @@ export async function POST(req: NextRequest) {
       { error: err.message || 'Internal Server Error' },
       { status: 500 }
     );
-  } finally {
-    if (browser) await browser.close();
   }
 }
