@@ -10,6 +10,9 @@ import { sendEmail } from '@/lib/emailService';
 import { generatePayslipHtml } from '@/lib/payslipTemplate';
 import Company from '@/models/Company';
 
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   let browser;
 
@@ -41,29 +44,41 @@ export async function POST(req: NextRequest) {
     const monthName = format(new Date(payroll.year, payroll.month - 1), 'MMMM yyyy');
 
     const company = await Company.findById(payroll.companyId) || null;
-    
+
     // ================= HTML =================
     const htmlContent = generatePayslipHtml(payroll, user, company);
 
     // ================= PUPPETEER =================
     browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: (chromium as any).defaultViewport,
       executablePath: await chromium.executablePath(),
-      headless: (chromium as any).headless,
+
+      args: [
+        ...chromium.args,
+        '--disable-dev-shm-usage',
+        '--no-sandbox',
+      ],
+
+      headless: true,
+
+      defaultViewport: {
+        width: 1280,
+        height: 1600,
+      },
     });
 
     const page = await browser.newPage();
 
     await page.setContent(htmlContent, {
-      waitUntil: 'domcontentloaded',
+      waitUntil: 'load',
     });
 
-    // IMPORTANT: ensure fonts are loaded
-    await page.evaluate(() => document.fonts?.ready);
+    await page.emulateMediaType('screen');
 
-    // safety delay for rendering
-    await new Promise((r) => setTimeout(r, 1200));
+    await page.evaluate(async () => {
+      if (document.fonts?.ready) {
+        await document.fonts.ready;
+      }
+    });
 
     const pdfBuffer = await page.pdf({
       format: 'A4',
