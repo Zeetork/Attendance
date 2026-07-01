@@ -4,6 +4,7 @@ import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
 import { toast } from 'react-hot-toast';
 import { FileText, Plus, Trash2, Edit } from 'lucide-react';
+import { api } from '@/services/api';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -106,7 +107,7 @@ export default function TemplatesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this template?')) return;
     try {
-      const res = await fetch(`/api/letters/templates/${id}`, { method: 'DELETE' });
+      const res = await api(`/api/letters/templates/${id}`, { method: 'DELETE' });
       if (res.ok) {
         toast.success('Template deleted');
         mutate('/api/letters/templates');

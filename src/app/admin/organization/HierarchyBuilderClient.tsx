@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Network, User as UserIcon, ChevronDown, ChevronRight, GripVertical, Search, Loader2, Menu, X } from 'lucide-react';
 import clsx from 'clsx';
+import { api } from '@/services/api';
 
 interface EmployeeNode {
   _id: string;
@@ -23,7 +24,7 @@ export default function HierarchyBuilderClient() {
   const fetchTree = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/hierarchy/tree');
+      const res = await api('/api/hierarchy/tree');
       const json = await res.json();
       if (json.success) {
         setTree(json.data);
@@ -44,7 +45,7 @@ export default function HierarchyBuilderClient() {
     
     // Optimistically update UI or just refetch. We'll refetch for simplicity and correctness.
     try {
-      const res = await fetch('/api/hierarchy/update-manager', {
+      const res = await api('/api/hierarchy/update-manager', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ employeeId, reportsTo: newManagerId }),

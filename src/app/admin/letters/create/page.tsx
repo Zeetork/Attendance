@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { Mail, FileText, CheckCircle, Search, Users } from 'lucide-react';
 import useSWR from 'swr';
 import { format } from 'date-fns';
+import { api } from '@/services/api';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -157,7 +158,7 @@ export default function CreateLetterPage() {
         }),
       };
 
-      const res = await fetch('/api/letters/bulk-send', {
+      const res = await api('/api/letters/bulk-send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

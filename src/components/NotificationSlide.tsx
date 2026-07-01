@@ -5,6 +5,7 @@ import { X, Bell, Check, Trash2, Loader2, Circle } from 'lucide-react';
 import useSWR from 'swr';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
+import { api } from '@/services/api';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -23,7 +24,7 @@ export default function NotificationSlide({ isOpen, onClose }: NotificationSlide
   const markAllRead = async () => {
     setMarking(true);
     try {
-      await fetch('/api/notifications?action=mark-all-read', { method: 'PUT' });
+      await api('/api/notifications?action=mark-all-read', { method: 'PUT' });
       mutate();
     } finally {
       setMarking(false);
@@ -32,7 +33,7 @@ export default function NotificationSlide({ isOpen, onClose }: NotificationSlide
 
   const markAsRead = async (id: string) => {
     try {
-      await fetch('/api/notifications', {
+      await api('/api/notifications', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })

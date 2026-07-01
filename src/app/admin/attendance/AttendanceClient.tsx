@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import { format } from 'date-fns';
 import { Search, Download, Filter, User, Edit, X, Loader2 } from 'lucide-react';
 import * as ExcelJS from 'exceljs';
+import { api } from '@/services/api';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -74,7 +75,7 @@ export default function AttendanceClient() {
     
     setIsUpdating(true);
     try {
-      const response = await fetch(`/api/admin/attendance/${editingRecord._id}`, {
+      const response = await api(`/api/admin/attendance/${editingRecord._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editFormData),

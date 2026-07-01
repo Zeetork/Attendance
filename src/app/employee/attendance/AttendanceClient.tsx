@@ -6,6 +6,7 @@ import { format, subMonths, isSameDay } from 'date-fns';
 import { Clock, Calendar as CalendarIcon, Filter, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 
 import { toast } from 'react-hot-toast';
+import { api } from '@/services/api';
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -64,7 +65,7 @@ export default function EmployeeAttendanceClient() {
         requestedCheckOut = new Date(`${requestDate}T${reqCheckOut}:00`);
       }
 
-      const res = await fetch('/api/requests/submit', {
+      const res = await api('/api/requests/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import useSWR from 'swr';
 import { Camera, Save, User, Lock, Upload } from 'lucide-react';
 import { format } from 'date-fns';
+import { api } from '@/services/api';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -58,7 +59,7 @@ export default function ProfileClient() {
     setMessage({ text: '', type: '' });
     
     try {
-      const res = await fetch('/api/profile', {
+      const res = await api('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

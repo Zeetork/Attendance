@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { mutate } from 'swr';
+import { api } from '@/services/api';
 
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, isLoading }: any) => {
   if (!isOpen) return null;
@@ -51,7 +52,7 @@ export default function AttendanceButtons() {
     const toastId = toast.loading(`${confirmAction === 'check-in' ? 'Checking in' : 'Checking out'}...`);
 
     try {
-      const res = await fetch(`/api/attendance/${confirmAction}`, {
+      const res = await api(`/api/attendance/${confirmAction}`, {
         method: 'POST',
       });
 

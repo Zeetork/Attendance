@@ -20,6 +20,7 @@ import { ChevronLeft, ChevronRight, Loader2, Calendar as CalendarIcon, User as U
 import clsx from 'clsx';
 import * as ExcelJS from 'exceljs';
 import { toast } from 'react-hot-toast';
+import { api } from '@/services/api';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -160,7 +161,7 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
     if (!selectedDate || !selectedUser) return;
     setIsSaving(true);
     try {
-      const res = await fetch('/api/admin/attendance/override', {
+      const res = await api('/api/admin/attendance/override', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -186,7 +187,7 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const res = await fetch(`/api/admin/calendar/export?month=${monthStr}`);
+      const res = await api(`/api/admin/calendar/export?month=${monthStr}`);
       if (!res.ok) throw new Error('Failed to fetch export data');
       const exportData = await res.json();
 

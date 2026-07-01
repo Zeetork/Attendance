@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import { format } from 'date-fns';
 import { Plus, X, CheckCircle, XCircle, Clock, Loader2, Calendar } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { api } from '@/services/api';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -28,7 +29,7 @@ export default function EmployeeLeavesClient() {
     setIsSubmitting(true);
     
     try {
-      const res = await fetch('/api/leaves/apply', {
+      const res = await api('/api/leaves/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

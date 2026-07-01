@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import { format } from 'date-fns';
 import { CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { api } from '@/services/api';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -42,7 +43,7 @@ export default function ApprovalClient() {
         }
       }
 
-      const res = await fetch('/api/approvals/action', {
+      const res = await api('/api/approvals/action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

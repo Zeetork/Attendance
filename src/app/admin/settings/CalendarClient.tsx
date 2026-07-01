@@ -9,6 +9,7 @@ import {
 } from 'date-fns';
 import { ChevronLeft, ChevronRight, Plus, X, Calendar as CalendarIcon, Loader2, Download, Upload } from 'lucide-react';
 import * as ExcelJS from 'exceljs';
+import { api } from '@/services/api';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -106,7 +107,7 @@ export default function CalendarClient() {
     if (!editingHoliday || !confirm('Delete this holiday?')) return;
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/admin/holidays/${editingHoliday._id}`, {
+      const response = await api(`/api/admin/holidays/${editingHoliday._id}`, {
         method: 'DELETE'
       });
       if (!response.ok) throw new Error('Failed to delete');

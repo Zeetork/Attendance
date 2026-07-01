@@ -4,6 +4,7 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { format } from 'date-fns';
 import { Search, CheckCircle, XCircle, Clock, User as UserIcon } from 'lucide-react';
+import { api } from '@/services/api';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -14,7 +15,7 @@ export default function LeavesClient() {
   
   const handleStatusUpdate = async (id: string, status: string) => {
     try {
-      const res = await fetch(`/api/admin/leaves/${id}`, {
+      const res = await api(`/api/admin/leaves/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })

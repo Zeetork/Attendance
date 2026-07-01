@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { mutate } from 'swr';
+import { api } from '@/services/api';
 
 interface Employee {
   employeeId: string;
@@ -126,7 +127,7 @@ export default function ReportingStructure({ manager, currentUser, subordinates,
     const toastId = toast.loading(`${confirmAction === 'check-in' ? 'Checking in' : 'Checking out'}...`);
 
     try {
-      const res = await fetch(`/api/attendance/${confirmAction}`, {
+      const res = await api(`/api/attendance/${confirmAction}`, {
         method: 'POST',
       });
 

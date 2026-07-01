@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Search, Edit, Trash2, X, Loader2, Camera, User as UserIcon, ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { api } from '@/services/api';
 
 export default function EmployeeClient({ initialEmployees, shifts }: { initialEmployees: any[], shifts: any[] }) {
   const router = useRouter();
@@ -158,7 +159,7 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
     if (!confirm('Are you sure you want to delete this employee?')) return;
     
     try {
-      const response = await fetch(`/api/admin/employees/${id}`, {
+      const response = await api(`/api/admin/employees/${id}`, {
         method: 'DELETE',
       });
 
@@ -189,7 +190,7 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
   const handleSaveBalance = async (employeeId: string) => {
     setIsSavingBalance(true);
     try {
-      const response = await fetch(`/api/admin/employees/${employeeId}/leave-balance`, {
+      const response = await api(`/api/admin/employees/${employeeId}/leave-balance`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(balanceForm),
@@ -246,7 +247,7 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
   const handleSaveDeductions = async (employeeId: string) => {
     setIsSavingDeductions(true);
     try {
-      const response = await fetch(`/api/admin/employees/${employeeId}/salary-deductions`, {
+      const response = await api(`/api/admin/employees/${employeeId}/salary-deductions`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(deductionsForm),

@@ -6,6 +6,7 @@ import { format, subMonths } from 'date-fns';
 import { Search, Download, PlayCircle, FileText, Loader2, User as UserIcon, Mail, X } from 'lucide-react';
 import * as ExcelJS from 'exceljs';
 import { useCompany } from '@/components/CompanyProvider';
+import { api } from '@/services/api';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -36,7 +37,7 @@ export default function PayrollClient() {
   const handleSendEmail = async (payrollId: string) => {
     setSendingEmail(payrollId);
     try {
-      const res = await fetch('/api/admin/payroll/send-email', {
+      const res = await api('/api/admin/payroll/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ payrollId })
@@ -64,7 +65,7 @@ export default function PayrollClient() {
     for (let i = 0; i < payrolls.length; i++) {
       setBulkProgress({ current: i + 1, total: payrolls.length });
       try {
-        const res = await fetch('/api/admin/payroll/send-email', {
+        const res = await api('/api/admin/payroll/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ payrollId: payrolls[i]._id })
@@ -105,7 +106,7 @@ export default function PayrollClient() {
     if (!confirm(`Generate payroll for ${format(currentDate, 'MMMM yyyy')}?`)) return;
     setIsGenerating(true);
     try {
-      const res = await fetch('/api/admin/payroll', {
+      const res = await api('/api/admin/payroll', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ month, year })

@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import useSWR from 'swr';
 import { useRouter } from 'next/navigation';
+import { api } from '@/services/api';
 
 interface Company {
   _id: string;
@@ -42,7 +43,7 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
         if (found) {
           setActiveCompany(found);
           // Sync backend cookie just in case
-          fetch('/api/companies/switch', {
+          api('/api/companies/switch', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ companyId: storedId })
@@ -54,7 +55,7 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
       // Default to first company
       setActiveCompany(data.companies[0]);
       localStorage.setItem('activeCompanyId', data.companies[0]._id);
-      fetch('/api/companies/switch', {
+      api('/api/companies/switch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: data.companies[0]._id })
@@ -64,7 +65,7 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
 
   const switchCompany = async (companyId: string) => {
     try {
-      const res = await fetch('/api/companies/switch', {
+      const res = await api('/api/companies/switch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId })
