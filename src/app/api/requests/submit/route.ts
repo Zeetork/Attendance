@@ -7,6 +7,7 @@ import OvertimeRequest from '@/models/OvertimeRequest';
 import WFHRequest from '@/models/WFHRequest';
 import User from '@/models/User';
 import Notification from '@/models/Notification';
+import Attendance from '@/models/Attendance';
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,10 +39,32 @@ export async function POST(req: NextRequest) {
         request = await MissPunch.create({ ...data, requestType: data.requestTypeSubType, employeeId: session.user.id, approverId, status: 'pending' });
         notificationMsg = `${user?.name} has submitted a Miss Punch request.`;
         break;
-      case 'ATTENDANCE_CORRECTION':
-        request = await AttendanceCorrection.create({ ...data, employeeId: session.user.id, approverId, status: 'pending' });
+      case 'ATTENDANCE_CORRECTION': {
+        let finalAttendanceId = data.attendanceId;
+        
+        if (!finalAttendanceId) {
+          // Find the attendance record for this user on the selected date
+          // The data.date might be '2026-07-01' so we can match it
+          const startOfDay = new Date(data.date);
+          startOfDay.setHours(0, 0, 0, 0);
+          const endOfDay = new Date(data.date);
+          endOfDay.setHours(23, 59, 59, 999);
+          
+          const attendance = await Attendance.findOne({
+            userId: session.user.id,
+            date: { $gte: startOfDay, $lte: endOfDay }
+          });
+          
+          if (!attendance) {
+            return NextResponse.json({ error: 'No attendance record found for this date. Please submit a Miss Punch request instead.' }, { status: 400 });
+          }
+          finalAttendanceId = attendance._id;
+        }
+
+        request = await AttendanceCorrection.create({ ...data, attendanceId: finalAttendanceId, employeeId: session.user.id, approverId, status: 'pending' });
         notificationMsg = `${user?.name} has submitted an Attendance Correction request.`;
         break;
+      }
       case 'OVERTIME':
         request = await OvertimeRequest.create({ ...data, employeeId: session.user.id, approverId, status: 'pending' });
         notificationMsg = `${user?.name} has submitted an Overtime request.`;

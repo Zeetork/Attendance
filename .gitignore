@@ -45,3 +45,26 @@ next-env.d.ts
 
 
 /scripts
+
+# capacitor generated build output
+
+android/app/build/
+android/.gradle/
+
+ios/build/
+ios/DerivedData/
+
+# Android Studio
+
+.idea/
+*.iml
+
+# Xcode
+
+*.xcuserstate
+xcuserdata/
+
+/android
+/ios
+/icons
+/resources

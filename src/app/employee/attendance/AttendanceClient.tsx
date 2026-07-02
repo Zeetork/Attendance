@@ -104,7 +104,16 @@ export default function EmployeeAttendanceClient() {
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button 
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setAttendanceId(null);
+              setRequestDate('');
+              setRequestType('MISS_PUNCH');
+              setSubType('Forgot Check In');
+              setReqCheckIn('');
+              setReqCheckOut('');
+              setReason('');
+              setIsModalOpen(true);
+            }}
             className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold rounded-xl transition-all shadow-lg shadow-primary/20 whitespace-nowrap min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Request Correction
