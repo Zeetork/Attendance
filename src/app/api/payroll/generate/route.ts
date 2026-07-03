@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    let usersQuery: any = { role: { $in: ['employee', 'manager', 'team_head', 'department_head'] }, isActive: true };
+    let usersQuery: any = { role: { $in: ['employee', 'intern', 'manager', 'team_head', 'department_head'] }, isActive: true };
     if (userId) {
       usersQuery._id = userId;
     }

@@ -69,8 +69,14 @@ export async function POST(req: NextRequest) {
 
       if (status === 'Restricted Holiday') {
         const Holiday = (await import('@/models/Holiday')).default;
+        
+        const startOfDay = new Date(attendanceDate);
+        startOfDay.setHours(0,0,0,0);
+        const endOfDay = new Date(attendanceDate);
+        endOfDay.setHours(23,59,59,999);
+
         const isRH = await Holiday.exists({
-          date: attendanceDate,
+          date: { $gte: startOfDay, $lte: endOfDay },
           holidayType: 'restricted'
         });
         if (!isRH) {
@@ -244,8 +250,14 @@ export async function POST(req: NextRequest) {
       const isWeeklyOff = shift && (!shift.workingDays || !shift.workingDays.includes(dayName));
       
       const Holiday = (await import('@/models/Holiday')).default;
+      
+      const startOfAttendanceDay = new Date(attendanceDate);
+      startOfAttendanceDay.setHours(0,0,0,0);
+      const endOfAttendanceDay = new Date(attendanceDate);
+      endOfAttendanceDay.setHours(23,59,59,999);
+
       const holiday = await Holiday.findOne({
-        date: attendanceDate,
+        date: { $gte: startOfAttendanceDay, $lte: endOfAttendanceDay },
         holidayType: { $in: ['public', 'company'] }
       });
       const isHoliday = !!holiday;

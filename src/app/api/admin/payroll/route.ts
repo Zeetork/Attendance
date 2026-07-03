@@ -6,6 +6,7 @@ import Payroll from '@/models/Payroll';
 import User from '@/models/User';
 import Attendance from '@/models/Attendance';
 import Holiday from '@/models/Holiday';
+import Leave from '@/models/Leave';
 import { startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay } from 'date-fns';
 
 export async function GET(req: NextRequest) {
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
     const endDate = new Date(year, month, 0);
 
     // Get all active employees with their shifts
-    const users = await User.find({ role: { $in: ['employee', 'manager', 'team_head', 'department_head'] }, isActive: true }).populate('shiftId');
+    const users = await User.find({ role: { $in: ['employee', 'intern', 'manager', 'team_head', 'department_head'] }, isActive: true }).populate('shiftId');
     console.log(`Found ${users.length} users for company ${activeCompanyId}`);
 
     // Get holidays
@@ -104,21 +105,59 @@ export async function POST(req: NextRequest) {
         date: { $gte: startDate, $lte: endDate }
       });
 
+      // Get leaves for this user
+      const leaves = await Leave.find({
+        userId: user._id,
+        status: 'approved',
+        $or: [
+          { fromDate: { $lte: endDate }, toDate: { $gte: startDate } }
+        ]
+      });
+
       let presentDays = 0;
       let halfDays = 0;
-      let leaveDays = 0;
+      let paidLeaveDays = 0;
+      let unpaidLeaveDays = 0;
       let explicitAbsent = 0;
 
       attendances.forEach(a => {
         if (['present', 'late', 'Work From Home', 'On Duty'].includes(a.status)) presentDays++;
         if (a.status === 'half-day') halfDays++;
-        if (a.status === 'Leave') leaveDays++;
         if (a.status === 'absent') explicitAbsent++;
+      });
+
+      // Process leaves to count paid and unpaid leave days within this month
+      leaves.forEach(l => {
+        const from = new Date(Math.max(l.fromDate.getTime(), startDate.getTime()));
+        const to = new Date(Math.min(l.toDate.getTime(), endDate.getTime()));
+        
+        let daysInMonth = 0;
+        let currentDate = new Date(from);
+        while (currentDate <= to) {
+          const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(currentDate);
+          const isWeeklyOff = !workingDaysPattern.includes(dayName);
+          const isHoliday = holidays.some(h => isSameDay(new Date(h.date), currentDate));
+          
+          if (!isWeeklyOff && !isHoliday) {
+            daysInMonth++;
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        if (l.duration === 'half_day') {
+          daysInMonth = 0.5;
+        }
+
+        if (l.leaveType === 'Leave Without Pay') {
+          unpaidLeaveDays += daysInMonth;
+        } else {
+          paidLeaveDays += daysInMonth;
+        }
       });
 
       // Calculate absent days based on punches vs working days
       // If employee didn't punch on a working day (and no leave/holiday/weekly off), they are absent
-      const actualPunches = presentDays + (halfDays * 0.5) + leaveDays + explicitAbsent;
+      const actualPunches = presentDays + (halfDays * 0.5) + paidLeaveDays + unpaidLeaveDays + explicitAbsent;
       let missingPunches = totalWorkingDays - actualPunches;
       if (missingPunches < 0) missingPunches = 0;
 
@@ -127,10 +166,11 @@ export async function POST(req: NextRequest) {
       const monthlySalary = user.monthlySalary || 0;
       const perDaySalary = monthlySalary / totalCalendarDays; 
 
-      // Deduction = Absent Days + Leave Days (Assuming leaves are unpaid, per instruction "Deduction Days = Absent Days + Unpaid Leave Days")
-      const deductionDays = absentDays + leaveDays;
+      // Deduction = Absent Days + Unpaid Leave Days (Paid leaves do not deduct from salary)
+      const deductionDays = absentDays + unpaidLeaveDays;
       let deductionAmount = deductionDays * perDaySalary;
       const paidDays = totalCalendarDays - deductionDays;
+      const leaveDays = paidLeaveDays + unpaidLeaveDays;
 
       // New: Salary Deductions
       let esiDeduction = 0;

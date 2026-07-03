@@ -9,7 +9,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password?: string;
-  role: 'super_admin' | 'company_admin' | 'admin' | 'director' | 'department_head' | 'manager' | 'team_head' | 'employee';
+  role: 'super_admin' | 'company_admin' | 'admin' | 'director' | 'department_head' | 'manager' | 'team_head' | 'employee' | 'intern';
   department: string;
   designation: string;
   reportsTo?: mongoose.Types.ObjectId | null;
@@ -58,7 +58,7 @@ const UserSchema: Schema = new Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, select: false },
-    role: { type: String, enum: ['super_admin', 'company_admin', 'admin', 'director', 'department_head', 'manager', 'team_head', 'employee'], default: 'employee' },
+    role: { type: String, enum: ['super_admin', 'company_admin', 'admin', 'director', 'department_head', 'manager', 'team_head', 'employee', 'intern'], default: 'employee' },
     department: { type: String, required: true },
     designation: { type: String, required: true },
     reportsTo: { type: Schema.Types.ObjectId, ref: 'User', default: null },
@@ -138,5 +138,6 @@ const UserSchema: Schema = new Schema(
 UserSchema.index({ companyId: 1 });
 UserSchema.index({ companyIds: 1 });
 
-const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+delete mongoose.models.User;
+const User: Model<IUser> = mongoose.model<IUser>('User', UserSchema);
 export default User;

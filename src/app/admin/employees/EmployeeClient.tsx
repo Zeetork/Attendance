@@ -788,6 +788,7 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                       required
                     >
                       <option value="employee">Employee</option>
+                      <option value="intern">Intern</option>
                       <option value="team_head">Team Head</option>
                       <option value="manager">Manager</option>
                       <option value="department_head">Department Head</option>

@@ -1,15 +1,13 @@
-
-```
-attendance
-├─ README.md
-├─ eslint.config.mjs
 ├─ next.config.ts
 ├─ package-lock.json
 ├─ package.json
 ├─ postcss.config.mjs
 ├─ public
 │  ├─ TF_logo.png
-│  └─ TF_logo2.png
+│  ├─ TF_logo2.png
+│  └─ manifest.webmanifest
+├─ resources
+│  └─ logo.png
 ├─ src
 │  ├─ app
 │  │  ├─ admin
@@ -21,6 +19,7 @@ attendance
 │  │  │  │  └─ page.tsx
 │  │  │  ├─ calendar
 │  │  │  │  ├─ AttendanceCalendar.tsx
+│  │  │  │  ├─ bulk-upload
 │  │  │  │  └─ page.tsx
 │  │  │  ├─ companies
 │  │  │  │  └─ page.tsx
@@ -68,6 +67,13 @@ attendance
 │  │  │  │  ├─ attendance
 │  │  │  │  │  ├─ [id]
 │  │  │  │  │  │  └─ route.ts
+│  │  │  │  │  ├─ bulk-import
+│  │  │  │  │  │  ├─ [importId]
+│  │  │  │  │  │  │  ├─ confirm
+│  │  │  │  │  │  │  └─ undo
+│  │  │  │  │  │  ├─ template
+│  │  │  │  │  │  └─ upload
+│  │  │  │  │  ├─ bulk-manual
 │  │  │  │  │  ├─ override
 │  │  │  │  │  │  └─ route.ts
 │  │  │  │  │  └─ route.ts
@@ -84,7 +90,9 @@ attendance
 │  │  │  │  │  ├─ [id]
 │  │  │  │  │  │  ├─ leave-balance
 │  │  │  │  │  │  │  └─ route.ts
-│  │  │  │  │  │  └─ route.ts
+│  │  │  │  │  │  ├─ route.ts
+│  │  │  │  │  │  └─ salary-deductions
+│  │  │  │  │  │     └─ route.ts
 │  │  │  │  │  └─ route.ts
 │  │  │  │  ├─ holidays
 │  │  │  │  │  ├─ [id]
@@ -180,7 +188,6 @@ attendance
 │  │  │  ├─ requests
 │  │  │  │  └─ submit
 │  │  │  │     └─ route.ts
-│  │  │  ├─ settings
 │  │  │  └─ shifts
 │  │  │     ├─ [id]
 │  │  │     │  └─ route.ts
@@ -220,6 +227,7 @@ attendance
 │  │  ├─ CompanySwitcher.tsx
 │  │  ├─ DashboardLayoutClient.tsx
 │  │  ├─ NotificationSlide.tsx
+│  │  ├─ PayslipDocument.tsx
 │  │  ├─ ProfileClient.tsx
 │  │  ├─ Sidebar.tsx
 │  │  ├─ ThemeToggle.tsx
@@ -227,9 +235,11 @@ attendance
 │  ├─ lib
 │  │  ├─ bulkEmailService.ts
 │  │  ├─ emailService.ts
+│  │  ├─ generatePayslipPdf.tsx
 │  │  ├─ mongodb.ts
 │  │  ├─ multiTenantPlugin.ts
-│  │  └─ pdfService.ts
+│  │  ├─ payslipTemplate.ts
+│  │  └─ pdfService.tsx
 │  ├─ middleware.ts
 │  ├─ models
 │  │  ├─ ApprovalAuditLog.ts
@@ -260,6 +270,7 @@ attendance
 │  │  └─ seed.ts
 │  ├─ services
 │  │  ├─ LeaveBalanceEngine.ts
+│  │  ├─ api.ts
 │  │  └─ hierarchy.service.ts
 │  └─ types
 │     ├─ global.d.ts
