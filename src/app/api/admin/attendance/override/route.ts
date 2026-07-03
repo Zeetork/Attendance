@@ -40,14 +40,14 @@ export async function POST(req: NextRequest) {
 
     if (loginTime) {
       const [hours, minutes] = loginTime.split(':');
-      parsedLoginTime = new Date(attendanceDate);
-      parsedLoginTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      const dateStr = attendanceDate.toISOString().split('T')[0];
+      parsedLoginTime = new Date(`${dateStr}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+05:30`);
     }
 
     if (logoutTime) {
       const [hours, minutes] = logoutTime.split(':');
-      parsedLogoutTime = new Date(attendanceDate);
-      parsedLogoutTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      const dateStr = attendanceDate.toISOString().split('T')[0];
+      parsedLogoutTime = new Date(`${dateStr}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+05:30`);
     }
 
     if (parsedLoginTime && parsedLogoutTime) {

@@ -24,18 +24,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     // Parse time and apply to the existing date
     if (loginTime) {
       const [hours, minutes] = loginTime.split(':');
-      const newLogin = new Date(attendance.date);
-      newLogin.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-      attendance.loginTime = newLogin;
+      const dateStr = new Date(attendance.date).toISOString().split('T')[0];
+      attendance.loginTime = new Date(`${dateStr}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+05:30`);
     } else {
       attendance.loginTime = undefined;
     }
 
     if (logoutTime) {
       const [hours, minutes] = logoutTime.split(':');
-      const newLogout = new Date(attendance.date);
-      newLogout.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-      attendance.logoutTime = newLogout;
+      const dateStr = new Date(attendance.date).toISOString().split('T')[0];
+      attendance.logoutTime = new Date(`${dateStr}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+05:30`);
     } else {
       attendance.logoutTime = undefined;
     }
