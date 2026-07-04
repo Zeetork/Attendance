@@ -26,6 +26,7 @@ export interface IPayroll extends Document {
   generatedAt: Date;
   salaryDeductionsSnapshot?: {
     esi: number;
+    hra: number;
     loan: number;
   };
 }
@@ -57,6 +58,7 @@ const PayrollSchema: Schema = new Schema(
     generatedAt: { type: Date, default: Date.now },
     salaryDeductionsSnapshot: {
       esi: { type: Number, default: 0 },
+      hra: { type: Number, default: 0 },
       loan: { type: Number, default: 0 }
     }
   },

@@ -432,7 +432,7 @@ export default function PayrollClient() {
                         <td className="px-4 py-3 font-bold text-card-foreground">Basic Salary</td>
                         <td className="px-4 py-3 text-right font-bold text-card-foreground">₹{(selectedPayslip.grossSalary || selectedPayslip.monthlySalary).toLocaleString()}</td>
                         <td className="px-4 py-3 font-bold text-card-foreground">Loss of Pay (Absent & Unpaid Leave)</td>
-                        <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{((selectedPayslip.deductionAmount ?? selectedPayslip.deductions) - (selectedPayslip.salaryDeductionsSnapshot?.esi || 0) - (selectedPayslip.salaryDeductionsSnapshot?.loan || 0)).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{((selectedPayslip.deductionAmount ?? selectedPayslip.deductions) - (selectedPayslip.salaryDeductionsSnapshot?.esi || 0) - (selectedPayslip.salaryDeductionsSnapshot?.hra || 0) - (selectedPayslip.salaryDeductionsSnapshot?.loan || 0)).toLocaleString()}</td>
                       </tr>
                       {selectedPayslip.salaryDeductionsSnapshot?.esi ? (
                         <tr className="border-b border-border print:border-neutral-200">
@@ -440,6 +440,14 @@ export default function PayrollClient() {
                           <td className="px-4 py-3 text-right"></td>
                           <td className="px-4 py-3 font-bold text-card-foreground">ESI Deduction</td>
                           <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{selectedPayslip.salaryDeductionsSnapshot.esi.toLocaleString()}</td>
+                        </tr>
+                      ) : null}
+                      {selectedPayslip.salaryDeductionsSnapshot?.hra ? (
+                        <tr className="border-b border-border print:border-neutral-200">
+                          <td className="px-4 py-3"></td>
+                          <td className="px-4 py-3 text-right"></td>
+                          <td className="px-4 py-3 font-bold text-card-foreground">HRA Deduction</td>
+                          <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{selectedPayslip.salaryDeductionsSnapshot.hra.toLocaleString()}</td>
                         </tr>
                       ) : null}
                       {selectedPayslip.salaryDeductionsSnapshot?.loan ? (
@@ -450,7 +458,7 @@ export default function PayrollClient() {
                           <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{selectedPayslip.salaryDeductionsSnapshot.loan.toLocaleString()}</td>
                         </tr>
                       ) : null}
-                      {!selectedPayslip.salaryDeductionsSnapshot?.esi && !selectedPayslip.salaryDeductionsSnapshot?.loan && (
+                      {!selectedPayslip.salaryDeductionsSnapshot?.esi && !selectedPayslip.salaryDeductionsSnapshot?.loan && !selectedPayslip.salaryDeductionsSnapshot?.hra && (
                         <tr className="border-b border-border print:border-neutral-200">
                           <td className="px-4 py-3"></td>
                           <td className="px-4 py-3 text-right"></td>

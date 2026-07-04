@@ -269,7 +269,7 @@ interface PayslipProps {
 export const PayslipDocument = ({ payroll, user, company }: PayslipProps) => {
   const monthName = format(new Date(payroll.year, payroll.month - 1), 'MMMM yyyy');
   
-  const lossOfPay = ((payroll.deductionAmount ?? payroll.deductions) - (payroll.salaryDeductionsSnapshot?.esi || 0) - (payroll.salaryDeductionsSnapshot?.loan || 0));
+  const lossOfPay = ((payroll.deductionAmount ?? payroll.deductions) - (payroll.salaryDeductionsSnapshot?.esi || 0) - (payroll.salaryDeductionsSnapshot?.hra || 0) - (payroll.salaryDeductionsSnapshot?.loan || 0));
 
   const formatCurrency = (val: number) => `Rs ${(val || 0).toLocaleString('en-IN')}`;
 
@@ -381,6 +381,15 @@ export const PayslipDocument = ({ payroll, user, company }: PayslipProps) => {
             </View>
           )}
 
+          {!!payroll.salaryDeductionsSnapshot?.hra && (
+            <View style={styles.tableRow}>
+              <Text style={styles.tableCell}></Text>
+              <Text style={styles.tableCellRight}></Text>
+              <Text style={styles.tableCell}>HRA Deduction</Text>
+              <Text style={styles.tableCellRedRight}>-{formatCurrency(payroll.salaryDeductionsSnapshot.hra)}</Text>
+            </View>
+          )}
+
           {!!payroll.salaryDeductionsSnapshot?.loan && (
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}></Text>
@@ -390,7 +399,7 @@ export const PayslipDocument = ({ payroll, user, company }: PayslipProps) => {
             </View>
           )}
           
-          {(!payroll.salaryDeductionsSnapshot?.esi && !payroll.salaryDeductionsSnapshot?.loan) && (
+          {(!payroll.salaryDeductionsSnapshot?.esi && !payroll.salaryDeductionsSnapshot?.loan && !payroll.salaryDeductionsSnapshot?.hra) && (
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}></Text>
               <Text style={styles.tableCellRight}></Text>

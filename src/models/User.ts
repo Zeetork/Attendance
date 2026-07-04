@@ -36,6 +36,7 @@ export interface IUser extends Document {
   };
   salaryDeductions?: {
     esi: { enabled: boolean; amount: number; };
+    hra: { enabled: boolean; amount: number; };
     loan: {
       enabled: boolean;
       principalAmount: number;
@@ -115,6 +116,10 @@ const UserSchema: Schema = new Schema(
     },
     salaryDeductions: {
       esi: {
+        enabled: { type: Boolean, default: false },
+        amount: { type: Number, default: 0 }
+      },
+      hra: {
         enabled: { type: Boolean, default: false },
         amount: { type: Number, default: 0 }
       },

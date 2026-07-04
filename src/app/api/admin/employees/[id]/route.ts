@@ -28,6 +28,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Email or Employee ID already in use' }, { status: 400 });
     }
 
+    const userToUpdate = await User.findById(id);
+    if (!userToUpdate) {
+      return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
+    }
+
     const updateData: any = {
       employeeId,
       name,
@@ -46,6 +51,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       gender: gender || undefined,
       role: role || 'employee',
     };
+
+    const isEsiEligible = updateData.monthlySalary <= 21000;
+    if (!isEsiEligible) {
+      updateData['salaryDeductions.esi.enabled'] = false;
+      updateData['salaryDeductions.esi.amount'] = 0;
+    } else {
+      updateData['salaryDeductions.esi.enabled'] = true;
+      updateData['salaryDeductions.esi.amount'] = Math.round(updateData.monthlySalary * 0.0075);
+    }
 
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);

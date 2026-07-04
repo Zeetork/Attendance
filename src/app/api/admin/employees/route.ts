@@ -67,7 +67,13 @@ export async function POST(req: NextRequest) {
       gender: gender || undefined,
       isActive: isActive !== undefined ? isActive : true,
       companyId: companyId,
-      companyIds: companyId ? [companyId] : []
+      companyIds: companyId ? [companyId] : [],
+      salaryDeductions: {
+        esi: {
+          enabled: Number(monthlySalary) <= 21000,
+          amount: Number(monthlySalary) <= 21000 ? Math.round(Number(monthlySalary) * 0.0075) : 0
+        }
+      }
     });
 
     return Response.json({ message: 'Employee created successfully' }, { status: 201 });

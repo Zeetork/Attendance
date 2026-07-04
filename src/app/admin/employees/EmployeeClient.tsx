@@ -26,6 +26,7 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
   const [isSavingDeductions, setIsSavingDeductions] = useState(false);
   const [deductionsForm, setDeductionsForm] = useState({
     esi: { enabled: false, amount: 0 },
+    hra: { enabled: false, amount: 0 },
     loan: { enabled: false, principalAmount: 0, totalMonths: 0, startDate: '', endDate: '' }
   });
 
@@ -229,10 +230,19 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
 
   const handleEditDeductions = (employee: any) => {
     setEditingDeductionsId(employee._id);
+    
+    const salary = Number(employee.monthlySalary) || 0;
+    const isEsiEligible = salary <= 21000;
+    const calculatedEsi = isEsiEligible ? Math.round(salary * 0.0075) : 0;
+
     setDeductionsForm({
       esi: {
-        enabled: employee.salaryDeductions?.esi?.enabled || false,
-        amount: employee.salaryDeductions?.esi?.amount || 0
+        enabled: isEsiEligible,
+        amount: isEsiEligible ? calculatedEsi : 0
+      },
+      hra: {
+        enabled: employee.salaryDeductions?.hra?.enabled || false,
+        amount: employee.salaryDeductions?.hra?.amount || 0
       },
       loan: {
         enabled: employee.salaryDeductions?.loan?.enabled || false,
@@ -496,6 +506,12 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
 
                         {/* Salary Deductions Section */}
                         <div className="mt-8 border-t border-border pt-6">
+                          {employee.role === 'intern' ? (
+                            <div className="text-center py-4 bg-muted/20 rounded-xl border border-border">
+                              <p className="text-sm font-bold text-muted-foreground">Salary deductions do not apply to interns.</p>
+                            </div>
+                          ) : (
+                            <>
                           <div className="flex justify-between items-center mb-4">
                             <h4 className="text-sm font-bold text-card-foreground">Salary Deductions</h4>
                             {editingDeductionsId === employee._id ? (
@@ -517,17 +533,54 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                             <div className="bg-background border border-border p-4 rounded-xl flex flex-col justify-between">
                               <div className="flex items-center justify-between mb-4">
                                 <div className="text-sm font-bold text-card-foreground">ESI (Employee State Insurance)</div>
+                                {employee.monthlySalary <= 21000 ? (
+                                  <span className="px-2 py-1 text-[10px] font-bold rounded-full bg-success/10 text-success">
+                                    Auto-Enabled
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-1 text-[10px] font-bold rounded-full bg-muted text-muted-foreground">
+                                    Disabled
+                                  </span>
+                                )}
+                              </div>
+                              
+                              <div>
+                                <label className="block text-xs font-bold text-muted-foreground mb-1">
+                                  {employee.monthlySalary <= 21000 ? 'Auto-Calculated Amount (0.75%)' : 'Not Eligible (Salary > 21k)'}
+                                </label>
+                                {editingDeductionsId === employee._id ? (
+                                  <input 
+                                    type="number" 
+                                    min="0" 
+                                    disabled={true}
+                                    className="w-full bg-muted border border-border rounded-xl text-foreground px-3 py-2 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:opacity-50" 
+                                    value={deductionsForm.esi.amount} 
+                                    readOnly
+                                  />
+                                ) : (
+                                  <div className="text-lg font-bold text-card-foreground">
+                                    ₹ {employee.monthlySalary <= 21000 ? Math.round((Number(employee.monthlySalary) || 0) * 0.0075) : 0}
+                                    <span className="text-[10px] text-muted-foreground font-normal ml-1">/ month</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {/* HRA Card */}
+                            <div className="bg-background border border-border p-4 rounded-xl flex flex-col justify-between">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="text-sm font-bold text-card-foreground">HRA (House Rent Allowance)</div>
                                 {editingDeductionsId === employee._id ? (
                                   <label className="flex items-center cursor-pointer">
                                     <div className="relative">
-                                      <input type="checkbox" className="sr-only" checked={deductionsForm.esi.enabled} onChange={e => setDeductionsForm({...deductionsForm, esi: {...deductionsForm.esi, enabled: e.target.checked}})} />
-                                      <div className={`block w-10 h-6 rounded-full transition-colors ${deductionsForm.esi.enabled ? 'bg-primary' : 'bg-muted border border-border'}`}></div>
-                                      <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${deductionsForm.esi.enabled ? 'transform translate-x-4' : ''}`}></div>
+                                      <input type="checkbox" className="sr-only" checked={deductionsForm.hra.enabled} onChange={e => setDeductionsForm({...deductionsForm, hra: {...deductionsForm.hra, enabled: e.target.checked}})} />
+                                      <div className={`block w-10 h-6 rounded-full transition-colors ${deductionsForm.hra.enabled ? 'bg-primary' : 'bg-muted border border-border'}`}></div>
+                                      <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${deductionsForm.hra.enabled ? 'transform translate-x-4' : ''}`}></div>
                                     </div>
                                   </label>
                                 ) : (
-                                  <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${employee.salaryDeductions?.esi?.enabled ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                                    {employee.salaryDeductions?.esi?.enabled ? 'Enabled' : 'Disabled'}
+                                  <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${employee.salaryDeductions?.hra?.enabled ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
+                                    {employee.salaryDeductions?.hra?.enabled ? 'Enabled' : 'Disabled'}
                                   </span>
                                 )}
                               </div>
@@ -538,14 +591,14 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                                   <input 
                                     type="number" 
                                     min="0" 
-                                    disabled={!deductionsForm.esi.enabled}
+                                    disabled={!deductionsForm.hra.enabled}
                                     className="w-full bg-muted border border-border rounded-xl text-foreground px-3 py-2 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:opacity-50" 
-                                    value={deductionsForm.esi.amount} 
-                                    onChange={e => setDeductionsForm({...deductionsForm, esi: {...deductionsForm.esi, amount: Number(e.target.value)}})} 
+                                    value={deductionsForm.hra.amount} 
+                                    onChange={e => setDeductionsForm({...deductionsForm, hra: {...deductionsForm.hra, amount: Number(e.target.value)}})} 
                                   />
                                 ) : (
                                   <div className="text-lg font-bold text-card-foreground">
-                                    ₹ {employee.salaryDeductions?.esi?.amount || 0}
+                                    ₹ {employee.salaryDeductions?.hra?.amount || 0}
                                     <span className="text-[10px] text-muted-foreground font-normal ml-1">/ month</span>
                                   </div>
                                 )}
@@ -668,6 +721,8 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                               </div>
                             </div>
                           </div>
+                          </>
+                          )}
                         </div>
                       </td>
                     </tr>

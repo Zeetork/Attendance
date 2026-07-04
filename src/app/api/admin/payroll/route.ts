@@ -174,10 +174,17 @@ export async function POST(req: NextRequest) {
 
       // New: Salary Deductions
       let esiDeduction = 0;
+      let hraDeduction = 0;
       let loanDeduction = 0;
 
-      if (user.salaryDeductions?.esi?.enabled) {
-        esiDeduction = user.salaryDeductions.esi.amount || 0;
+      if (user.role !== 'intern') {
+
+      if (monthlySalary <= 21000) {
+        esiDeduction = Math.round(monthlySalary * 0.0075);
+      }
+
+      if (user.salaryDeductions?.hra?.enabled) {
+        hraDeduction = user.salaryDeductions.hra.amount || 0;
       }
 
       if (user.salaryDeductions?.loan?.enabled && user.salaryDeductions.loan.remainingMonths > 0) {
@@ -212,8 +219,9 @@ export async function POST(req: NextRequest) {
           await user.save();
         }
       }
+      } // End if (user.role !== 'intern')
 
-      deductionAmount += esiDeduction + loanDeduction;
+      deductionAmount += esiDeduction + hraDeduction + loanDeduction;
       const netSalary = monthlySalary - deductionAmount;
 
       // Upsert payroll
@@ -238,6 +246,7 @@ export async function POST(req: NextRequest) {
           companyId: activeCompanyId,
           salaryDeductionsSnapshot: {
             esi: esiDeduction,
+            hra: hraDeduction,
             loan: loanDeduction
           },
           // Legacy fields for backward compatibility

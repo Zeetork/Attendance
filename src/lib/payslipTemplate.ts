@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 export function generatePayslipHtml(payroll: any, user: any, company: any) {
   const monthName = format(new Date(payroll.year, payroll.month - 1), 'MMMM yyyy');
   
-  const lossOfPay = ((payroll.deductionAmount ?? payroll.deductions) - (payroll.salaryDeductionsSnapshot?.esi || 0) - (payroll.salaryDeductionsSnapshot?.loan || 0));
+  const lossOfPay = ((payroll.deductionAmount ?? payroll.deductions) - (payroll.salaryDeductionsSnapshot?.esi || 0) - (payroll.salaryDeductionsSnapshot?.hra || 0) - (payroll.salaryDeductionsSnapshot?.loan || 0));
 
   return `
 <!DOCTYPE html>
@@ -125,6 +125,14 @@ export function generatePayslipHtml(payroll: any, user: any, company: any) {
             <td class="px-4 py-3 text-right font-bold text-red-600">-₹${payroll.salaryDeductionsSnapshot.esi.toLocaleString()}</td>
           </tr>
           ` : ''}
+          ${payroll.salaryDeductionsSnapshot?.hra ? `
+          <tr class="border-b border-neutral-200">
+            <td class="px-4 py-3"></td>
+            <td class="px-4 py-3"></td>
+            <td class="px-4 py-3 font-bold text-neutral-900">HRA Deduction</td>
+            <td class="px-4 py-3 text-right font-bold text-red-600">-₹${payroll.salaryDeductionsSnapshot.hra.toLocaleString()}</td>
+          </tr>
+          ` : ''}
           ${payroll.salaryDeductionsSnapshot?.loan ? `
           <tr class="border-b border-neutral-200">
             <td class="px-4 py-3"></td>
@@ -133,7 +141,7 @@ export function generatePayslipHtml(payroll: any, user: any, company: any) {
             <td class="px-4 py-3 text-right font-bold text-red-600">-₹${payroll.salaryDeductionsSnapshot.loan.toLocaleString()}</td>
           </tr>
           ` : ''}
-          ${!payroll.salaryDeductionsSnapshot?.esi && !payroll.salaryDeductionsSnapshot?.loan ? `
+          ${!payroll.salaryDeductionsSnapshot?.esi && !payroll.salaryDeductionsSnapshot?.loan && !payroll.salaryDeductionsSnapshot?.hra ? `
           <tr class="border-b border-neutral-200">
             <td class="px-4 py-3"></td><td class="px-4 py-3"></td><td class="px-4 py-3"></td><td class="px-4 py-3"></td>
           </tr>

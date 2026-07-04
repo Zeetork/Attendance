@@ -27,7 +27,7 @@ export default auth((req) => {
   const user = req.auth?.user;
   
   if (user && activeCompanyId) {
-    const hasAccess = user.role === 'super_admin' || user.role === 'admin' || (user.companyIds && user.companyIds.includes(activeCompanyId));
+    const hasAccess = user.role === 'super_admin' || user.role === 'admin' || (user.companyIds && user.companyIds.includes(activeCompanyId)) || user.companyId === activeCompanyId;
     if (!hasAccess && !nextUrl.pathname.startsWith('/unauthorized')) {
       return Response.redirect(new URL('/unauthorized', nextUrl));
     }

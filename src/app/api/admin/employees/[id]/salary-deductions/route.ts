@@ -11,7 +11,7 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { esi, loan } = await req.json();
+    const { esi, hra, loan } = await req.json();
 
     await dbConnect();
     
@@ -20,13 +20,20 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
 
-    if (user.role === 'admin' || user.role === 'super_admin') {
-      return NextResponse.json({ error: 'Admins cannot receive salary deductions' }, { status: 400 });
+    if (user.role === 'admin' || user.role === 'super_admin' || user.role === 'intern') {
+      return NextResponse.json({ error: 'This role cannot receive salary deductions' }, { status: 400 });
     }
 
+    const salary = user.monthlySalary || 0;
+    const isEsiEligible = salary <= 21000;
+    const esiEnabled = isEsiEligible;
+    const esiAmount = esiEnabled ? Math.round(salary * 0.0075) : 0;
+
     const updateData: any = {
-      'salaryDeductions.esi.enabled': Boolean(esi?.enabled),
-      'salaryDeductions.esi.amount': Math.max(0, Number(esi?.amount) || 0)
+      'salaryDeductions.esi.enabled': esiEnabled,
+      'salaryDeductions.esi.amount': esiAmount,
+      'salaryDeductions.hra.enabled': Boolean(hra?.enabled),
+      'salaryDeductions.hra.amount': Math.max(0, Number(hra?.amount) || 0)
     };
 
     if (loan) {

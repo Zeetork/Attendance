@@ -19,10 +19,14 @@ export async function GET() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const user = await User.findById(session.user.id)
+    const user = await User.findById(session.user.id, null, { bypassTenant: true })
       .populate('shiftId')
       .populate('reportsTo', 'employeeId name role designation department profileImage')
       .lean() as any;
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
     const subordinates = await User.find({ reportsTo: session.user.id })
       .select('employeeId name role designation department profileImage')
