@@ -4,12 +4,14 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { format } from 'date-fns';
 import { FileText, Download, DollarSign, Loader2, X } from 'lucide-react';
+import { useCompany } from '@/components/CompanyProvider';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function PayslipsClient() {
   const { data, error, isLoading } = useSWR('/api/employee/payslips', fetcher);
   const [selectedPayslip, setSelectedPayslip] = useState<any>(null);
+  const { activeCompany } = useCompany();
 
   const payslips = data?.payrolls || [];
 
@@ -108,9 +110,9 @@ export default function PayslipsClient() {
                     <p className="text-muted-foreground mt-1 font-bold">{format(new Date(selectedPayslip.year, selectedPayslip.month - 1), 'MMMM yyyy')}</p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <h2 className="text-xl font-bold text-card-foreground">ACME Corporation</h2>
-                    <p className="text-sm text-muted-foreground">123 Business Avenue, Tech Park</p>
-                    <p className="text-sm text-muted-foreground">contact@acme.corp | +1 234 567 890</p>
+                    <h2 className="text-xl font-bold text-card-foreground">{activeCompany?.companyName || 'Company Name'}</h2>
+                    <p className="text-sm text-muted-foreground">{activeCompany?.address || 'Company Address'}</p>
+                    <p className="text-sm text-muted-foreground">{activeCompany?.email || 'email@company.com'} | {activeCompany?.phone || 'Phone Number'}</p>
                   </div>
                 </div>
 
