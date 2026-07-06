@@ -1,4 +1,5 @@
 import NextAuth from 'next-auth';
+import { NextResponse } from 'next/server';
 import { authConfig } from '@/auth.config';
 
 const { auth } = NextAuth(authConfig);
@@ -10,7 +11,8 @@ export default auth((req) => {
   
   if (isAuthPage) {
     if (isAuthenticated) {
-      if (req.auth?.user?.role === 'admin') {
+      const adminRoles = ['admin', 'super_admin', 'company_admin'];
+      if (adminRoles.includes(req.auth?.user?.role as string)) {
         return Response.redirect(new URL('/admin/dashboard', nextUrl));
       }
       return Response.redirect(new URL('/employee/dashboard', nextUrl));
@@ -24,17 +26,28 @@ export default auth((req) => {
 
   // Multi-Company Validation
   const activeCompanyId = req.cookies.get('activeCompanyId')?.value;
-  const user = req.auth?.user;
+  const user = req.auth?.user as any;
+  
+  // console.log('[Middleware] NextUrl:', nextUrl.pathname);
+  // console.log('[Middleware] Authenticated:', isAuthenticated);
+  // console.log('[Middleware] User:', JSON.stringify(user));
+  // console.log('[Middleware] activeCompanyId:', activeCompanyId);
   
   if (user && activeCompanyId) {
     const hasAccess = user.role === 'super_admin' || user.role === 'admin' || (user.companyIds && user.companyIds.includes(activeCompanyId)) || user.companyId === activeCompanyId;
-    if (!hasAccess && !nextUrl.pathname.startsWith('/unauthorized')) {
-      return Response.redirect(new URL('/unauthorized', nextUrl));
+    console.log('[Middleware] hasAccess:', hasAccess);
+    if (!hasAccess) {
+      console.log('[Middleware] Invalid activeCompanyId cookie detected. Clearing it and redirecting to a safe route.');
+      const safeUrl = (user.role === 'super_admin' || user.role === 'admin' || user.role === 'company_admin') ? '/admin/dashboard' : '/employee/dashboard';
+      const response = NextResponse.redirect(new URL(safeUrl, nextUrl));
+      response.cookies.delete('activeCompanyId');
+      return response;
     }
   }
 
   // Role based protection
-  const isAdmin = req.auth?.user?.role === 'admin' || req.auth?.user?.role === 'super_admin';
+  const adminRoles = ['admin', 'super_admin', 'company_admin'];
+  const isAdmin = adminRoles.includes(req.auth?.user?.role as string);
   if (nextUrl.pathname.startsWith('/admin') && !isAdmin) {
     return Response.redirect(new URL('/employee/dashboard', nextUrl));
   }

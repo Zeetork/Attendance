@@ -1,7 +1,7 @@
 import type { NextAuthConfig } from 'next-auth';
 
 export const authConfig = {
-  providers: [], // Add providers in auth.ts
+  providers: [],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
