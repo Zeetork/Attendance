@@ -10,18 +10,16 @@
 
 // capacitor.config.ts
 
-import type { CapacitorConfig } from "@capacitor/cli"
+import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.example.app",
+  appId: "com.truflow.attendance",
   appName: "TruFlow",
 
-  webDir: "public",
-
   server: {
-    url: "https://attendance-truflow.vercel.app/",
-    cleartext: false
-  }
-}
+    url: "https://attendance-truflow.vercel.app",
+    cleartext: false,
+  },
+};
 
-export default config
+export default config;

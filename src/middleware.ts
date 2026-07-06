@@ -8,7 +8,7 @@ export default auth((req) => {
   const { nextUrl } = req;
   const isAuthenticated = !!req.auth;
   const isAuthPage = nextUrl.pathname.startsWith('/login');
-  
+
   if (isAuthPage) {
     if (isAuthenticated) {
       const adminRoles = ['admin', 'super_admin', 'company_admin'];
@@ -27,12 +27,12 @@ export default auth((req) => {
   // Multi-Company Validation
   const activeCompanyId = req.cookies.get('activeCompanyId')?.value;
   const user = req.auth?.user as any;
-  
+
   // console.log('[Middleware] NextUrl:', nextUrl.pathname);
   // console.log('[Middleware] Authenticated:', isAuthenticated);
   // console.log('[Middleware] User:', JSON.stringify(user));
   // console.log('[Middleware] activeCompanyId:', activeCompanyId);
-  
+
   if (user && activeCompanyId) {
     const hasAccess = user.role === 'super_admin' || user.role === 'admin' || (user.companyIds && user.companyIds.includes(activeCompanyId)) || user.companyId === activeCompanyId;
     console.log('[Middleware] hasAccess:', hasAccess);
