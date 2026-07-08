@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
 import Attendance from '@/models/Attendance';
 import Shift from '@/models/Shift';
-import { startOfDay, endOfDay, differenceInMinutes } from 'date-fns';
+import { differenceInMinutes } from 'date-fns';
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,8 +15,13 @@ export async function POST(req: NextRequest) {
     await dbConnect();
     const userId = session.user.id;
     const now = new Date();
-    const todayStart = startOfDay(now);
-    const todayEnd = endOfDay(now);
+    // Get the current date in IST
+    const istDateString = now.toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata' });
+    const [month, day, year] = istDateString.split('/');
+    
+    // Create UTC midnight representing the start of the day for the IST date
+    const todayStart = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0));
+    const todayEnd = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 23, 59, 59, 999));
 
     const attendance = await Attendance.findOne({
       userId,

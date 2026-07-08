@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
 import Attendance from '@/models/Attendance';
 import User from '@/models/User';
-import { startOfDay, endOfDay, differenceInMinutes } from 'date-fns';
+import { differenceInMinutes } from 'date-fns';
 import Shift from '@/models/Shift';
 
 export async function POST(req: NextRequest) {
@@ -16,8 +16,14 @@ export async function POST(req: NextRequest) {
     await dbConnect();
     const userId = session.user.id;
     const now = new Date();
-    const todayStart = startOfDay(now);
-    const todayEnd = endOfDay(now);
+    
+    // Get the current date in IST
+    const istDateString = now.toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata' });
+    const [month, day, year] = istDateString.split('/');
+    
+    // Create UTC midnight representing the start of the day for the IST date
+    const todayStart = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0));
+    const todayEnd = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 23, 59, 59, 999));
 
     const existingAttendance = await Attendance.findOne({
       userId,
@@ -33,7 +39,7 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
 
-    let expectedLoginTime = new Date(now);
+    let expectedLoginTime: Date;
     let shiftId = user.shiftId?._id;
     let graceTime = 15;
     let isHalfDayLeave = false;
@@ -71,14 +77,16 @@ export async function POST(req: NextRequest) {
         finalStartMinutes = midPointMinutes % 60;
       }
       
-      expectedLoginTime.setHours(finalStartHours, finalStartMinutes, 0, 0);
+      const expectedLoginStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${finalStartHours.toString().padStart(2, '0')}:${finalStartMinutes.toString().padStart(2, '0')}:00+05:30`;
+      expectedLoginTime = new Date(expectedLoginStr);
       graceTime = shift.graceTime || 15;
     } else {
       let defaultStart = 9;
       if (isHalfDayLeave && halfDaySession === 'first_half') {
         defaultStart = 14; // 2 PM
       }
-      expectedLoginTime.setHours(defaultStart, 0, 0, 0); // Default if no shift
+      const expectedLoginStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${defaultStart.toString().padStart(2, '0')}:00:00+05:30`;
+      expectedLoginTime = new Date(expectedLoginStr); // Default if no shift
     }
 
     let status: 'present' | 'late' | 'half-day' = isHalfDayLeave ? 'half-day' : 'present';

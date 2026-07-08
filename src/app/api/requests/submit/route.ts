@@ -45,10 +45,10 @@ export async function POST(req: NextRequest) {
         if (!finalAttendanceId) {
           // Find the attendance record for this user on the selected date
           // The data.date might be '2026-07-01' so we can match it
-          const startOfDay = new Date(data.date);
-          startOfDay.setHours(0, 0, 0, 0);
-          const endOfDay = new Date(data.date);
-          endOfDay.setHours(23, 59, 59, 999);
+          // Parse base date as UTC to prevent server timezone shifting
+          const [year, month, day] = data.date.split('-');
+          const startOfDay = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0));
+          const endOfDay = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 23, 59, 59, 999));
           
           const attendance = await Attendance.findOne({
             userId: session.user.id,

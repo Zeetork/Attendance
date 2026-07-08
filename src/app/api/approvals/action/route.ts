@@ -110,7 +110,10 @@ export async function POST(req: NextRequest) {
         const atDate = requestType === 'MISS_PUNCH' ? request.date : request.currentCheckIn; // or attendanceId
         if (requestType === 'MISS_PUNCH') {
           // Find or create attendance
-          let attendance = await Attendance.findOne({ userId: request.employeeId, date: { $gte: new Date(new Date(request.date).setHours(0, 0, 0, 0)), $lte: new Date(new Date(request.date).setHours(23, 59, 59, 999)) } });
+          const d = new Date(request.date);
+          const startOfDay = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
+          const endOfDay = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 23, 59, 59, 999));
+          let attendance = await Attendance.findOne({ userId: request.employeeId, date: { $gte: startOfDay, $lte: endOfDay } });
           if (!attendance) {
             attendance = new Attendance({
               userId: request.employeeId,

@@ -14,8 +14,10 @@ export async function GET() {
 
     await dbConnect();
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const istDateString = now.toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata' });
+    const [month, day, year] = istDateString.split('/');
+    const today = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0));
 
     // Stats
     const totalEmployees = await User.countDocuments({ role: 'employee', isActive: true });

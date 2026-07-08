@@ -22,13 +22,6 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
     compensatoryOff: 0
   });
   
-  const [editingDeductionsId, setEditingDeductionsId] = useState<string | null>(null);
-  const [isSavingDeductions, setIsSavingDeductions] = useState(false);
-  const [deductionsForm, setDeductionsForm] = useState({
-    esi: { enabled: false, amount: 0 },
-    hra: { enabled: false, amount: 0 },
-    loan: { enabled: false, principalAmount: 0, totalMonths: 0, startDate: '', endDate: '' }
-  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -42,12 +35,8 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
     designation: '',
     shiftId: shifts.length > 0 ? shifts[0]._id : '',
     joiningDate: new Date().toISOString().split('T')[0],
-    monthlySalary: '',
     isActive: true,
     profileImage: '',
-    bankName: '',
-    accountNumber: '',
-    ifscCode: '',
     gender: '',
     role: 'employee',
   });
@@ -71,12 +60,8 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
         designation: employee.designation,
         shiftId: employee.shiftId?._id || employee.shiftId || (shifts.length > 0 ? shifts[0]._id : ''),
         joiningDate: new Date(employee.joiningDate).toISOString().split('T')[0],
-        monthlySalary: employee.monthlySalary.toString(),
         isActive: employee.isActive,
         profileImage: employee.profileImage || '',
-        bankName: employee.bankName || '',
-        accountNumber: employee.accountNumber || '',
-        ifscCode: employee.ifscCode || '',
         gender: employee.gender || '',
         role: employee.role || 'employee',
       });
@@ -92,12 +77,8 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
         designation: '',
         shiftId: shifts.length > 0 ? shifts[0]._id : '',
         joiningDate: new Date().toISOString().split('T')[0],
-        monthlySalary: '',
         isActive: true,
         profileImage: '',
-        bankName: '',
-        accountNumber: '',
-        ifscCode: '',
         gender: '',
         role: 'employee',
       });
@@ -228,67 +209,7 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
     }
   };
 
-  const handleEditDeductions = (employee: any) => {
-    setEditingDeductionsId(employee._id);
-    
-    const salary = Number(employee.monthlySalary) || 0;
-    const isEsiEligible = salary <= 21000;
-    const calculatedEsi = isEsiEligible ? Math.round(salary * 0.0075) : 0;
 
-    setDeductionsForm({
-      esi: {
-        enabled: isEsiEligible,
-        amount: isEsiEligible ? calculatedEsi : 0
-      },
-      hra: {
-        enabled: employee.salaryDeductions?.hra?.enabled || false,
-        amount: employee.salaryDeductions?.hra?.amount || 0
-      },
-      loan: {
-        enabled: employee.salaryDeductions?.loan?.enabled || false,
-        principalAmount: employee.salaryDeductions?.loan?.principalAmount || 0,
-        totalMonths: employee.salaryDeductions?.loan?.totalMonths || 0,
-        startDate: employee.salaryDeductions?.loan?.startDate ? new Date(employee.salaryDeductions.loan.startDate).toISOString().split('T')[0] : '',
-        endDate: employee.salaryDeductions?.loan?.endDate ? new Date(employee.salaryDeductions.loan.endDate).toISOString().split('T')[0] : ''
-      }
-    });
-  };
-
-  const handleSaveDeductions = async (employeeId: string) => {
-    setIsSavingDeductions(true);
-    try {
-      const response = await api(`/api/admin/employees/${employeeId}/salary-deductions`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(deductionsForm),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        alert(error.error || 'Failed to update deductions');
-        return;
-      }
-      
-      const updatedEmployee = await response.json();
-
-      const updatedEmployees = employees.map(emp => {
-        if (emp._id === employeeId) {
-          return {
-            ...emp,
-            salaryDeductions: updatedEmployee.salaryDeductions
-          };
-        }
-        return emp;
-      });
-      setEmployees(updatedEmployees);
-      setEditingDeductionsId(null);
-    } catch (error) {
-      console.error(error);
-      alert('An error occurred');
-    } finally {
-      setIsSavingDeductions(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -503,227 +424,6 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                             </div>
                           </div>
                         </div>
-
-                        {/* Salary Deductions Section */}
-                        <div className="mt-8 border-t border-border pt-6">
-                          {employee.role === 'intern' ? (
-                            <div className="text-center py-4 bg-muted/20 rounded-xl border border-border">
-                              <p className="text-sm font-bold text-muted-foreground">Salary deductions do not apply to interns.</p>
-                            </div>
-                          ) : (
-                            <>
-                          <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-sm font-bold text-card-foreground">Salary Deductions</h4>
-                            {editingDeductionsId === employee._id ? (
-                              <div className="flex gap-2">
-                                <button onClick={() => setEditingDeductionsId(null)} className="px-4 py-2 min-h-[44px] text-xs font-bold text-muted-foreground hover:text-foreground transition-colors border border-border rounded-xl">Cancel</button>
-                                <button onClick={() => handleSaveDeductions(employee._id)} disabled={isSavingDeductions} className="px-4 py-2 min-h-[44px] text-xs font-bold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                                  {isSavingDeductions ? 'Saving...' : 'Save Deductions'}
-                                </button>
-                              </div>
-                            ) : (
-                              <button onClick={() => handleEditDeductions(employee)} className="text-xs font-bold flex items-center text-primary hover:text-primary/80 transition-colors">
-                                <Edit className="w-3 h-3 mr-1" /> Edit Deductions
-                              </button>
-                            )}
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* ESI Card */}
-                            <div className="bg-background border border-border p-4 rounded-xl flex flex-col justify-between">
-                              <div className="flex items-center justify-between mb-4">
-                                <div className="text-sm font-bold text-card-foreground">ESI (Employee State Insurance)</div>
-                                {employee.monthlySalary <= 21000 ? (
-                                  <span className="px-2 py-1 text-[10px] font-bold rounded-full bg-success/10 text-success">
-                                    Auto-Enabled
-                                  </span>
-                                ) : (
-                                  <span className="px-2 py-1 text-[10px] font-bold rounded-full bg-muted text-muted-foreground">
-                                    Disabled
-                                  </span>
-                                )}
-                              </div>
-                              
-                              <div>
-                                <label className="block text-xs font-bold text-muted-foreground mb-1">
-                                  {employee.monthlySalary <= 21000 ? 'Auto-Calculated Amount (0.75%)' : 'Not Eligible (Salary > 21k)'}
-                                </label>
-                                {editingDeductionsId === employee._id ? (
-                                  <input 
-                                    type="number" 
-                                    min="0" 
-                                    disabled={true}
-                                    className="w-full bg-muted border border-border rounded-xl text-foreground px-3 py-2 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:opacity-50" 
-                                    value={deductionsForm.esi.amount} 
-                                    readOnly
-                                  />
-                                ) : (
-                                  <div className="text-lg font-bold text-card-foreground">
-                                    ₹ {employee.monthlySalary <= 21000 ? Math.round((Number(employee.monthlySalary) || 0) * 0.0075) : 0}
-                                    <span className="text-[10px] text-muted-foreground font-normal ml-1">/ month</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            
-                            {/* HRA Card */}
-                            <div className="bg-background border border-border p-4 rounded-xl flex flex-col justify-between">
-                              <div className="flex items-center justify-between mb-4">
-                                <div className="text-sm font-bold text-card-foreground">HRA (House Rent Allowance)</div>
-                                {editingDeductionsId === employee._id ? (
-                                  <label className="flex items-center cursor-pointer">
-                                    <div className="relative">
-                                      <input type="checkbox" className="sr-only" checked={deductionsForm.hra.enabled} onChange={e => setDeductionsForm({...deductionsForm, hra: {...deductionsForm.hra, enabled: e.target.checked}})} />
-                                      <div className={`block w-10 h-6 rounded-full transition-colors ${deductionsForm.hra.enabled ? 'bg-primary' : 'bg-muted border border-border'}`}></div>
-                                      <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${deductionsForm.hra.enabled ? 'transform translate-x-4' : ''}`}></div>
-                                    </div>
-                                  </label>
-                                ) : (
-                                  <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${employee.salaryDeductions?.hra?.enabled ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                                    {employee.salaryDeductions?.hra?.enabled ? 'Enabled' : 'Disabled'}
-                                  </span>
-                                )}
-                              </div>
-                              
-                              <div>
-                                <label className="block text-xs font-bold text-muted-foreground mb-1">Fixed Deduction Amount (₹)</label>
-                                {editingDeductionsId === employee._id ? (
-                                  <input 
-                                    type="number" 
-                                    min="0" 
-                                    disabled={!deductionsForm.hra.enabled}
-                                    className="w-full bg-muted border border-border rounded-xl text-foreground px-3 py-2 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:opacity-50" 
-                                    value={deductionsForm.hra.amount} 
-                                    onChange={e => setDeductionsForm({...deductionsForm, hra: {...deductionsForm.hra, amount: Number(e.target.value)}})} 
-                                  />
-                                ) : (
-                                  <div className="text-lg font-bold text-card-foreground">
-                                    ₹ {employee.salaryDeductions?.hra?.amount || 0}
-                                    <span className="text-[10px] text-muted-foreground font-normal ml-1">/ month</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            
-                            {/* Loan Card */}
-                            <div className="bg-background border border-border p-4 rounded-xl flex flex-col justify-between">
-                              <div className="flex items-center justify-between mb-4">
-                                <div className="text-sm font-bold text-card-foreground">Company Loan</div>
-                                {editingDeductionsId === employee._id ? (
-                                  <label className="flex items-center cursor-pointer">
-                                    <div className="relative">
-                                      <input type="checkbox" className="sr-only" checked={deductionsForm.loan.enabled} onChange={e => setDeductionsForm({...deductionsForm, loan: {...deductionsForm.loan, enabled: e.target.checked}})} />
-                                      <div className={`block w-10 h-6 rounded-full transition-colors ${deductionsForm.loan.enabled ? 'bg-primary' : 'bg-muted border border-border'}`}></div>
-                                      <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${deductionsForm.loan.enabled ? 'transform translate-x-4' : ''}`}></div>
-                                    </div>
-                                  </label>
-                                ) : (
-                                  <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${employee.salaryDeductions?.loan?.enabled ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                                    {employee.salaryDeductions?.loan?.enabled ? 'Active' : (employee.salaryDeductions?.loan?.completed ? 'Completed' : 'Disabled')}
-                                  </span>
-                                )}
-                              </div>
-
-                              {editingDeductionsId === employee._id ? (
-                                <>
-                                <div className="grid grid-cols-2 gap-3 mb-2">
-                                  <div>
-                                    <label className="block text-xs font-bold text-muted-foreground mb-1">Principal (₹)</label>
-                                    <input 
-                                      type="number" 
-                                      min="0" 
-                                      disabled={!deductionsForm.loan.enabled}
-                                      className="w-full bg-muted border border-border rounded-xl text-foreground px-2 py-2 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:opacity-50" 
-                                      value={deductionsForm.loan.principalAmount} 
-                                      onChange={e => setDeductionsForm({...deductionsForm, loan: {...deductionsForm.loan, principalAmount: Number(e.target.value)}})} 
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-bold text-muted-foreground mb-1">Months</label>
-                                    <input 
-                                      type="number" 
-                                      min="1" 
-                                      disabled={!deductionsForm.loan.enabled}
-                                      className="w-full bg-muted border border-border rounded-xl text-foreground px-2 py-2 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:opacity-50" 
-                                      value={deductionsForm.loan.totalMonths} 
-                                      onChange={e => setDeductionsForm({...deductionsForm, loan: {...deductionsForm.loan, totalMonths: Number(e.target.value)}})} 
-                                    />
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3 mb-2">
-                                  <div>
-                                    <label className="block text-xs font-bold text-muted-foreground mb-1">Start Date</label>
-                                    <input 
-                                      type="date" 
-                                      disabled={!deductionsForm.loan.enabled}
-                                      className="w-full bg-muted border border-border rounded-xl text-foreground px-2 py-2 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:opacity-50 [color-scheme:dark]" 
-                                      value={deductionsForm.loan.startDate} 
-                                      onChange={e => setDeductionsForm({...deductionsForm, loan: {...deductionsForm.loan, startDate: e.target.value}})} 
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-bold text-muted-foreground mb-1">End Date</label>
-                                    <input 
-                                      type="date" 
-                                      disabled={!deductionsForm.loan.enabled}
-                                      className="w-full bg-muted border border-border rounded-xl text-foreground px-2 py-2 min-h-[44px] text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:opacity-50 [color-scheme:dark]" 
-                                      value={deductionsForm.loan.endDate} 
-                                      onChange={e => setDeductionsForm({...deductionsForm, loan: {...deductionsForm.loan, endDate: e.target.value}})} 
-                                    />
-                                  </div>
-                                </div>
-                                </>
-                              ) : (
-                                <>
-                                <div className="grid grid-cols-2 gap-3 mb-3">
-                                  <div>
-                                    <div className="text-xs text-muted-foreground mb-1">Principal</div>
-                                    <div className="text-sm font-bold text-card-foreground">₹ {employee.salaryDeductions?.loan?.principalAmount || 0}</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-muted-foreground mb-1">Total Months</div>
-                                    <div className="text-sm font-bold text-card-foreground">{employee.salaryDeductions?.loan?.totalMonths || 0}</div>
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3 mb-3">
-                                  <div>
-                                    <div className="text-xs text-muted-foreground mb-1">Start Date</div>
-                                    <div className="text-sm font-bold text-card-foreground">{employee.salaryDeductions?.loan?.startDate ? new Date(employee.salaryDeductions.loan.startDate).toLocaleDateString() : 'N/A'}</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-muted-foreground mb-1">End Date</div>
-                                    <div className="text-sm font-bold text-card-foreground">{employee.salaryDeductions?.loan?.endDate ? new Date(employee.salaryDeductions.loan.endDate).toLocaleDateString() : 'N/A'}</div>
-                                  </div>
-                                </div>
-                                </>
-                              )}
-                              
-                              <div className="bg-muted/50 rounded-lg p-2 mt-auto">
-                                {editingDeductionsId === employee._id ? (
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-xs font-bold text-muted-foreground">Monthly Deduction Preview:</span>
-                                    <span className="text-sm font-bold text-card-foreground">
-                                      ₹ {deductionsForm.loan.totalMonths > 0 ? (deductionsForm.loan.principalAmount / deductionsForm.loan.totalMonths).toFixed(0) : 0}
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <>
-                                    <div className="flex justify-between items-center mb-1">
-                                      <span className="text-xs font-bold text-muted-foreground">Monthly:</span>
-                                      <span className="text-sm font-bold text-card-foreground">₹ {(employee.salaryDeductions?.loan?.monthlyDeduction || 0).toFixed(0)}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-xs font-bold text-muted-foreground">Remaining:</span>
-                                      <span className="text-xs font-bold text-card-foreground">{employee.salaryDeductions?.loan?.remainingMonths || 0} Months</span>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          </>
-                          )}
-                        </div>
                       </td>
                     </tr>
                   )}
@@ -896,48 +596,7 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
                       onChange={(e) => setFormData({...formData, joiningDate: e.target.value})}
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Monthly Salary (₹)</label>
-                    <input
-                      type="number"
-                      required
-                      className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                      value={formData.monthlySalary}
-                      onChange={(e) => setFormData({...formData, monthlySalary: e.target.value})}
-                    />
-                  </div>
-                  <div className="sm:col-span-2 pt-4 border-t border-border mt-2">
-                    <h4 className="text-sm font-bold text-card-foreground mb-4">Bank Details (Optional)</h4>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                      <div>
-                        <label className="block text-sm font-bold text-card-foreground mb-1.5">Bank Name</label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                          value={formData.bankName}
-                          onChange={(e) => setFormData({...formData, bankName: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-card-foreground mb-1.5">Account Number</label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                          value={formData.accountNumber}
-                          onChange={(e) => setFormData({...formData, accountNumber: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-card-foreground mb-1.5">IFSC Code</label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 bg-background border border-border rounded-xl min-h-[44px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                          value={formData.ifscCode}
-                          onChange={(e) => setFormData({...formData, ifscCode: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                  </div>
+
                   <div className="flex items-center mt-6">
                     <input
                       type="checkbox"

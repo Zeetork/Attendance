@@ -30,9 +30,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Parse base date
-    const attendanceDate = new Date(date);
-    attendanceDate.setHours(0, 0, 0, 0);
+    // Parse base date as UTC to prevent server timezone shifting
+    const [year, month, day] = date.split('-');
+    const attendanceDate = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0));
 
     let parsedLoginTime;
     let parsedLogoutTime;
@@ -70,10 +70,8 @@ export async function POST(req: NextRequest) {
       if (status === 'Restricted Holiday') {
         const Holiday = (await import('@/models/Holiday')).default;
         
-        const startOfDay = new Date(attendanceDate);
-        startOfDay.setHours(0,0,0,0);
-        const endOfDay = new Date(attendanceDate);
-        endOfDay.setHours(23,59,59,999);
+        const startOfDay = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0));
+        const endOfDay = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 23, 59, 59, 999));
 
         const isRH = await Holiday.exists({
           date: { $gte: startOfDay, $lte: endOfDay },
@@ -251,10 +249,8 @@ export async function POST(req: NextRequest) {
       
       const Holiday = (await import('@/models/Holiday')).default;
       
-      const startOfAttendanceDay = new Date(attendanceDate);
-      startOfAttendanceDay.setHours(0,0,0,0);
-      const endOfAttendanceDay = new Date(attendanceDate);
-      endOfAttendanceDay.setHours(23,59,59,999);
+      const startOfAttendanceDay = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0));
+      const endOfAttendanceDay = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 23, 59, 59, 999));
 
       const holiday = await Holiday.findOne({
         date: { $gte: startOfAttendanceDay, $lte: endOfAttendanceDay },

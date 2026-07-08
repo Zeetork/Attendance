@@ -7,10 +7,12 @@ import { Search, Download, PlayCircle, FileText, Loader2, User as UserIcon, Mail
 import * as ExcelJS from 'exceljs';
 import { useCompany } from '@/components/CompanyProvider';
 import { api } from '@/services/api';
+import SalaryConfigurator from './SalaryConfigurator';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function PayrollClient() {
+  const [activeTab, setActiveTab] = useState<'payroll' | 'salary'>('payroll');
   const [currentDate, setCurrentDate] = useState(new Date());
   const month = currentDate.getMonth() + 1;
   const year = currentDate.getFullYear();
@@ -178,6 +180,22 @@ export default function PayrollClient() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Payroll Management</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage salary, deductions, and payslips.</p>
         </div>
+        <div className="flex bg-muted p-1 rounded-xl w-max border border-border">
+          <button
+            onClick={() => setActiveTab('payroll')}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'payroll' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Payroll Run
+          </button>
+          <button
+            onClick={() => setActiveTab('salary')}
+            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'salary' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Salary Configuration
+          </button>
+        </div>
+        
+        {activeTab === 'payroll' && (
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <button
             onClick={handleSendBulkEmail}
@@ -204,8 +222,13 @@ export default function PayrollClient() {
             Generate
           </button>
         </div>
+        )}
       </div>
 
+      {activeTab === 'salary' ? (
+        <SalaryConfigurator />
+      ) : (
+        <>
       <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col print:hidden">
         <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="relative max-w-md w-full">
@@ -491,6 +514,8 @@ export default function PayrollClient() {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   );

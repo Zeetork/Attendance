@@ -52,6 +52,16 @@ export default auth((req) => {
     return Response.redirect(new URL('/employee/dashboard', nextUrl));
   }
 
+  // Prevent 'admin' role from accessing employees and payroll pages
+  // if (user?.role === 'admin' && (nextUrl.pathname.startsWith('/admin/employees') || nextUrl.pathname.startsWith('/admin/payroll'))) {
+  //   return Response.redirect(new URL('/unauthorized', nextUrl));
+  // }
+
+    if (user?.role === 'admin' && nextUrl.pathname.startsWith('/admin/payroll')) {
+    return Response.redirect(new URL('/unauthorized', nextUrl));
+  }
+
+
   if (nextUrl.pathname.startsWith('/employee') && isAdmin) {
     return Response.redirect(new URL('/admin/dashboard', nextUrl));
   }

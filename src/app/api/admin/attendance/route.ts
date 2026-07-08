@@ -25,11 +25,10 @@ export async function GET(req: Request) {
     const query: any = {};
 
     if (dateStr) {
-      const date = new Date(dateStr);
-      date.setHours(0, 0, 0, 0);
-      const nextDate = new Date(date);
-      nextDate.setDate(nextDate.getDate() + 1);
-      query.date = { $gte: date, $lt: nextDate };
+      const [year, month, day] = dateStr.split('-');
+      const date = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0));
+      const nextDate = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 23, 59, 59, 999));
+      query.date = { $gte: date, $lte: nextDate };
     }
 
     if (status) {

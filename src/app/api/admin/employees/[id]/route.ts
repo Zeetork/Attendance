@@ -7,14 +7,14 @@ import bcrypt from 'bcryptjs';
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
-    if (!session || !['admin', 'super_admin'].includes(session.user.role)) {
+    if (!session || !['super_admin'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { id } = await params;
     const data = await req.json();
     const {
-      employeeId, name, email, department, designation, shiftId, joiningDate, monthlySalary, isActive, password, phoneNumber, profileImage, bankName, accountNumber, ifscCode, gender, role
+      employeeId, name, email, department, designation, shiftId, joiningDate, isActive, password, phoneNumber, profileImage, gender, role
     } = data;
 
     await dbConnect();
@@ -41,25 +41,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       designation,
       shiftId: shiftId || undefined,
       joiningDate: new Date(joiningDate),
-      monthlySalary: Number(monthlySalary),
       isActive: Boolean(isActive),
       phoneNumber,
       profileImage,
-      bankName,
-      accountNumber,
-      ifscCode,
       gender: gender || undefined,
       role: role || 'employee',
     };
-
-    const isEsiEligible = updateData.monthlySalary <= 21000;
-    if (!isEsiEligible) {
-      updateData['salaryDeductions.esi.enabled'] = false;
-      updateData['salaryDeductions.esi.amount'] = 0;
-    } else {
-      updateData['salaryDeductions.esi.enabled'] = true;
-      updateData['salaryDeductions.esi.amount'] = Math.round(updateData.monthlySalary * 0.0075);
-    }
 
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
@@ -80,7 +67,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
-    if (!session || !['admin', 'super_admin'].includes(session.user.role)) {
+    if (!session || !['super_admin'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

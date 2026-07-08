@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   try {
     // ================= AUTH =================
     const session = await auth();
-    if (!session || !['admin', 'super_admin'].includes(session.user.role)) {
+    if (!session || !['super_admin'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

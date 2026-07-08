@@ -55,7 +55,11 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { name: 'Profile', href: '/employee/profile', icon: UserIcon },
   ];
 
-  const links = ['admin', 'super_admin'].includes(role as string) ? adminLinks : employeeLinks;
+  let links = ['admin', 'super_admin'].includes(role as string) ? adminLinks : employeeLinks;
+
+  if (role === 'admin') {
+    links = links.filter(link => link.name !== 'Payroll');
+  }
 
   return (
     <div className="flex flex-col w-55 h-[100dvh] bg-card border-r border-border transition-all duration-300">

@@ -37,7 +37,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     } else {
       attendance.logoutTime = undefined;
     }
-    
+
     if (attendance.loginTime && attendance.logoutTime) {
       const diffMs = attendance.logoutTime.getTime() - attendance.loginTime.getTime();
       attendance.totalHours = diffMs / (1000 * 60 * 60);

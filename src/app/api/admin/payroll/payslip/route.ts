@@ -10,7 +10,7 @@ import { generatePayslipPdf } from '@/lib/generatePayslipPdf';
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session || !['admin', 'super_admin'].includes(session.user.role)) {
+    if (!session || !['super_admin'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

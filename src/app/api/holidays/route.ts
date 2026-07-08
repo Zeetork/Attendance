@@ -22,8 +22,10 @@ export async function GET(req: NextRequest) {
       query.date = { $gte: start, $lte: end };
     } else {
       // If no year, get upcoming holidays
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const now = new Date();
+      const istDateString = now.toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata' });
+      const [monthStr, dayStr, currentYearStr] = istDateString.split('/');
+      const today = new Date(Date.UTC(parseInt(currentYearStr), parseInt(monthStr) - 1, parseInt(dayStr), 0, 0, 0, 0));
       query.date = { $gte: today };
     }
 
