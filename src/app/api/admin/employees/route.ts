@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session || !['super_admin'].includes(session.user.role)) {
+    if (!session || !['admin', 'super_admin'].includes(session.user.role)) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       designation,
       shiftId: shiftId || undefined,
       joiningDate: new Date(joiningDate),
-      monthlySalary: Number(monthlySalary),
+      monthlySalary: monthlySalary ? Number(monthlySalary) : undefined,
       role: role || 'employee',
       phoneNumber,
       profileImage,
@@ -68,12 +68,12 @@ export async function POST(req: NextRequest) {
       isActive: isActive !== undefined ? isActive : true,
       companyId: companyId,
       companyIds: companyId ? [companyId] : [],
-      salaryDeductions: {
+      salaryDeductions: monthlySalary ? {
         esi: {
           enabled: Number(monthlySalary) <= 21000,
           amount: Number(monthlySalary) <= 21000 ? Math.round(Number(monthlySalary) * 0.0075) : 0
         }
-      }
+      } : undefined
     });
 
     return Response.json({ message: 'Employee created successfully' }, { status: 201 });

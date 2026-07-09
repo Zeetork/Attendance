@@ -396,6 +396,7 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
                   onChange={e => setEditData({ ...editData, status: e.target.value })}
                 >
                   <optgroup label="Attendance">
+                    <option value="none">None (Clear Record)</option>
                     <option value="present">Present</option>
                     <option value="absent">Absent</option>
                     <option value="half-day">Half Day</option>
@@ -413,7 +414,7 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
                 </select>
               </div>
 
-              {!['present', 'absent', 'half-day', 'late'].includes(editData.status) && (
+              {!['none', 'present', 'absent', 'half-day', 'late'].includes(editData.status) && (
                 <>
                   <div>
                     <label className="block text-sm font-bold text-card-foreground mb-1.5">Leave Duration</label>

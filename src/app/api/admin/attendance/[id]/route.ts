@@ -21,6 +21,18 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Attendance record not found' }, { status: 404 });
     }
 
+    if (status === 'none' || status === 'clear') {
+      const attendanceDate = attendance.date;
+      const userId = attendance.userId;
+      
+      await Attendance.findByIdAndDelete(id);
+      
+      const CompOffCredit = (await import('@/models/CompOffCredit')).default;
+      await CompOffCredit.findOneAndDelete({ employeeId: userId, attendanceDate });
+
+      return NextResponse.json({ message: 'Attendance record deleted successfully' });
+    }
+
     // Parse time and apply to the existing date
     if (loginTime) {
       const [hours, minutes] = loginTime.split(':');

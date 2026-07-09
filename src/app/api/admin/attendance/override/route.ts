@@ -57,6 +57,58 @@ export async function POST(req: NextRequest) {
 
     const attendanceTypes = ['present', 'absent', 'half-day', 'late'];
 
+    if (status === 'none' || status === 'clear') {
+      // Remove existing attendance for this day
+      await Attendance.findOneAndDelete({ userId, date: attendanceDate });
+      
+      const CompOffCredit = (await import('@/models/CompOffCredit')).default;
+      await CompOffCredit.findOneAndDelete({ employeeId: userId, attendanceDate });
+
+      // Remove existing leave and refund
+      const existingLeave = await Leave.findOneAndDelete({ userId, fromDate: attendanceDate, toDate: attendanceDate });
+      
+      if (existingLeave) {
+         // Refund balance
+         const { LeaveBalanceEngine } = await import('@/services/LeaveBalanceEngine');
+         await LeaveBalanceEngine.syncLeaveBalance(userId);
+         const user = await User.findById(userId);
+         if (user && user.leaveBalance) {
+            const oldDeductAmount = existingLeave.numberOfDays || 1;
+            if (existingLeave.leaveType === 'Casual Leave') {
+              user.leaveBalance.casualLeave.taken -= oldDeductAmount;
+              user.leaveBalance.casualLeave.available += oldDeductAmount;
+            } else if (existingLeave.leaveType === 'Sick Leave') {
+              user.leaveBalance.sickLeave.taken -= oldDeductAmount;
+              user.leaveBalance.sickLeave.available += oldDeductAmount;
+            } else if (existingLeave.leaveType === 'Restricted Holiday') {
+              user.leaveBalance.restrictedLeave.taken -= oldDeductAmount;
+              user.leaveBalance.restrictedLeave.available += oldDeductAmount;
+            } else if (existingLeave.leaveType === 'Maternity Leave') {
+              user.leaveBalance.maternityLeave.taken -= oldDeductAmount;
+              user.leaveBalance.maternityLeave.available += oldDeductAmount;
+            } else if (existingLeave.leaveType === 'Paternity Leave') {
+              user.leaveBalance.paternityLeave.taken -= oldDeductAmount;
+              user.leaveBalance.paternityLeave.available += oldDeductAmount;
+            } else if (existingLeave.leaveType === 'Leave Without Pay') {
+              user.leaveBalance.leaveWithoutPay.taken -= oldDeductAmount;
+            } else if (existingLeave.leaveType === 'Compensatory Off') {
+               const credit = await CompOffCredit.findOne({ usedAgainstLeave: existingLeave._id });
+               if (credit) {
+                 credit.isUsed = false;
+                 credit.usedAgainstLeave = undefined;
+                 await credit.save();
+                 user.leaveBalance.compensatoryOff.taken -= oldDeductAmount;
+                 user.leaveBalance.compensatoryOff.available += oldDeductAmount;
+               }
+            }
+            user.markModified('leaveBalance');
+            await user.save();
+         }
+      }
+
+      return NextResponse.json({ message: 'Attendance record cleared successfully' });
+    }
+
     if (!attendanceTypes.includes(status)) {
       const isHalfDay = duration === 'half_day';
       const deductAmount = isHalfDay ? 0.5 : 1;

@@ -72,7 +72,7 @@ const UserSchema: Schema = new Schema(
     accountNumber: { type: String },
     ifscCode: { type: String },
     joiningDate: { type: Date, required: true },
-    monthlySalary: { type: Number, required: true },
+    monthlySalary: { type: Number, default: 0 },
     gender: { type: String, enum: ['male', 'female', 'other'] },
     isActive: { type: Boolean, default: true },
     leaveBalance: {

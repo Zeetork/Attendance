@@ -387,6 +387,7 @@ export default function AttendanceClient() {
                     value={editFormData.status}
                     onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
                   >
+                    <option value="none">None (Clear Record)</option>
                     <option value="present">Present</option>
                     <option value="late">Late</option>
                     <option value="half-day">Half-Day</option>
