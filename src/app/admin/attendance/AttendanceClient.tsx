@@ -123,7 +123,7 @@ export default function AttendanceClient() {
         shift: a.userId?.shiftId?.shiftName || 'N/A',
         in: a.loginTime ? format(new Date(a.loginTime), 'hh:mm a') : '-',
         out: a.logoutTime ? format(new Date(a.logoutTime), 'hh:mm a') : '-',
-        hours: a.totalHours ? a.totalHours.toFixed(2) : '-',
+        hours: a.totalHours ? `${Math.floor(a.totalHours)}.${Math.round((a.totalHours % 1) * 60).toString().padStart(2, '0')}` : '-',
         late: a.lateMinutes || 0,
         status: a.status.toUpperCase(),
       });
@@ -304,7 +304,7 @@ export default function AttendanceClient() {
                       <div className="text-sm font-bold text-muted-foreground">Out: {record.logoutTime ? format(new Date(record.logoutTime), 'hh:mm a') : '--:--'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-card-foreground">
-                      {record.totalHours ? `${record.totalHours.toFixed(1)}h` : '-'}
+                      {record.totalHours ? `${Math.floor(record.totalHours)}.${Math.round((record.totalHours % 1) * 60).toString().padStart(2, '0')}h` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-card-foreground">
                       {record.lateMinutes > 0 ? <span className="text-warning">{record.lateMinutes}m</span> : '-'}

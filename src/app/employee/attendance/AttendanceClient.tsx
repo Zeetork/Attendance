@@ -217,7 +217,7 @@ export default function EmployeeAttendanceClient() {
                       {att.logoutTime ? format(new Date(att.logoutTime), 'HH:mm') : '--:--'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground group-hover:text-accent-foreground/80 font-medium font-mono">
-                      {att.totalHours ? `${att.totalHours.toFixed(2)} hrs` : '-'}
+                      {att.totalHours ? `${Math.floor(att.totalHours)}.${Math.round((att.totalHours % 1) * 60).toString().padStart(2, '0')} hrs` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(att.status)}

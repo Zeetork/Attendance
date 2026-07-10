@@ -67,11 +67,11 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
     const attendance = data.attendances?.find((a: any) => isSameDay(new Date(a.date), day));
     if (attendance) {
       if (attendance.status === 'present') {
-        const hours = attendance.totalHours ? `${attendance.totalHours.toFixed(2)} Hrs` : (attendance.loginTime && !attendance.logoutTime) ? 'Working' : '';
+        const hours = attendance.totalHours ? `${Math.floor(attendance.totalHours)}.${Math.round((attendance.totalHours % 1) * 60).toString().padStart(2, '0')} Hrs` : (attendance.loginTime && !attendance.logoutTime) ? 'Working' : '';
         return { type: 'present', label: 'Present', subLabel: hours, color: 'bg-success/10 text-success border-success/20' };
       }
       if (attendance.status === 'half-day') {
-        return { type: 'half-day', label: 'Half Day', subLabel: attendance.totalHours ? `${attendance.totalHours.toFixed(2)} Hrs` : '', color: 'bg-warning/10 text-warning border-warning/20' };
+        return { type: 'half-day', label: 'Half Day', subLabel: attendance.totalHours ? `${Math.floor(attendance.totalHours)}.${Math.round((attendance.totalHours % 1) * 60).toString().padStart(2, '0')} Hrs` : '', color: 'bg-warning/10 text-warning border-warning/20' };
       }
       if (attendance.status === 'absent') {
         return { type: 'absent', label: 'Absent', color: 'bg-destructive/10 text-destructive border-destructive/20' };
