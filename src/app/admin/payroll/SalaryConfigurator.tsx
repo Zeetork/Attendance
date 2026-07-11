@@ -173,7 +173,7 @@ export default function SalaryConfigurator() {
                           {user.bankName || user.accountNumber ? (
                             <div className="text-xs text-muted-foreground">
                               <div>{user.bankName || 'No Bank'}</div>
-                              <div>Acct: {user.accountNumber || 'N/A'}</div>
+                              <div>Acct: {user.accountNumber ? user.accountNumber.replace(/.(?=.{4})/g, '*') : 'N/A'}</div>
                               <div>IFSC: {user.ifscCode || 'N/A'}</div>
                             </div>
                           ) : (
