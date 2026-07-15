@@ -10,14 +10,44 @@ export async function PUT(req: NextRequest, props: { params: Promise<{ id: strin
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { shiftName, startTime, endTime, graceTime, workingDays, isActive } = await req.json();
+    const { shiftName, workingDays, sessions, isActive } = await req.json();
+
+    if (!shiftName || !workingDays || workingDays.length === 0 || !sessions || sessions.length === 0) {
+      return NextResponse.json({ error: 'Missing required fields or sessions' }, { status: 400 });
+    }
+
+    sessions.sort((a: any, b: any) => a.startTime.localeCompare(b.startTime));
+
+    for (let i = 0; i < sessions.length; i++) {
+      const s = sessions[i];
+      if (s.endTime <= s.startTime) {
+        return NextResponse.json({ error: `Session ${i+1}: End time must be after start time` }, { status: 400 });
+      }
+      s.order = i + 1;
+      s.graceTime = s.graceTime || 0;
+
+      if (i > 0) {
+        const prev = sessions[i - 1];
+        if (s.startTime < prev.endTime) {
+          return NextResponse.json({ error: `Session ${i+1} overlaps with Session ${i}` }, { status: 400 });
+        }
+      }
+    }
 
     await dbConnect();
     const { id } = await props.params;
     
     const shift = await Shift.findByIdAndUpdate(
       id,
-      { shiftName, startTime, endTime, graceTime, workingDays, isActive },
+      { 
+        shiftName, 
+        workingDays, 
+        sessions, 
+        isActive,
+        startTime: sessions[0].startTime,
+        endTime: sessions[sessions.length - 1].endTime,
+        graceTime: sessions[0].graceTime
+      },
       { new: true }
     );
 

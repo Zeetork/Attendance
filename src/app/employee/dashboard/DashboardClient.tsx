@@ -59,6 +59,8 @@ export default function EmployeeDashboardClient() {
             subordinates={data?.subordinates}
             isLoading={isLoading}
             todayAttendance={data?.todayAttendance}
+            sessionStatus={data?.sessionStatus}
+            activeSessionInfo={data?.activeSessionInfo}
           />
         </div>
 

@@ -29,6 +29,8 @@ interface ReportingStructureProps {
   subordinates: Employee[] | null;
   isLoading: boolean;
   todayAttendance: AttendanceData | null;
+  sessionStatus?: string;
+  activeSessionInfo?: any;
 }
 
 const Avatar = ({ src, alt, size = "md" }: { src?: string, alt?: string, size?: "sm" | "md" | "lg" }) => {
@@ -89,7 +91,7 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, isLoading }
   );
 };
 
-export default function ReportingStructure({ manager, currentUser, subordinates, isLoading, todayAttendance }: ReportingStructureProps) {
+export default function ReportingStructure({ manager, currentUser, subordinates, isLoading, todayAttendance, sessionStatus, activeSessionInfo }: ReportingStructureProps) {
   const router = useRouter();
   const [elapsed, setElapsed] = useState('00 : 00 : 00');
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -191,16 +193,19 @@ export default function ReportingStructure({ manager, currentUser, subordinates,
         </p>
 
         <div className="mt-6 w-full flex flex-col items-center bg-background/50 rounded-xl p-4 border border-border">
-          <p className="text-sm font-medium mb-2 text-muted-foreground uppercase tracking-widest text-[10px]">Current Status</p>
+          <p className="text-sm font-medium mb-2 text-muted-foreground uppercase tracking-widest text-[10px]">Current Session Status</p>
           <div className="flex items-center gap-2 mb-3">
-             <span className={clsx("relative flex h-3 w-3", todayAttendance?.loginTime && !todayAttendance?.logoutTime ? "flex" : "hidden")}>
+             <span className={clsx("relative flex h-3 w-3", sessionStatus === 'CAN_CHECK_OUT' ? "flex" : "hidden")}>
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-success"></span>
              </span>
              <p className={clsx("text-sm font-bold", 
-               todayAttendance?.loginTime && !todayAttendance?.logoutTime ? "text-success" : "text-muted-foreground"
+               sessionStatus === 'CAN_CHECK_OUT' ? "text-success" : "text-muted-foreground"
              )}>
-               {todayAttendance?.loginTime && !todayAttendance?.logoutTime ? 'Checked In' : 'Not Checked In'}
+               {sessionStatus === 'CAN_CHECK_IN' ? 'Check In Available' : 
+                sessionStatus === 'CAN_CHECK_OUT' ? 'Checked In' : 
+                sessionStatus === 'COMPLETED' ? 'Session Completed' :
+                sessionStatus === 'NO_ACTIVE_SESSION' ? 'No Active Session' : 'Not Available'}
              </p>
           </div>
 
@@ -214,8 +219,21 @@ export default function ReportingStructure({ manager, currentUser, subordinates,
           </div>
         </div>
 
-        <div className="mt-6 w-full">
-          {!todayAttendance?.loginTime ? (
+        <div className="mt-6 w-full text-center mb-2">
+          {activeSessionInfo?.activeSession && (
+            <p className="text-xs font-bold text-muted-foreground mb-2">
+              Active Session: {activeSessionInfo.activeSession.startTime} - {activeSessionInfo.activeSession.endTime}
+            </p>
+          )}
+          {!activeSessionInfo?.activeSession && activeSessionInfo?.nextSession && (
+            <p className="text-xs font-bold text-muted-foreground mb-2">
+              Next Session: {activeSessionInfo.nextSession.startTime}
+            </p>
+          )}
+        </div>
+
+        <div className="mt-2 w-full">
+          {sessionStatus === 'CAN_CHECK_IN' ? (
             <button
               disabled={isActionLoading}
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 py-3.5 rounded-xl font-bold transition-all text-sm flex items-center justify-center disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -223,7 +241,7 @@ export default function ReportingStructure({ manager, currentUser, subordinates,
             >
               {isActionLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Check In Now'}
             </button>
-          ) : !todayAttendance?.logoutTime ? (
+          ) : sessionStatus === 'CAN_CHECK_OUT' ? (
             <button
               disabled={isActionLoading}
               className="w-full bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30 py-3.5 rounded-xl font-bold transition-all text-sm flex items-center justify-center disabled:opacity-50 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -233,7 +251,7 @@ export default function ReportingStructure({ manager, currentUser, subordinates,
             </button>
           ) : (
             <div className="w-full bg-muted border border-border text-muted-foreground py-3.5 rounded-xl font-medium text-sm flex items-center justify-center cursor-not-allowed">
-              Shift Completed
+              {sessionStatus === 'COMPLETED' ? 'Shift Completed' : 'Action Unavailable'}
             </div>
           )}
         </div>

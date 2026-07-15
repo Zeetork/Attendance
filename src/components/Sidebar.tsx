@@ -19,7 +19,8 @@ import {
   CalendarDays,
   Mail,
   Building2,
-  Clock
+  Clock,
+  Timer
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import clsx from 'clsx';
@@ -34,6 +35,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { name: 'Employees', href: '/admin/employees', icon: Users },
     { name: 'Attendance', href: '/admin/attendance', icon: CalendarClock },
     { name: 'Leaves', href: '/admin/leaves', icon: CalendarOff },
+    { name: 'Permissions', href: '/admin/permissions', icon: Timer },
     { name: 'Approval Center', href: '/admin/approvals', icon: Network },
     { name: 'Payroll', href: '/admin/payroll', icon: Banknote },
     { name: 'Reports', href: '/admin/reports', icon: FileBarChart },
@@ -49,6 +51,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { name: 'Dashboard', href: '/employee/dashboard', icon: LayoutDashboard },
     { name: 'Attendance', href: '/employee/attendance', icon: CalendarClock },
     { name: 'Leaves', href: '/employee/leaves', icon: CalendarOff },
+    { name: 'Permissions', href: '/employee/permissions', icon: Timer },
     { name: 'Approval Center', href: '/employee/approvals', icon: Network },
     { name: 'Calendar', href: '/employee/calendar', icon: CalendarDays },
     { name: 'Payslips', href: '/employee/payslips', icon: Receipt },

@@ -6,7 +6,7 @@ import GeneratedLetter from '@/models/GeneratedLetter';
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user || !['admin', 'director', 'hr'].includes(session.user.role as string)) {
+    if (!session?.user || !['super_admin', 'admin', 'director', 'hr'].includes(session.user.role as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

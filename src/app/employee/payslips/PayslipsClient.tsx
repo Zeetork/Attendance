@@ -103,7 +103,7 @@ export default function PayslipsClient() {
               </div>
 
               {/* Printable Area */}
-              <div className="space-y-4 text-black bg-white p-8 rounded-lg">
+              <div className="space-y-4 text-black bg-white p-4 sm:p-8 rounded-lg overflow-x-auto">
                 {/* Header */}
                 <div className="flex justify-center items-center relative mb-6">
                   <h1 className="text-xl font-bold uppercase tracking-wider">Pay Slip</h1>
@@ -113,7 +113,7 @@ export default function PayslipsClient() {
                 </div>
 
                 {/* Table 1 */}
-                <table className="w-full border-2 border-black text-sm mb-4">
+                <table className="w-full min-w-[600px] border-2 border-black text-sm mb-4">
                   <tbody>
                     <tr className="border-b border-black">
                       <td className="p-2 border-r border-black w-1/4">Employee Name</td>
@@ -149,7 +149,7 @@ export default function PayslipsClient() {
                 </table>
 
                 {/* Table 2: Leave */}
-                <table className="w-full border-2 border-black text-sm text-center mb-4">
+                <table className="w-full min-w-[600px] border-2 border-black text-sm text-center mb-4">
                   <thead>
                     <tr className="bg-gray-50 border-b border-black">
                       <th className="p-2 border-r border-black font-normal w-1/4">Leave Record</th>
@@ -181,7 +181,7 @@ export default function PayslipsClient() {
                 </table>
 
                 {/* Table 3: Salary */}
-                <table className="w-full border-2 border-black text-sm mb-4">
+                <table className="w-full min-w-[600px] border-2 border-black text-sm mb-4">
                   <thead>
                     <tr className="border-b border-black text-center">
                       <th colSpan={2} className="p-2 border-r border-black font-bold uppercase w-1/2">SALARY</th>

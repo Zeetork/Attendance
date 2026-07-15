@@ -179,6 +179,9 @@ export default function EmployeeAttendanceClient() {
                 <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Check In</th>
                 <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Check Out</th>
                 <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Work Hours</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Extra</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Available</th>
+                <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Used</th>
                 <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Status</th>
                 <th scope="col" className="px-6 py-4 text-right text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Action / Status</th>
               </tr>
@@ -204,7 +207,9 @@ export default function EmployeeAttendanceClient() {
                   </td>
                 </tr>
               ) : (
-                attendances.map((att: { _id: string, date: string, loginTime?: string, logoutTime?: string, totalHours?: number, status: string, correctionStatus?: string }) => (
+                attendances.map((att: any) => {
+                  const used = (att.totalExtraMinutes || 0) - (att.availableExtraMinutes || 0);
+                  return (
                   <tr key={att._id} className="hover:bg-accent hover:text-accent-foreground transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-bold text-card-foreground group-hover:text-accent-foreground">{format(new Date(att.date), 'MMM dd, yyyy')}</div>
@@ -218,6 +223,15 @@ export default function EmployeeAttendanceClient() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground group-hover:text-accent-foreground/80 font-medium font-mono">
                       {att.totalHours ? `${Math.floor(att.totalHours)}.${Math.round((att.totalHours % 1) * 60).toString().padStart(2, '0')} hrs` : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-primary font-bold font-mono">
+                      {att.totalExtraMinutes ? `${Math.floor(att.totalExtraMinutes / 60)}h ${att.totalExtraMinutes % 60}m` : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-success font-bold font-mono">
+                      {att.availableExtraMinutes ? `${Math.floor(att.availableExtraMinutes / 60)}h ${att.availableExtraMinutes % 60}m` : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-warning font-bold font-mono">
+                      {used > 0 ? `${Math.floor(used / 60)}h ${used % 60}m` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(att.status)}
@@ -265,7 +279,8 @@ export default function EmployeeAttendanceClient() {
                       )}
                     </td>
                   </tr>
-                ))
+                );
+              })
               )}
             </tbody>
           </table>

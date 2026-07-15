@@ -4,8 +4,9 @@ import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import Attendance from '@/models/Attendance';
 import Leave from '@/models/Leave';
-import '@/models/Shift'; // Side-effect import to ensure model registration
+import '@/models/Shift'; 
 import Holiday from '@/models/Holiday';
+import { getActiveSessionInfo } from '@/lib/sessionUtils';
 
 export async function GET() {
   try {
@@ -111,13 +112,29 @@ export async function GET() {
       });
     }
 
+    const currentIstTime = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour12: false, hour: '2-digit', minute: '2-digit' });
+    const shift = user?.shiftId;
+    let sessionStatus = 'NO_SHIFT';
+    let activeSessionInfo = null;
+    
+    if (shift && shift.sessions) {
+      activeSessionInfo = getActiveSessionInfo(shift.sessions, todayAttendance?.sessions || [], currentIstTime);
+      sessionStatus = activeSessionInfo.currentStatus;
+      
+      if (todayAttendance) {
+        (todayAttendance as any).activeSessionInfo = activeSessionInfo;
+      }
+    }
+
     return NextResponse.json({
-      shift: user?.shiftId,
+      shift,
       todayAttendance,
+      sessionStatus,
+      activeSessionInfo,
       attendancePercentage,
       presentDays,
       workingDays,
-      leaveBalance: availableLeave, // Keep for backward compatibility
+      leaveBalance: availableLeave,
       rawLeaveBalance: user?.leaveBalance,
       availableLeave,
       takenLeaves,
