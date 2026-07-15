@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59, 999);
     const daysInMonth = endDate.getDate();
 
-    const employees = await User.find({ role: { $in: ['employee', 'intern'] }, isActive: true })
+    const employees = await User.find({ role: { $nin: ['admin', 'super_admin'] }, isActive: true })
       .populate('shiftId')
       .lean();
 
