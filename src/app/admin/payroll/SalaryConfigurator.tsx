@@ -198,10 +198,10 @@ export default function SalaryConfigurator() {
                             </div>
                           </div>
                           
-                          {/* HRA */}
+                          {/* Rental Deduction */}
                           <div className="bg-muted/30 p-3 rounded-xl border border-border">
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-xs font-bold text-foreground">HRA</span>
+                              <span className="text-xs font-bold text-foreground">Rental Deduction</span>
                               <label className="flex items-center cursor-pointer">
                                 <div className="relative">
                                   <input type="checkbox" className="sr-only" checked={formData.salaryDeductions.hra.enabled} onChange={e => setFormData({...formData, salaryDeductions: {...formData.salaryDeductions, hra: {...formData.salaryDeductions.hra, enabled: e.target.checked}}})} />
@@ -265,7 +265,7 @@ export default function SalaryConfigurator() {
                           )}
                           {user.salaryDeductions?.hra?.enabled && (
                             <div className="text-destructive flex justify-between">
-                              <span>HRA</span> <span>₹{user.salaryDeductions.hra.amount}</span>
+                              <span>Rental Deduction</span> <span>₹{user.salaryDeductions.hra.amount}</span>
                             </div>
                           )}
                           {user.salaryDeductions?.loan?.enabled && (

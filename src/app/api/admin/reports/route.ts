@@ -3,8 +3,7 @@ import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import Attendance from '@/models/Attendance';
-import Leave from '@/models/Leave';
-import Payroll from '@/models/Payroll';
+import Shift from '@/models/Shift';
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,59 +13,111 @@ export async function GET(req: NextRequest) {
     }
 
     await dbConnect();
-    const currentMonth = new Date().getMonth() + 1;
-    const currentYear = new Date().getFullYear();
-
-    const employees = await User.countDocuments({ role: 'employee', isActive: true });
     
-    // Attendance Stats (last 7 days)
-    const last7Days = Array.from({ length: 7 }).map((_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      return d.toISOString().split('T')[0];
-    }).reverse();
+    const url = new URL(req.url);
+    const monthParam = url.searchParams.get('month');
+    const yearParam = url.searchParams.get('year');
+    
+    const now = new Date();
+    const targetMonth = monthParam ? parseInt(monthParam) : now.getMonth() + 1;
+    const targetYear = yearParam ? parseInt(yearParam) : now.getFullYear();
 
-    const attendanceStats = await Promise.all(last7Days.map(async (dateStr) => {
-      const start = new Date(dateStr);
-      const end = new Date(start);
-      end.setDate(end.getDate() + 1);
+    const startDate = new Date(targetYear, targetMonth - 1, 1);
+    const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59, 999);
+    const daysInMonth = endDate.getDate();
 
-      const attendances = await Attendance.find({ date: { $gte: start, $lt: end } });
-      const present = attendances.filter(a => a.status === 'present').length;
-      const late = attendances.filter(a => a.status === 'late').length;
-      const halfDay = attendances.filter(a => a.status === 'half-day').length;
+    const employees = await User.find({ role: { $in: ['employee', 'intern'] }, isActive: true })
+      .populate('shiftId')
+      .lean();
+
+    const userIds = employees.map(e => e._id);
+
+    const attendances = await Attendance.find({
+      userId: { $in: userIds },
+      date: { $gte: startDate, $lte: endDate }
+    }).populate('shiftId').lean();
+
+    // 1. Late Coming Log (List of specific late instances)
+    const lateLog = attendances
+      .filter((a: any) => a.status === 'late' || (a.lateMinutes && a.lateMinutes > 0))
+      .map((a: any) => {
+        const user = employees.find(e => e._id.toString() === a.userId.toString());
+        const shift = a.shiftId || user?.shiftId;
+        return {
+          employeeName: user?.name || 'Unknown',
+          department: user?.department || 'Unknown',
+          date: a.date,
+          shiftStart: shift ? shift.startTime : '-',
+          actualCheckIn: a.loginTime || '-',
+          lateBy: a.lateMinutes || 0
+        };
+      })
+      .sort((a, b) => b.lateBy - a.lateBy); // Sort by highest late arrivals
+
+    // 2. Monthly Matrix & Summary
+    const monthlyData = employees.map((emp: any) => {
+      const empAttendances = attendances.filter((a: any) => a.userId.toString() === emp._id.toString());
+      
+      const matrix: Record<number, string> = {};
+      let presentCount = 0;
+      let lateCount = 0;
+      let absentCount = 0;
+      let halfDayCount = 0;
+      let leaveCount = 0;
+      let otCount = 0; // Placeholder for OT
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = new Date(targetYear, targetMonth - 1, day).toISOString().split('T')[0];
+        const record = empAttendances.find((a: any) => new Date(a.date).toISOString().split('T')[0] === dateStr);
+        
+        if (record) {
+          matrix[day] = record.status;
+          switch (record.status) {
+            case 'present': presentCount++; break;
+            case 'late': lateCount++; break;
+            case 'absent': absentCount++; break;
+            case 'half-day': halfDayCount++; break;
+            case 'Leave': leaveCount++; break;
+            // Add other statuses if needed
+          }
+        } else {
+          // If past date, mark as absent if no record, else '-'
+          const checkDate = new Date(targetYear, targetMonth - 1, day);
+          if (checkDate <= now && checkDate.getDay() !== 0) {
+            // matrix[day] = 'absent';
+            // absentCount++;
+            matrix[day] = '-';
+          } else {
+            matrix[day] = '-';
+          }
+        }
+      }
 
       return {
-        date: dateStr.split('-').slice(1).join('/'),
-        present,
-        late,
-        halfDay
+        employeeName: emp.name,
+        department: emp.department,
+        matrix,
+        summary: {
+          present: presentCount,
+          late: lateCount,
+          absent: absentCount,
+          halfDay: halfDayCount,
+          leave: leaveCount,
+          ot: otCount
+        }
       };
-    }));
-
-    // Leave Stats
-    const leaves = await Leave.find();
-    const leaveStats = {
-      pending: leaves.filter(l => l.status === 'pending').length,
-      approved: leaves.filter(l => l.status === 'approved').length,
-      rejected: leaves.filter(l => l.status === 'rejected').length
-    };
-
-    // Payroll Stats (current month)
-    const payrolls = await Payroll.find({ month: currentMonth, year: currentYear });
-    const payrollStats = {
-      totalGenerated: payrolls.length,
-      totalPayout: payrolls.reduce((sum, p) => sum + (p.finalSalary || 0), 0),
-      totalDeductions: payrolls.reduce((sum, p) => sum + (p.deductions || 0), 0)
-    };
+    });
 
     return NextResponse.json({
-      employees,
-      attendanceStats,
-      leaveStats,
-      payrollStats
+      month: targetMonth,
+      year: targetYear,
+      daysInMonth,
+      lateLog,
+      monthlyData
     });
+
   } catch (error: any) {
+    console.error('Error fetching reports:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

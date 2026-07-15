@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { format } from 'date-fns';
 import { Plus, X, CheckCircle, XCircle, Clock, Loader2, Calendar } from 'lucide-react';
@@ -11,8 +12,15 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function EmployeeLeavesClient() {
   const { data, error, isLoading, mutate } = useSWR('/api/employee/leaves', fetcher);
+  const searchParams = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('apply') === 'true') {
+      setIsModalOpen(true);
+    }
+  }, [searchParams]);
   
   const [formData, setFormData] = useState({
     leaveType: '',

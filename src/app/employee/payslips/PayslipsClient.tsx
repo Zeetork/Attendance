@@ -30,7 +30,7 @@ export default function PayslipsClient() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:hidden">
         {isLoading ? (
-          Array.from({length: 3}).map((_, i) => (
+          Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="bg-card border border-border rounded-2xl p-6 h-48 animate-pulse"></div>
           ))
         ) : payslips.length === 0 ? (
@@ -53,7 +53,7 @@ export default function PayslipsClient() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2 mb-6">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Gross Salary</span>
@@ -69,7 +69,7 @@ export default function PayslipsClient() {
                   </div>
                 </div>
 
-                <button 
+                <button
                   onClick={() => setSelectedPayslip(payslip)}
                   className="w-full flex items-center justify-center px-4 py-2 min-h-[44px] bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/80 transition-colors border border-border text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
@@ -89,7 +89,7 @@ export default function PayslipsClient() {
             <div className="fixed inset-0 transition-opacity bg-black/80 backdrop-blur-sm z-0 print:hidden" onClick={() => setSelectedPayslip(null)} />
 
             <div className="relative z-10 inline-block w-full max-w-3xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-card text-card-foreground rounded-2xl shadow-xl sm:my-8 sm:align-middle sm:p-8 print:shadow-none print:m-0 print:w-full print:max-w-none animate-in fade-in zoom-in-95 duration-200">
-              
+
               <div className="flex justify-between items-center mb-8 print:hidden border-b border-border pb-4">
                 <h3 className="text-xl font-bold">Payslip Preview</h3>
                 <div className="flex gap-2">
@@ -103,109 +103,150 @@ export default function PayslipsClient() {
               </div>
 
               {/* Printable Area */}
-              <div className="space-y-8">
-                <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-end gap-4 sm:gap-0 border-b-2 border-border pb-6">
-                  <div>
-                    <h1 className="text-3xl font-black tracking-tight text-card-foreground">PAYSLIP</h1>
-                    <p className="text-muted-foreground mt-1 font-bold">{format(new Date(selectedPayslip.year, selectedPayslip.month - 1), 'MMMM yyyy')}</p>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <h2 className="text-xl font-bold text-card-foreground">{activeCompany?.companyName || 'Company Name'}</h2>
-                    <p className="text-sm text-muted-foreground">{activeCompany?.address || 'Company Address'}</p>
-                    <p className="text-sm text-muted-foreground">{activeCompany?.email || 'email@company.com'} | {activeCompany?.phone || 'Phone Number'}</p>
+              <div className="space-y-4 text-black bg-white p-8 rounded-lg">
+                {/* Header */}
+                <div className="flex justify-center items-center relative mb-6">
+                  <h1 className="text-xl font-bold uppercase tracking-wider">Pay Slip</h1>
+                  <div className="absolute right-0 text-3xl font-bold text-[#d32f2f] uppercase tracking-wider">
+                    {activeCompany?.companyName || 'COMPANY NAME'}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
-                  <div className="bg-muted/30 p-5 rounded-2xl border border-border">
-                    <h3 className="text-xs font-bold text-card-foreground uppercase tracking-wider mb-4">Employee Details</h3>
-                    <div className="grid grid-cols-2 gap-y-3 text-sm">
-                      <div className="text-muted-foreground font-medium">Employee ID:</div>
-                      <div className="font-bold text-right">{selectedPayslip.userId?.employeeId}</div>
-                      <div className="text-muted-foreground font-medium">Name:</div>
-                      <div className="font-bold text-right">{selectedPayslip.userId?.name}</div>
-                      <div className="text-muted-foreground font-medium">Department:</div>
-                      <div className="font-bold text-right">{selectedPayslip.userId?.department}</div>
-                      <div className="text-muted-foreground font-medium">Designation:</div>
-                      <div className="font-bold text-right">{selectedPayslip.userId?.designation}</div>
-                    </div>
-                  </div>
-                  <div className="bg-muted/30 p-5 rounded-2xl border border-border">
-                    <h3 className="text-xs font-bold text-card-foreground uppercase tracking-wider mb-4">Bank Details</h3>
-                    <div className="grid grid-cols-2 gap-y-3 text-sm">
-                      <div className="text-muted-foreground font-medium">Bank Name:</div>
-                      <div className="font-bold text-right">{selectedPayslip.userId?.bankName || '-'}</div>
-                      <div className="text-muted-foreground font-medium">Account No:</div>
-                      <div className="font-bold text-right">{selectedPayslip.userId?.accountNumber || '-'}</div>
-                      <div className="text-muted-foreground font-medium">IFSC Code:</div>
-                      <div className="font-bold text-right">{selectedPayslip.userId?.ifscCode || '-'}</div>
-                    </div>
-                  </div>
-                </div>
+                {/* Table 1 */}
+                <table className="w-full border-2 border-black text-sm mb-4">
+                  <tbody>
+                    <tr className="border-b border-black">
+                      <td className="p-2 border-r border-black w-1/4">Employee Name</td>
+                      <td className="p-2 border-r border-black w-1/4">{selectedPayslip.userId?.name || '-'}</td>
+                      <td className="p-2 border-r border-black w-1/4">Month</td>
+                      <td className="p-2 w-1/4">{format(new Date(selectedPayslip.year, selectedPayslip.month - 1), 'MMM yyyy')}</td>
+                    </tr>
+                    <tr className="border-b border-black">
+                      <td className="p-2 border-r border-black">Designation</td>
+                      <td className="p-2 border-r border-black">{selectedPayslip.userId?.designation || '-'}</td>
+                      <td className="p-2 border-r border-black">Total Working Days</td>
+                      <td className="p-2">{selectedPayslip.totalWorkingDays || '-'}</td>
+                    </tr>
+                    <tr className="border-b border-black">
+                      <td className="p-2 border-r border-black">Date of Joining</td>
+                      <td className="p-2 border-r border-black">{selectedPayslip.userId?.joiningDate ? format(new Date(selectedPayslip.userId.joiningDate), 'dd.MM.yyyy') : '-'}</td>
+                      <td className="p-2 border-r border-black">Un-Paid Leave Taken</td>
+                      <td className="p-2">{selectedPayslip.absentDays || 0}</td>
+                    </tr>
+                    <tr className="border-b border-black">
+                      <td className="p-2 border-r border-black">Job Location</td>
+                      <td className="p-2 border-r border-black">{selectedPayslip.userId?.location || selectedPayslip.userId?.address || 'Coimbatore'}</td>
+                      <td className="p-2 border-r border-black">Days Paid</td>
+                      <td className="p-2">{(selectedPayslip.totalWorkingDays || 0) - (selectedPayslip.absentDays || 0)}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 border-r border-black">Bank Name</td>
+                      <td className="p-2 border-r border-black">{selectedPayslip.userId?.bankName || '-'}</td>
+                      <td className="p-2 border-r border-black">A/c Number</td>
+                      <td className="p-2">{selectedPayslip.userId?.accountNumber || '-'}</td>
+                    </tr>
+                  </tbody>
+                </table>
 
-                <div className="bg-muted/30 p-5 rounded-2xl border border-border grid grid-cols-2 sm:flex sm:justify-between gap-4 sm:gap-0 text-sm">
-                  <div className="text-center sm:px-4">
-                    <div className="text-muted-foreground font-medium mb-1">Total Days</div>
-                    <div className="font-black text-xl">{selectedPayslip.totalWorkingDays}</div>
-                  </div>
-                  <div className="text-center sm:px-4 sm:border-l border-border">
-                    <div className="text-muted-foreground font-medium mb-1">Present</div>
-                    <div className="font-black text-xl text-success">{selectedPayslip.presentDays}</div>
-                  </div>
-                  <div className="text-center sm:px-4 sm:border-l border-border">
-                    <div className="text-muted-foreground font-medium mb-1">Absent</div>
-                    <div className="font-black text-xl text-destructive">{selectedPayslip.absentDays}</div>
-                  </div>
-                  <div className="text-center sm:px-4 sm:border-l border-border">
-                    <div className="text-muted-foreground font-medium mb-1">Half Days</div>
-                    <div className="font-black text-xl text-warning">{selectedPayslip.halfDays}</div>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto rounded-2xl border border-border">
-                  <table className="min-w-full w-full text-sm">
+                {/* Table 2: Leave */}
+                <table className="w-full border-2 border-black text-sm text-center mb-4">
                   <thead>
-                    <tr className="bg-muted/50 border-b border-border">
-                      <th className="px-5 py-4 text-left font-bold text-card-foreground">Earnings</th>
-                      <th className="px-5 py-4 text-right font-bold text-card-foreground">Amount</th>
-                      <th className="px-5 py-4 text-left font-bold text-card-foreground">Deductions</th>
-                      <th className="px-5 py-4 text-right font-bold text-card-foreground">Amount</th>
+                    <tr className="bg-gray-50 border-b border-black">
+                      <th className="p-2 border-r border-black font-normal w-1/4">Leave Record</th>
+                      <th className="p-2 border-r border-black font-normal w-1/4">Total</th>
+                      <th className="p-2 border-r border-black font-normal w-1/4">Taken</th>
+                      <th className="p-2 font-normal w-1/4">Balance</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-border">
-                      <td className="px-5 py-4 font-medium">Basic Salary</td>
-                      <td className="px-5 py-4 text-right font-bold">₹{selectedPayslip.monthlySalary.toLocaleString()}</td>
-                      <td className="px-5 py-4 font-medium">Loss of Pay (Absent)</td>
-                      <td className="px-5 py-4 text-right font-bold text-destructive">-₹{selectedPayslip.deductions.toLocaleString()}</td>
+                    <tr className="border-b border-black">
+                      <td className="p-2 border-r border-black">Casual Leave</td>
+                      <td className="p-2 border-r border-black">{selectedPayslip.userId?.leaveBalance?.casualLeave?.total || 0}</td>
+                      <td className="p-2 border-r border-black bg-gray-100">{selectedPayslip.userId?.leaveBalance?.casualLeave?.taken || 0}</td>
+                      <td className="p-2">{selectedPayslip.userId?.leaveBalance?.casualLeave?.available || 0}</td>
                     </tr>
-                    <tr className="border-b border-border">
-                      <td className="px-5 py-4"></td>
-                      <td className="px-5 py-4 text-right"></td>
-                      <td className="px-5 py-4"></td>
-                      <td className="px-5 py-4 text-right"></td>
+                    <tr className="border-b border-black">
+                      <td className="p-2 border-r border-black">Sick Leave</td>
+                      <td className="p-2 border-r border-black">{selectedPayslip.userId?.leaveBalance?.sickLeave?.total || 0}</td>
+                      <td className="p-2 border-r border-black bg-gray-100">{selectedPayslip.userId?.leaveBalance?.sickLeave?.taken || 0}</td>
+                      <td className="p-2">{selectedPayslip.userId?.leaveBalance?.sickLeave?.available || 0}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 border-r border-black">Restricted Holiday</td>
+                      <td className="p-2 border-r border-black">{selectedPayslip.userId?.leaveBalance?.restrictedLeave?.total || 0}</td>
+                      <td className="p-2 border-r border-black bg-gray-100">{selectedPayslip.userId?.leaveBalance?.restrictedLeave?.taken || 0}</td>
+                      <td className="p-2">{selectedPayslip.userId?.leaveBalance?.restrictedLeave?.available || 0}</td>
                     </tr>
                   </tbody>
-                  <tfoot>
-                    <tr className="bg-muted/30 font-bold">
-                      <td className="px-5 py-4">Total Earnings</td>
-                      <td className="px-5 py-4 text-right text-lg">₹{selectedPayslip.monthlySalary.toLocaleString()}</td>
-                      <td className="px-5 py-4">Total Deductions</td>
-                      <td className="px-5 py-4 text-right text-lg text-destructive">-₹{selectedPayslip.deductions.toLocaleString()}</td>
-                    </tr>
-                  </tfoot>
                 </table>
-                </div>
 
-                <div className="flex justify-between items-center bg-primary/10 p-8 rounded-2xl border border-primary/20 mt-6">
-                  <div className="text-lg text-primary font-bold">Net Salary Payable</div>
-                  <div className="text-4xl font-black text-primary">₹{selectedPayslip.finalSalary.toLocaleString()}</div>
-                </div>
-                
-                <div className="pt-16 pb-8 flex flex-col sm:flex-row gap-12 sm:gap-0 justify-between items-center px-4 sm:px-12 text-sm text-muted-foreground font-bold">
-                  <div className="text-center border-t-2 border-border pt-4 w-48">Employer Signature</div>
-                  <div className="text-center border-t-2 border-border pt-4 w-48">Employee Signature</div>
-                </div>
+                {/* Table 3: Salary */}
+                <table className="w-full border-2 border-black text-sm mb-4">
+                  <thead>
+                    <tr className="border-b border-black text-center">
+                      <th colSpan={2} className="p-2 border-r border-black font-bold uppercase w-1/2">SALARY</th>
+                      <th colSpan={2} className="p-2 font-bold uppercase w-1/2">DEDUCTION</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const monthlySalary = selectedPayslip.monthlySalary || 0;
+                      const basicSalary = monthlySalary * 0.5;
+                      const hraAllowance = monthlySalary * 0.2;
+                      const otherAllowances = monthlySalary * 0.3;
+                      
+                      const totalDeductions = selectedPayslip.deductionAmount || selectedPayslip.deductions || 0;
+                      const esi = selectedPayslip.salaryDeductionsSnapshot?.esi || 0;
+                      const rentalDeduction = selectedPayslip.userId?.salaryDeductions?.hra?.amount || selectedPayslip.salaryDeductionsSnapshot?.hra || 0;
+                      const loan = selectedPayslip.salaryDeductionsSnapshot?.loan || 0;
+                      
+                      // Loss of Pay is what's left of totalDeductions after ESI, Rental, and Loan
+                      const lossOfPay = Math.max(0, totalDeductions - esi - rentalDeduction - loan);
+                      const otherDeductions = lossOfPay + loan;
+                      
+                      const netPayable = monthlySalary - totalDeductions;
+
+                      return (
+                        <>
+                          <tr className="border-b border-black">
+                            <td className="p-2 border-r border-black w-1/4">Basic Salary</td>
+                            <td className="p-2 border-r border-black w-1/4 text-right">₹{basicSalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                            <td className="p-2 border-r border-black w-1/4">TDS</td>
+                            <td className="p-2 w-1/4 text-right">₹0.00</td>
+                          </tr>
+                          <tr className="border-b border-black">
+                            <td className="p-2 border-r border-black">HRA</td>
+                            <td className="p-2 border-r border-black text-right">₹{hraAllowance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                            <td className="p-2 border-r border-black">ESI</td>
+                            <td className="p-2 text-right">₹{esi.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          </tr>
+                          <tr className="border-b border-black">
+                            <td className="p-2 border-r border-black">Other Allowances</td>
+                            <td className="p-2 border-r border-black text-right">₹{otherAllowances.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                            <td className="p-2 border-r border-black">Rental Deduction</td>
+                            <td className="p-2 text-right">₹{rentalDeduction.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          </tr>
+                          <tr className="border-b border-black">
+                            <td className="p-2 border-r border-black">Bonus</td>
+                            <td className="p-2 border-r border-black text-right">₹0.00</td>
+                            <td className="p-2 border-r border-black">Other Deduction</td>
+                            <td className="p-2 text-right">₹{otherDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          </tr>
+                          <tr className="border-b border-black">
+                            <td className="p-2 border-r border-black">Gross Total</td>
+                            <td className="p-2 border-r border-black text-right">₹{monthlySalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                            <td className="p-2 border-r border-black">Total Deductions</td>
+                            <td className="p-2 text-right">₹{totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          </tr>
+                          <tr>
+                            <td colSpan={3} className="p-2 border-r border-black text-right font-bold text-base">Net Payable</td>
+                            <td className="p-2 text-right font-bold text-base">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          </tr>
+                        </>
+                      );
+                    })()}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

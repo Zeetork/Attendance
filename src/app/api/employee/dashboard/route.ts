@@ -118,6 +118,7 @@ export async function GET() {
       presentDays,
       workingDays,
       leaveBalance: availableLeave, // Keep for backward compatibility
+      rawLeaveBalance: user?.leaveBalance,
       availableLeave,
       takenLeaves,
       halfDayCount,

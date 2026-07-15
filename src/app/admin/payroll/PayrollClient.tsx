@@ -194,34 +194,34 @@ export default function PayrollClient() {
             Salary Configuration
           </button>
         </div>
-        
+
         {activeTab === 'payroll' && (
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <button
-            onClick={handleSendBulkEmail}
-            disabled={isSendingBulk || isGenerating || !payrolls.length}
-            className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-success text-success-foreground rounded-xl min-h-[44px] hover:bg-success/90 transition-colors shadow-sm font-bold disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            {isSendingBulk ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
-            {isSendingBulk ? `Sending (${bulkProgress.current}/${bulkProgress.total})` : 'Send All'}
-          </button>
-          <button
-            onClick={handleExport}
-            disabled={isSendingBulk || isGenerating || !payrolls.length}
-            className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-secondary border border-border text-secondary-foreground rounded-xl min-h-[44px] hover:bg-secondary/80 transition-colors shadow-sm font-bold disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </button>
-          <button
-            onClick={handleGenerate}
-            disabled={isGenerating || isSendingBulk}
-            className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-primary text-primary-foreground rounded-xl min-h-[44px] hover:bg-primary/90 transition-colors shadow-sm font-bold disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <PlayCircle className="h-4 w-4 mr-2" />}
-            Generate
-          </button>
-        </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button
+              onClick={handleSendBulkEmail}
+              disabled={isSendingBulk || isGenerating || !payrolls.length}
+              className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-success text-success-foreground rounded-xl min-h-[44px] hover:bg-success/90 transition-colors shadow-sm font-bold disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              {isSendingBulk ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+              {isSendingBulk ? `Sending (${bulkProgress.current}/${bulkProgress.total})` : 'Send All'}
+            </button>
+            <button
+              onClick={handleExport}
+              disabled={isSendingBulk || isGenerating || !payrolls.length}
+              className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-secondary border border-border text-secondary-foreground rounded-xl min-h-[44px] hover:bg-secondary/80 transition-colors shadow-sm font-bold disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </button>
+            <button
+              onClick={handleGenerate}
+              disabled={isGenerating || isSendingBulk}
+              className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-primary text-primary-foreground rounded-xl min-h-[44px] hover:bg-primary/90 transition-colors shadow-sm font-bold disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <PlayCircle className="h-4 w-4 mr-2" />}
+              Generate
+            </button>
+          </div>
         )}
       </div>
 
@@ -229,293 +229,300 @@ export default function PayrollClient() {
         <SalaryConfigurator />
       ) : (
         <>
-      <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col print:hidden">
-        <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="relative max-w-md w-full">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-muted-foreground" />
+          <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col print:hidden">
+            <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="relative max-w-md w-full">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <input
+                  type="text"
+                  className="block w-full pl-10 pr-3 py-2 border border-border rounded-xl min-h-[44px] leading-5 bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors font-bold"
+                  placeholder="Search employee..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="flex w-full sm:w-auto">
+                <select
+                  className="w-full sm:w-auto block pl-3 pr-10 py-2 min-h-[44px] text-base border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm rounded-xl transition-colors font-bold"
+                  onChange={(e) => setCurrentDate(new Date(e.target.value))}
+                  value={currentDate.toISOString()}
+                >
+                  {months.map((m, i) => (
+                    <option key={i} value={m.toISOString()}>{format(m, 'MMMM yyyy')}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <input
-              type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-border rounded-xl min-h-[44px] leading-5 bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors font-bold"
-              placeholder="Search employee..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="flex w-full sm:w-auto">
-            <select
-              className="w-full sm:w-auto block pl-3 pr-10 py-2 min-h-[44px] text-base border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm rounded-xl transition-colors font-bold"
-              onChange={(e) => setCurrentDate(new Date(e.target.value))}
-              value={currentDate.toISOString()}
-            >
-              {months.map((m, i) => (
-                <option key={i} value={m.toISOString()}>{format(m, 'MMMM yyyy')}</option>
-              ))}
-            </select>
-          </div>
-        </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-border">
-            <thead className="bg-muted/30">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Employee</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Shift</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Days (W/P/A/L/WO)</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Gross Salary</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Deductions</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Net Payable</th>
-                <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
-              </tr>
-            </thead>
-            <tbody className="bg-card divide-y divide-border">
-              {isLoading ? (
-                <tr><td colSpan={7} className="px-6 py-10 text-center text-muted-foreground font-bold">Loading...</td></tr>
-              ) : filteredPayrolls.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-10 text-center text-muted-foreground font-bold">
-                    No payroll data for this month. Click "Generate Payroll" to calculate.
-                  </td>
-                </tr>
-              ) : (
-                filteredPayrolls.map((payroll: any) => {
-                  const user = payroll.userId;
-                  return (
-                    <tr key={payroll._id.toString()} className="hover:bg-muted/50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-muted rounded-full flex items-center justify-center overflow-hidden border border-border">
-                            {user?.profileImage ? (
-                              <img src={user.profileImage} alt="" className="h-full w-full object-cover" />
-                            ) : (
-                              <UserIcon className="h-5 w-5 text-muted-foreground" />
-                            )}
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-bold text-card-foreground">{user?.name || 'Unknown'}</div>
-                            <div className="text-xs text-muted-foreground font-bold">{user?.employeeId || '-'}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 bg-muted text-muted-foreground font-bold text-xs rounded-lg block w-max mb-1 border border-border">
-                          {user?.shiftId?.shiftName || 'N/A'}
-                        </span>
-                        <div className="text-[10px] text-muted-foreground font-bold">
-                          {user?.shiftId?.workingDays?.map((d: string) => d.slice(0, 3)).join('-') || 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-xs space-y-1 font-bold">
-                          <div className="text-muted-foreground">Total Working: <span className="text-foreground">{payroll.totalWorkingDays}</span></div>
-                          <div className="text-success">Present: {payroll.presentDays}</div>
-                          <div className="text-destructive">Absent: {payroll.absentDays}</div>
-                          <div className="text-warning">Leave: {payroll.leaveDays || 0}</div>
-                          <div className="text-primary">Weekly Off: {payroll.weeklyOffDays || 0}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-card-foreground">
-                        ₹{(payroll.grossSalary || payroll.monthlySalary).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-destructive font-bold">
-                        -₹{(payroll.deductionAmount ?? payroll.deductions).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-success">
-                        ₹{(payroll.netSalary || payroll.finalSalary).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold">
-                        <div className="flex items-center justify-end space-x-2">
-                          <button
-                            onClick={() => handleSendEmail(payroll._id)}
-                            disabled={sendingEmail === payroll._id || isSendingBulk}
-                            className="text-success hover:text-success/80 transition-colors bg-success/10 px-4 py-2 min-h-[44px] rounded-xl border border-success/20 flex items-center disabled:opacity-50"
-                          >
-                            {sendingEmail === payroll._id ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Mail className="h-4 w-4 mr-1.5" />}
-                            Email
-                          </button>
-                          <button
-                            onClick={() => setSelectedPayslip(payroll)}
-                            className="text-primary hover:text-primary/80 transition-colors bg-primary/10 px-4 py-2 min-h-[44px] rounded-xl border border-primary/20 flex items-center"
-                          >
-                            <FileText className="h-4 w-4 mr-1.5" />
-                            Payslip
-                          </button>
-                        </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-muted/30">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Employee</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Shift</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Days (W/P/A/L/WO)</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Gross Salary</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Deductions</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">Net Payable</th>
+                    <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody className="bg-card divide-y divide-border">
+                  {isLoading ? (
+                    <tr><td colSpan={7} className="px-6 py-10 text-center text-muted-foreground font-bold">Loading...</td></tr>
+                  ) : filteredPayrolls.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-10 text-center text-muted-foreground font-bold">
+                        No payroll data for this month. Click "Generate Payroll" to calculate.
                       </td>
                     </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                  ) : (
+                    filteredPayrolls.map((payroll: any) => {
+                      const user = payroll.userId;
+                      return (
+                        <tr key={payroll._id.toString()} className="hover:bg-muted/50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10 bg-muted rounded-full flex items-center justify-center overflow-hidden border border-border">
+                                {user?.profileImage ? (
+                                  <img src={user.profileImage} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                  <UserIcon className="h-5 w-5 text-muted-foreground" />
+                                )}
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-bold text-card-foreground">{user?.name || 'Unknown'}</div>
+                                <div className="text-xs text-muted-foreground font-bold">{user?.employeeId || '-'}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-2 py-1 bg-muted text-muted-foreground font-bold text-xs rounded-lg block w-max mb-1 border border-border">
+                              {user?.shiftId?.shiftName || 'N/A'}
+                            </span>
+                            <div className="text-[10px] text-muted-foreground font-bold">
+                              {user?.shiftId?.workingDays?.map((d: string) => d.slice(0, 3)).join('-') || 'N/A'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-xs space-y-1 font-bold">
+                              <div className="text-muted-foreground">Total Working: <span className="text-foreground">{payroll.totalWorkingDays}</span></div>
+                              <div className="text-success">Present: {payroll.presentDays}</div>
+                              <div className="text-destructive">Absent: {payroll.absentDays}</div>
+                              <div className="text-warning">Leave: {payroll.leaveDays || 0}</div>
+                              <div className="text-primary">Weekly Off: {payroll.weeklyOffDays || 0}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-card-foreground">
+                            ₹{(payroll.grossSalary || payroll.monthlySalary).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-destructive font-bold">
+                            -₹{(payroll.deductionAmount ?? payroll.deductions).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-success">
+                            ₹{(payroll.netSalary || payroll.finalSalary).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold">
+                            <div className="flex items-center justify-end space-x-2">
+                              <button
+                                onClick={() => handleSendEmail(payroll._id)}
+                                disabled={sendingEmail === payroll._id || isSendingBulk}
+                                className="text-success hover:text-success/80 transition-colors bg-success/10 px-4 py-2 min-h-[44px] rounded-xl border border-success/20 flex items-center disabled:opacity-50"
+                              >
+                                {sendingEmail === payroll._id ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Mail className="h-4 w-4 mr-1.5" />}
+                                Email
+                              </button>
+                              <button
+                                onClick={() => setSelectedPayslip(payroll)}
+                                className="text-primary hover:text-primary/80 transition-colors bg-primary/10 px-4 py-2 min-h-[44px] rounded-xl border border-primary/20 flex items-center"
+                              >
+                                <FileText className="h-4 w-4 mr-1.5" />
+                                Payslip
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      {/* Payslip Modal (Also used for printing) */}
-      {selectedPayslip && (
-        <div className="fixed inset-0 z-50 overflow-y-auto print:absolute print:inset-0 print:bg-white print:text-black">
-          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0 print:block print:p-0">
-            <div className="fixed inset-0 transition-opacity bg-black/80 backdrop-blur-sm z-0 print:hidden" onClick={() => setSelectedPayslip(null)} />
+          {/* Payslip Modal (Also used for printing) */}
+          {selectedPayslip && (
+            <div className="fixed inset-0 z-50 overflow-y-auto print:absolute print:inset-0 print:bg-white print:text-black">
+              <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0 print:block print:p-0">
+                <div className="fixed inset-0 transition-opacity bg-black/80 backdrop-blur-sm z-0 print:hidden" onClick={() => setSelectedPayslip(null)} />
 
-            <div className="relative z-10 inline-block w-full max-w-3xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-card text-card-foreground rounded-2xl shadow-xl sm:my-8 sm:align-middle sm:p-8 print:shadow-none print:m-0 print:w-full print:max-w-none print:bg-white print:text-black border border-border print:border-none">
+                <div className="relative z-10 inline-block w-full max-w-3xl px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-card text-card-foreground rounded-2xl shadow-xl sm:my-8 sm:align-middle sm:p-8 print:shadow-none print:m-0 print:w-full print:max-w-none print:bg-white print:text-black border border-border print:border-none">
 
-              <div className="flex justify-between items-center mb-8 print:hidden border-b border-border pb-4">
-                <h3 className="text-xl font-bold text-card-foreground">Payslip Preview</h3>
-                <div className="flex gap-2">
-                  <button onClick={handlePrint} className="flex items-center px-4 py-2 min-h-[44px] bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                    <Download className="w-4 h-4 mr-2" /> Print / PDF
-                  </button>
-                  <button onClick={() => setSelectedPayslip(null)} className="text-muted-foreground hover:text-foreground font-bold p-2">
-                    <X className="h-6 w-6" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Printable Area */}
-              <div className="space-y-8">
-                <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-end gap-4 sm:gap-0 border-b-2 border-border print:border-neutral-200 pb-6">
-                  <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground print:text-neutral-900">PAYSLIP</h1>
-                    <p className="text-muted-foreground print:text-neutral-500 mt-1 font-bold">{format(new Date(selectedPayslip.year, selectedPayslip.month - 1), 'MMMM yyyy')}</p>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <h2 className="text-xl font-bold text-foreground print:text-neutral-900">{activeCompany?.companyName || 'Company Name'}</h2>
-                    <p className="text-sm font-bold text-muted-foreground print:text-neutral-500">{activeCompany?.address || 'Company Address'}</p>
-                    <p className="text-sm font-bold text-muted-foreground print:text-neutral-500">{activeCompany?.email || 'email@company.com'} | {activeCompany?.phone || 'Phone Number'}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
-                  <div className="bg-muted/30 print:bg-neutral-50 p-4 rounded-xl border border-border print:border-neutral-200">
-                    <h3 className="text-sm font-bold text-foreground print:text-neutral-900 uppercase tracking-wider mb-3">Employee Details</h3>
-                    <div className="grid grid-cols-2 gap-y-2 text-sm">
-                      <div className="text-muted-foreground print:text-neutral-500 font-bold">Employee ID:</div>
-                      <div className="font-bold text-card-foreground print:text-neutral-900">{selectedPayslip.userId?.employeeId}</div>
-                      <div className="text-muted-foreground print:text-neutral-500 font-bold">Name:</div>
-                      <div className="font-bold text-card-foreground print:text-neutral-900">{selectedPayslip.userId?.name}</div>
-                      <div className="text-muted-foreground print:text-neutral-500 font-bold">Department:</div>
-                      <div className="font-bold text-card-foreground print:text-neutral-900">{selectedPayslip.userId?.department}</div>
-                      <div className="text-muted-foreground print:text-neutral-500 font-bold">Designation:</div>
-                      <div className="font-bold text-card-foreground print:text-neutral-900">{selectedPayslip.userId?.designation}</div>
+                  <div className="flex justify-between items-center mb-8 print:hidden border-b border-border pb-4">
+                    <h3 className="text-xl font-bold text-card-foreground">Payslip Preview</h3>
+                    <div className="flex gap-2">
+                      <button onClick={handlePrint} className="flex items-center px-4 py-2 min-h-[44px] bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        <Download className="w-4 h-4 mr-2" /> Print / PDF
+                      </button>
+                      <button onClick={() => setSelectedPayslip(null)} className="text-muted-foreground hover:text-foreground font-bold p-2">
+                        <X className="h-6 w-6" />
+                      </button>
                     </div>
                   </div>
-                  <div className="bg-muted/30 print:bg-neutral-50 p-4 rounded-xl border border-border print:border-neutral-200">
-                    <h3 className="text-sm font-bold text-foreground print:text-neutral-900 uppercase tracking-wider mb-3">Bank Details</h3>
-                    <div className="grid grid-cols-2 gap-y-2 text-sm">
-                      <div className="text-muted-foreground print:text-neutral-500 font-bold">Bank Name:</div>
-                      <div className="font-bold text-card-foreground print:text-neutral-900">{selectedPayslip.userId?.bankName || '-'}</div>
-                      <div className="text-muted-foreground print:text-neutral-500 font-bold">Account No:</div>
-                      <div className="font-bold text-card-foreground print:text-neutral-900">{selectedPayslip.userId?.accountNumber || '-'}</div>
-                      <div className="text-muted-foreground print:text-neutral-500 font-bold">IFSC Code:</div>
-                      <div className="font-bold text-card-foreground print:text-neutral-900">{selectedPayslip.userId?.ifscCode || '-'}</div>
+
+                  {/* Printable Area */}
+                  <div className="space-y-4 text-black bg-white p-8 rounded-lg">
+                    {/* Header */}
+                    <div className="flex justify-center items-center relative mb-6">
+                      <h1 className="text-xl font-bold uppercase tracking-wider">Pay Slip</h1>
+                      <div className="absolute right-0 text-3xl font-bold text-[#d32f2f] uppercase tracking-wider">
+                        {activeCompany?.companyName || 'COMPANY NAME'}
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                <div className="bg-muted/30 print:bg-neutral-50 p-4 rounded-xl border border-border print:border-neutral-200 grid grid-cols-3 sm:grid-cols-6 gap-4 sm:gap-0 text-sm">
-                  <div className="text-center sm:px-2">
-                    <div className="text-muted-foreground print:text-neutral-500 font-bold mb-1">Calendar Days</div>
-                    <div className="font-bold text-lg text-foreground print:text-neutral-900">{selectedPayslip.totalCalendarDays || '-'}</div>
-                  </div>
-                  <div className="text-center sm:px-2 sm:border-l border-border print:border-neutral-200">
-                    <div className="text-muted-foreground print:text-neutral-500 font-bold mb-1">Working Days</div>
-                    <div className="font-bold text-lg text-foreground print:text-neutral-900">{selectedPayslip.totalWorkingDays}</div>
-                  </div>
-                  <div className="text-center sm:px-2 sm:border-l border-border print:border-neutral-200">
-                    <div className="text-muted-foreground print:text-neutral-500 font-bold mb-1">Present</div>
-                    <div className="font-bold text-lg text-success print:text-green-600">{selectedPayslip.presentDays}</div>
-                  </div>
-                  <div className="text-center sm:px-2 sm:border-l border-border print:border-neutral-200">
-                    <div className="text-muted-foreground print:text-neutral-500 font-bold mb-1">Absent</div>
-                    <div className="font-bold text-lg text-destructive print:text-red-600">{selectedPayslip.absentDays}</div>
-                  </div>
-                  <div className="text-center sm:px-2 sm:border-l border-border print:border-neutral-200">
-                    <div className="text-muted-foreground print:text-neutral-500 font-bold mb-1">Leave</div>
-                    <div className="font-bold text-lg text-pink-500 print:text-pink-600">{selectedPayslip.leaveDays || 0}</div>
-                  </div>
-                  <div className="text-center sm:px-2 sm:border-l border-border print:border-neutral-200">
-                    <div className="text-muted-foreground print:text-neutral-500 font-bold mb-1">Weekly Offs</div>
-                    <div className="font-bold text-lg text-primary print:text-blue-600">{selectedPayslip.weeklyOffDays || 0}</div>
-                  </div>
-                </div>
+                    {/* Table 1 */}
+                    <table className="w-full border-2 border-black text-sm mb-4">
+                      <tbody>
+                        <tr className="border-b border-black">
+                          <td className="p-2 border-r border-black w-1/4">Employee Name</td>
+                          <td className="p-2 border-r border-black w-1/4">{selectedPayslip.userId?.name || '-'}</td>
+                          <td className="p-2 border-r border-black w-1/4">Month</td>
+                          <td className="p-2 w-1/4">{format(new Date(selectedPayslip.year, selectedPayslip.month - 1), 'MMM yyyy')}</td>
+                        </tr>
+                        <tr className="border-b border-black">
+                          <td className="p-2 border-r border-black">Designation</td>
+                          <td className="p-2 border-r border-black">{selectedPayslip.userId?.designation || '-'}</td>
+                          <td className="p-2 border-r border-black">Total Working Days</td>
+                          <td className="p-2">{selectedPayslip.totalWorkingDays || '-'}</td>
+                        </tr>
+                        <tr className="border-b border-black">
+                          <td className="p-2 border-r border-black">Date of Joining</td>
+                          <td className="p-2 border-r border-black">{selectedPayslip.userId?.joiningDate ? format(new Date(selectedPayslip.userId.joiningDate), 'dd.MM.yyyy') : '-'}</td>
+                          <td className="p-2 border-r border-black">Un-Paid Leave Taken</td>
+                          <td className="p-2">{selectedPayslip.absentDays || 0}</td>
+                        </tr>
+                        <tr className="border-b border-black">
+                          <td className="p-2 border-r border-black">Job Location</td>
+                          <td className="p-2 border-r border-black">{selectedPayslip.userId?.location || selectedPayslip.userId?.address || 'Coimbatore'}</td>
+                          <td className="p-2 border-r border-black">Days Paid</td>
+                          <td className="p-2">{(selectedPayslip.totalWorkingDays || 0) - (selectedPayslip.absentDays || 0)}</td>
+                        </tr>
+                        <tr>
+                          <td className="p-2 border-r border-black">Bank Name</td>
+                          <td className="p-2 border-r border-black">{selectedPayslip.userId?.bankName || '-'}</td>
+                          <td className="p-2 border-r border-black">A/c Number</td>
+                          <td className="p-2">{selectedPayslip.userId?.accountNumber || '-'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full w-full text-sm">
-                    <thead>
-                      <tr className="bg-muted print:bg-neutral-100 border-y border-border print:border-neutral-200">
-                        <th className="px-4 py-3 text-left font-bold text-foreground print:text-neutral-900">Earnings</th>
-                        <th className="px-4 py-3 text-right font-bold text-foreground print:text-neutral-900">Amount</th>
-                        <th className="px-4 py-3 text-left font-bold text-foreground print:text-neutral-900">Deductions</th>
-                        <th className="px-4 py-3 text-right font-bold text-foreground print:text-neutral-900">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b border-border print:border-neutral-200">
-                        <td className="px-4 py-3 font-bold text-card-foreground">Basic Salary</td>
-                        <td className="px-4 py-3 text-right font-bold text-card-foreground">₹{(selectedPayslip.grossSalary || selectedPayslip.monthlySalary).toLocaleString()}</td>
-                        <td className="px-4 py-3 font-bold text-card-foreground">Loss of Pay (Absent & Unpaid Leave)</td>
-                        <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{((selectedPayslip.deductionAmount ?? selectedPayslip.deductions) - (selectedPayslip.salaryDeductionsSnapshot?.esi || 0) - (selectedPayslip.salaryDeductionsSnapshot?.hra || 0) - (selectedPayslip.salaryDeductionsSnapshot?.loan || 0)).toLocaleString()}</td>
-                      </tr>
-                      {selectedPayslip.salaryDeductionsSnapshot?.esi ? (
-                        <tr className="border-b border-border print:border-neutral-200">
-                          <td className="px-4 py-3"></td>
-                          <td className="px-4 py-3 text-right"></td>
-                          <td className="px-4 py-3 font-bold text-card-foreground">ESI Deduction</td>
-                          <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{selectedPayslip.salaryDeductionsSnapshot.esi.toLocaleString()}</td>
+                    {/* Table 2: Leave */}
+                    <table className="w-full border-2 border-black text-sm text-center mb-4">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-black">
+                          <th className="p-2 border-r border-black font-normal w-1/4">Leave Record</th>
+                          <th className="p-2 border-r border-black font-normal w-1/4">Total</th>
+                          <th className="p-2 border-r border-black font-normal w-1/4">Taken</th>
+                          <th className="p-2 font-normal w-1/4">Balance</th>
                         </tr>
-                      ) : null}
-                      {selectedPayslip.salaryDeductionsSnapshot?.hra ? (
-                        <tr className="border-b border-border print:border-neutral-200">
-                          <td className="px-4 py-3"></td>
-                          <td className="px-4 py-3 text-right"></td>
-                          <td className="px-4 py-3 font-bold text-card-foreground">HRA Deduction</td>
-                          <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{selectedPayslip.salaryDeductionsSnapshot.hra.toLocaleString()}</td>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b border-black">
+                          <td className="p-2 border-r border-black">Casual Leave</td>
+                          <td className="p-2 border-r border-black">{selectedPayslip.userId?.leaveBalance?.casualLeave?.total || 0}</td>
+                          <td className="p-2 border-r border-black bg-gray-100">{selectedPayslip.userId?.leaveBalance?.casualLeave?.taken || 0}</td>
+                          <td className="p-2">{selectedPayslip.userId?.leaveBalance?.casualLeave?.available || 0}</td>
                         </tr>
-                      ) : null}
-                      {selectedPayslip.salaryDeductionsSnapshot?.loan ? (
-                        <tr className="border-b border-border print:border-neutral-200">
-                          <td className="px-4 py-3"></td>
-                          <td className="px-4 py-3 text-right"></td>
-                          <td className="px-4 py-3 font-bold text-card-foreground">Loan Repayment</td>
-                          <td className="px-4 py-3 text-right font-bold text-destructive print:text-red-600">-₹{selectedPayslip.salaryDeductionsSnapshot.loan.toLocaleString()}</td>
+                        <tr className="border-b border-black">
+                          <td className="p-2 border-r border-black">Sick Leave</td>
+                          <td className="p-2 border-r border-black">{selectedPayslip.userId?.leaveBalance?.sickLeave?.total || 0}</td>
+                          <td className="p-2 border-r border-black bg-gray-100">{selectedPayslip.userId?.leaveBalance?.sickLeave?.taken || 0}</td>
+                          <td className="p-2">{selectedPayslip.userId?.leaveBalance?.sickLeave?.available || 0}</td>
                         </tr>
-                      ) : null}
-                      {!selectedPayslip.salaryDeductionsSnapshot?.esi && !selectedPayslip.salaryDeductionsSnapshot?.loan && !selectedPayslip.salaryDeductionsSnapshot?.hra && (
-                        <tr className="border-b border-border print:border-neutral-200">
-                          <td className="px-4 py-3"></td>
-                          <td className="px-4 py-3 text-right"></td>
-                          <td className="px-4 py-3"></td>
-                          <td className="px-4 py-3 text-right"></td>
+                        <tr>
+                          <td className="p-2 border-r border-black">Restricted Holiday</td>
+                          <td className="p-2 border-r border-black">{selectedPayslip.userId?.leaveBalance?.restrictedLeave?.total || 0}</td>
+                          <td className="p-2 border-r border-black bg-gray-100">{selectedPayslip.userId?.leaveBalance?.restrictedLeave?.taken || 0}</td>
+                          <td className="p-2">{selectedPayslip.userId?.leaveBalance?.restrictedLeave?.available || 0}</td>
                         </tr>
-                      )}
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-muted/30 print:bg-neutral-50 font-bold">
-                        <td className="px-4 py-3 text-foreground print:text-neutral-900">Total Earnings</td>
-                        <td className="px-4 py-3 text-right text-foreground print:text-neutral-900">₹{(selectedPayslip.grossSalary || selectedPayslip.monthlySalary).toLocaleString()}</td>
-                        <td className="px-4 py-3 text-foreground print:text-neutral-900">Total Deductions</td>
-                        <td className="px-4 py-3 text-right text-destructive print:text-red-600">-₹{(selectedPayslip.deductionAmount ?? selectedPayslip.deductions).toLocaleString()}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
+                      </tbody>
+                    </table>
 
-                <div className="flex justify-between items-center bg-primary/10 print:bg-blue-50 p-6 rounded-xl border border-primary/20 print:border-blue-100 mt-6">
-                  <div className="text-lg text-primary print:text-blue-900 font-bold">Net Salary Payable</div>
-                  <div className="text-3xl font-black text-primary print:text-blue-700">₹{(selectedPayslip.netSalary || selectedPayslip.finalSalary).toLocaleString()}</div>
-                </div>
+                    {/* Table 3: Salary */}
+                    <table className="w-full border-2 border-black text-sm mb-4">
+                      <thead>
+                        <tr className="border-b border-black text-center">
+                          <th colSpan={2} className="p-2 border-r border-black font-bold uppercase w-1/2">SALARY</th>
+                          <th colSpan={2} className="p-2 font-bold uppercase w-1/2">DEDUCTION</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                    {(() => {
+                      const monthlySalary = selectedPayslip.monthlySalary || 0;
+                      const basicSalary = monthlySalary * 0.5;
+                      const hraAllowance = monthlySalary * 0.2;
+                      const otherAllowances = monthlySalary * 0.3;
+                      
+                      const totalDeductions = selectedPayslip.deductionAmount || selectedPayslip.deductions || 0;
+                      const esi = selectedPayslip.salaryDeductionsSnapshot?.esi || 0;
+                      const rentalDeduction = selectedPayslip.userId?.salaryDeductions?.hra?.amount || selectedPayslip.salaryDeductionsSnapshot?.hra || 0;
+                      const loan = selectedPayslip.salaryDeductionsSnapshot?.loan || 0;
+                      
+                      // Loss of Pay is what's left of totalDeductions after ESI, Rental, and Loan
+                      const lossOfPay = Math.max(0, totalDeductions - esi - rentalDeduction - loan);
+                      const otherDeductions = lossOfPay + loan;
+                      
+                      const netPayable = monthlySalary - totalDeductions;
 
-                <div className="pt-16 pb-8 flex flex-col sm:flex-row gap-12 sm:gap-0 justify-between items-center px-4 sm:px-12 text-sm text-muted-foreground print:text-neutral-500 font-bold">
-                  <div className="text-center border-t border-border print:border-neutral-300 pt-2 w-48">Employer Signature</div>
-                  <div className="text-center border-t border-border print:border-neutral-300 pt-2 w-48">Employee Signature</div>
+                      return (
+                        <>
+                          <tr className="border-b border-black">
+                            <td className="p-2 border-r border-black w-1/4">Basic Salary</td>
+                            <td className="p-2 border-r border-black w-1/4 text-right">₹{basicSalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                            <td className="p-2 border-r border-black w-1/4">TDS</td>
+                            <td className="p-2 w-1/4 text-right">₹0.00</td>
+                          </tr>
+                          <tr className="border-b border-black">
+                            <td className="p-2 border-r border-black">HRA</td>
+                            <td className="p-2 border-r border-black text-right">₹{hraAllowance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                            <td className="p-2 border-r border-black">ESI</td>
+                            <td className="p-2 text-right">₹{esi.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          </tr>
+                          <tr className="border-b border-black">
+                            <td className="p-2 border-r border-black">Other Allowances</td>
+                            <td className="p-2 border-r border-black text-right">₹{otherAllowances.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                            <td className="p-2 border-r border-black">Rental Deduction</td>
+                            <td className="p-2 text-right">₹{rentalDeduction.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          </tr>
+                          <tr className="border-b border-black">
+                            <td className="p-2 border-r border-black">Bonus</td>
+                            <td className="p-2 border-r border-black text-right">₹0.00</td>
+                            <td className="p-2 border-r border-black">Other Deduction</td>
+                            <td className="p-2 text-right">₹{otherDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          </tr>
+                          <tr className="border-b border-black">
+                            <td className="p-2 border-r border-black">Gross Total</td>
+                            <td className="p-2 border-r border-black text-right">₹{monthlySalary.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                            <td className="p-2 border-r border-black">Total Deductions</td>
+                            <td className="p-2 text-right">₹{totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          </tr>
+                          <tr>
+                            <td colSpan={3} className="p-2 border-r border-black text-right font-bold text-base">Net Payable</td>
+                            <td className="p-2 text-right font-bold text-base">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          </tr>
+                        </>
+                      );
+                    })()}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-      </>
+          )}
+        </>
       )}
     </div>
   );

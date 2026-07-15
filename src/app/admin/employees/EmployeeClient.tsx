@@ -12,6 +12,7 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState<'employees' | 'leaves'>('employees');
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const [editingBalanceId, setEditingBalanceId] = useState<string | null>(null);
   const [isSavingBalance, setIsSavingBalance] = useState(false);
@@ -227,7 +228,22 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
         </button>
       </div>
 
-      <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col">
+      <div className="flex border-b border-border overflow-x-auto scrollbar-hide bg-card rounded-t-2xl px-4 pt-2">
+        <button 
+          className={`px-6 py-3 whitespace-nowrap text-sm font-bold transition-colors ${activeTab === 'employees' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+          onClick={() => setActiveTab('employees')}
+        >
+          Employees Directory
+        </button>
+        <button 
+          className={`px-6 py-3 whitespace-nowrap text-sm font-bold transition-colors ${activeTab === 'leaves' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+          onClick={() => setActiveTab('leaves')}
+        >
+          Leave Balances
+        </button>
+      </div>
+
+      <div className="bg-card border-x border-b border-border rounded-b-2xl shadow-sm overflow-hidden flex flex-col">
         <div className="p-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="relative max-w-md w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -236,13 +252,14 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
             <input
               type="text"
               className="block w-full pl-10 pr-3 py-2 min-h-[44px] border border-border rounded-xl leading-5 bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors"
-              placeholder="Search employees..."
+              placeholder={activeTab === 'employees' ? "Search employees..." : "Search by name or ID..."}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
         </div>
 
+        {activeTab === 'employees' && (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-border">
             <thead className="bg-muted/30">
@@ -433,6 +450,136 @@ export default function EmployeeClient({ initialEmployees, shifts }: { initialEm
             </tbody>
           </table>
         </div>
+        )}
+
+        {activeTab === 'leaves' && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted/30">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Employee
+                </th>
+                <th scope="col" className="px-6 py-3 text-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Casual Leave
+                </th>
+                <th scope="col" className="px-6 py-3 text-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Sick Leave
+                </th>
+                <th scope="col" className="px-6 py-3 text-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Restricted Leave
+                </th>
+                <th scope="col" className="px-6 py-3 text-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Compensatory Off
+                </th>
+                <th scope="col" className="px-6 py-3 text-center text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Leave Without Pay
+                </th>
+                <th scope="col" className="relative px-6 py-3">
+                  <span className="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-card divide-y divide-border">
+              {filteredEmployees.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-10 text-center text-muted-foreground font-bold">
+                    No employees found.
+                  </td>
+                </tr>
+              ) : (
+                filteredEmployees.map((employee) => {
+                  const isEditing = editingBalanceId === employee._id;
+                  
+                  return (
+                  <tr key={employee._id} className="hover:bg-muted/50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground font-bold overflow-hidden">
+                          {employee.profileImage ? (
+                            <img src={employee.profileImage} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            employee.name.charAt(0)
+                          )}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-bold text-card-foreground">{employee.name}</div>
+                          <div className="text-xs text-muted-foreground">{employee.employeeId}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {isEditing ? (
+                        <input type="number" min="0" step="0.5" className="w-16 mx-auto bg-background border border-border rounded-xl text-foreground px-2 py-1 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none" value={balanceForm.casualLeave} onChange={e => setBalanceForm({...balanceForm, casualLeave: Number(e.target.value)})} />
+                      ) : (
+                        <div>
+                          <div className="text-sm font-bold text-card-foreground">{employee.leaveBalance?.casualLeave?.available || 0} <span className="text-[10px] text-muted-foreground font-normal">avail</span></div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">{employee.leaveBalance?.casualLeave?.taken || 0} taken</div>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {isEditing ? (
+                        <input type="number" min="0" step="0.5" className="w-16 mx-auto bg-background border border-border rounded-xl text-foreground px-2 py-1 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none" value={balanceForm.sickLeave} onChange={e => setBalanceForm({...balanceForm, sickLeave: Number(e.target.value)})} />
+                      ) : (
+                        <div>
+                          <div className="text-sm font-bold text-card-foreground">{employee.leaveBalance?.sickLeave?.available || 0} <span className="text-[10px] text-muted-foreground font-normal">avail</span></div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">{employee.leaveBalance?.sickLeave?.taken || 0} taken</div>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {isEditing ? (
+                        <input type="number" min="0" step="0.5" className="w-16 mx-auto bg-background border border-border rounded-xl text-foreground px-2 py-1 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none" value={balanceForm.restrictedLeave} onChange={e => setBalanceForm({...balanceForm, restrictedLeave: Number(e.target.value)})} />
+                      ) : (
+                        <div>
+                          <div className="text-sm font-bold text-card-foreground">{employee.leaveBalance?.restrictedLeave?.available || 0} <span className="text-[10px] text-muted-foreground font-normal">avail</span></div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">{employee.leaveBalance?.restrictedLeave?.taken || 0} taken</div>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {isEditing ? (
+                        <input type="number" min="0" step="0.5" className="w-16 mx-auto bg-background border border-border rounded-xl text-foreground px-2 py-1 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none" value={balanceForm.compensatoryOff} onChange={e => setBalanceForm({...balanceForm, compensatoryOff: Number(e.target.value)})} />
+                      ) : (
+                        <div>
+                          <div className="text-sm font-bold text-card-foreground">{employee.leaveBalance?.compensatoryOff?.available || 0} <span className="text-[10px] text-muted-foreground font-normal">avail</span></div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">{employee.leaveBalance?.compensatoryOff?.taken || 0} taken</div>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{employee.leaveBalance?.leaveWithoutPay?.taken || 0} taken</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold">
+                      {isEditing ? (
+                        <div className="flex flex-col gap-1 items-end">
+                          <button onClick={() => handleSaveBalance(employee._id)} disabled={isSavingBalance} className="text-xs font-bold bg-primary text-primary-foreground px-3 py-1.5 rounded-lg hover:bg-primary/90 disabled:opacity-50">
+                            {isSavingBalance ? 'Saving...' : 'Save'}
+                          </button>
+                          <button onClick={() => setEditingBalanceId(null)} className="text-xs font-bold text-muted-foreground hover:text-foreground px-3 py-1.5 border border-border rounded-lg">
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => handleEditBalance(employee)}
+                          className="text-primary hover:text-primary/80 transition-colors p-2 bg-primary/10 rounded-lg flex items-center ml-auto"
+                        >
+                          <Edit className="h-4 w-4 mr-1.5" /> Edit
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+        )}
       </div>
 
       {isModalOpen && (

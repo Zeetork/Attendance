@@ -4,6 +4,7 @@ import { Clock, Calendar, FileText, CheckCircle2 } from 'lucide-react';
 import useSWR from 'swr';
 import { format } from 'date-fns';
 import clsx from 'clsx';
+import { useRouter } from 'next/navigation';
 import ReportingStructure from './ReportingStructure';
 
 const fetcher = async (url: string) => {
@@ -17,6 +18,7 @@ const fetcher = async (url: string) => {
 };
 
 export default function EmployeeDashboardClient() {
+  const router = useRouter();
   const { data, error, isLoading } = useSWR('/api/employee/dashboard', fetcher, {
     refreshInterval: 60000, // 1 minute is sufficient for attendance dashboard
   });
@@ -38,8 +40,8 @@ export default function EmployeeDashboardClient() {
   const stats = [
     { name: 'Today Attendance', value: isLoading ? '...' : getStatusDisplay(), icon: Clock, color: 'text-primary', bg: 'bg-primary/10' },
     { name: 'Monthly Attendance', value: isLoading ? '...' : `${data?.attendancePercentage ?? 0}% (${data?.presentDays ?? 0}/${data?.workingDays ?? 0} Days)`, icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' },
-    { name: 'Leaves (Available / Used)', value: isLoading ? '...' : `${data?.availableLeave ?? 0} / ${data?.takenLeaves ?? 0}`, icon: FileText, color: 'text-primary', bg: 'bg-primary/10' },
-    { name: 'Half Day Leaves', value: isLoading ? '...' : `${data?.halfDayCount ?? 0} Taken`, icon: FileText, color: 'text-primary', bg: 'bg-primary/10' },
+    { name: 'Casual Leaves (Available / Used)', value: isLoading ? '...' : `${data?.rawLeaveBalance?.casualLeave?.available ?? 0} / ${data?.rawLeaveBalance?.casualLeave?.taken ?? 0}`, icon: FileText, color: 'text-primary', bg: 'bg-primary/10' },
+    { name: 'Sick Leaves (Available / Used)', value: isLoading ? '...' : `${data?.rawLeaveBalance?.sickLeave?.available ?? 0} / ${data?.rawLeaveBalance?.sickLeave?.taken ?? 0}`, icon: FileText, color: 'text-primary', bg: 'bg-primary/10' },
   ];
 
   return (
@@ -222,7 +224,9 @@ export default function EmployeeDashboardClient() {
                   ))}
                 </div>
               )}
-              <button className="mt-6 px-4 py-3 min-h-[44px] w-full text-sm font-bold bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background border border-border">
+              <button 
+                onClick={() => router.push('/employee/leaves?apply=true')}
+                className="mt-6 px-4 py-3 min-h-[44px] w-full text-sm font-bold bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background border border-border">
                 Apply for Leave
               </button>
             </div>

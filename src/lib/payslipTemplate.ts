@@ -3,7 +3,18 @@ import { format } from 'date-fns';
 export function generatePayslipHtml(payroll: any, user: any, company: any) {
   const monthName = format(new Date(payroll.year, payroll.month - 1), 'MMMM yyyy');
   
-  const lossOfPay = ((payroll.deductionAmount ?? payroll.deductions) - (payroll.salaryDeductionsSnapshot?.esi || 0) - (payroll.salaryDeductionsSnapshot?.hra || 0) - (payroll.salaryDeductionsSnapshot?.loan || 0));
+  const monthlySalary = payroll.monthlySalary || 0;
+  const basicSalary = monthlySalary * 0.5;
+  const hraAllowance = monthlySalary * 0.2;
+  const otherAllowances = monthlySalary * 0.3;
+  
+  const totalDeductions = payroll.deductionAmount ?? payroll.deductions ?? 0;
+  const esi = payroll.salaryDeductionsSnapshot?.esi || 0;
+  const rentalDeduction = payroll.salaryDeductionsSnapshot?.hra || 0;
+  const loan = payroll.salaryDeductionsSnapshot?.loan || 0;
+  
+  const lossOfPay = Math.max(0, totalDeductions - esi - rentalDeduction - loan);
+  const otherDeductions = lossOfPay + loan;
 
   return `
 <!DOCTYPE html>
@@ -113,39 +124,28 @@ export function generatePayslipHtml(payroll: any, user: any, company: any) {
         <tbody>
           <tr class="border-b border-neutral-200">
             <td class="px-4 py-3 font-bold text-neutral-900">Basic Salary</td>
-            <td class="px-4 py-3 text-right font-bold text-neutral-900">₹${(payroll.grossSalary || payroll.monthlySalary || 0).toLocaleString()}</td>
-            <td class="px-4 py-3 font-bold text-neutral-900">Loss of Pay (Absent & Unpaid Leave)</td>
-            <td class="px-4 py-3 text-right font-bold text-red-600">-₹${lossOfPay.toLocaleString()}</td>
+            <td class="px-4 py-3 text-right font-bold text-neutral-900">₹${basicSalary.toLocaleString()}</td>
+            <td class="px-4 py-3 font-bold text-neutral-900">TDS</td>
+            <td class="px-4 py-3 text-right font-bold text-red-600">-₹0</td>
           </tr>
-          ${payroll.salaryDeductionsSnapshot?.esi ? `
           <tr class="border-b border-neutral-200">
-            <td class="px-4 py-3"></td>
-            <td class="px-4 py-3"></td>
-            <td class="px-4 py-3 font-bold text-neutral-900">ESI Deduction</td>
-            <td class="px-4 py-3 text-right font-bold text-red-600">-₹${payroll.salaryDeductionsSnapshot.esi.toLocaleString()}</td>
+            <td class="px-4 py-3 font-bold text-neutral-900">HRA</td>
+            <td class="px-4 py-3 text-right font-bold text-neutral-900">₹${hraAllowance.toLocaleString()}</td>
+            <td class="px-4 py-3 font-bold text-neutral-900">ESI</td>
+            <td class="px-4 py-3 text-right font-bold text-red-600">-₹${esi.toLocaleString()}</td>
           </tr>
-          ` : ''}
-          ${payroll.salaryDeductionsSnapshot?.hra ? `
           <tr class="border-b border-neutral-200">
-            <td class="px-4 py-3"></td>
-            <td class="px-4 py-3"></td>
-            <td class="px-4 py-3 font-bold text-neutral-900">HRA Deduction</td>
-            <td class="px-4 py-3 text-right font-bold text-red-600">-₹${payroll.salaryDeductionsSnapshot.hra.toLocaleString()}</td>
+            <td class="px-4 py-3 font-bold text-neutral-900">Other Allowances</td>
+            <td class="px-4 py-3 text-right font-bold text-neutral-900">₹${otherAllowances.toLocaleString()}</td>
+            <td class="px-4 py-3 font-bold text-neutral-900">Rental Deduction</td>
+            <td class="px-4 py-3 text-right font-bold text-red-600">-₹${rentalDeduction.toLocaleString()}</td>
           </tr>
-          ` : ''}
-          ${payroll.salaryDeductionsSnapshot?.loan ? `
           <tr class="border-b border-neutral-200">
-            <td class="px-4 py-3"></td>
-            <td class="px-4 py-3"></td>
-            <td class="px-4 py-3 font-bold text-neutral-900">Loan Repayment</td>
-            <td class="px-4 py-3 text-right font-bold text-red-600">-₹${payroll.salaryDeductionsSnapshot.loan.toLocaleString()}</td>
+            <td class="px-4 py-3 font-bold text-neutral-900">Bonus</td>
+            <td class="px-4 py-3 text-right font-bold text-neutral-900">₹0</td>
+            <td class="px-4 py-3 font-bold text-neutral-900">Other Deduction</td>
+            <td class="px-4 py-3 text-right font-bold text-red-600">-₹${otherDeductions.toLocaleString()}</td>
           </tr>
-          ` : ''}
-          ${!payroll.salaryDeductionsSnapshot?.esi && !payroll.salaryDeductionsSnapshot?.loan && !payroll.salaryDeductionsSnapshot?.hra ? `
-          <tr class="border-b border-neutral-200">
-            <td class="px-4 py-3"></td><td class="px-4 py-3"></td><td class="px-4 py-3"></td><td class="px-4 py-3"></td>
-          </tr>
-          ` : ''}
         </tbody>
         <tfoot>
           <tr class="bg-neutral-50 font-bold">

@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     await dbConnect();
     const payrolls = await Payroll.find({ userId: session.user.id })
       .sort({ year: -1, month: -1 })
-      .populate('userId', 'name employeeId department designation bankName accountNumber ifscCode')
+      .populate('userId', 'name employeeId department designation bankName accountNumber ifscCode joiningDate address location leaveBalance salaryDeductions')
       .lean();
 
     return NextResponse.json({ payrolls });

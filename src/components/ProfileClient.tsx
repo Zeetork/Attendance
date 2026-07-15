@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import useSWR from 'swr';
-import { Camera, Save, User, Lock, Upload } from 'lucide-react';
+import { Camera, Save, User, Lock, Upload, FileText, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { api } from '@/services/api';
 
@@ -142,21 +142,27 @@ export default function ProfileClient() {
         {/* Right Column - Details and Forms */}
         <div className="w-full md:w-2/3">
           <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm min-h-[400px]">
-            <div className="flex border-b border-border">
+            <div className="flex border-b border-border overflow-x-auto scrollbar-hide">
               <button 
-                className={`flex-1 py-4 text-sm font-bold transition-colors ${activeTab === 'details' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`flex-1 py-4 px-4 whitespace-nowrap text-sm font-bold transition-colors ${activeTab === 'details' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setActiveTab('details')}
               >
                 Personal Details
               </button>
               <button 
-                className={`flex-1 py-4 text-sm font-bold transition-colors ${activeTab === 'salary' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`flex-1 py-4 px-4 whitespace-nowrap text-sm font-bold transition-colors ${activeTab === 'salary' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setActiveTab('salary')}
               >
                 Salary
               </button>
               <button 
-                className={`flex-1 py-4 text-sm font-bold transition-colors ${activeTab === 'security' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`flex-1 py-4 px-4 whitespace-nowrap text-sm font-bold transition-colors ${activeTab === 'policies' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                onClick={() => setActiveTab('policies')}
+              >
+                Company Policies
+              </button>
+              <button 
+                className={`flex-1 py-4 px-4 whitespace-nowrap text-sm font-bold transition-colors ${activeTab === 'security' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setActiveTab('security')}
               >
                 Security
@@ -303,6 +309,39 @@ export default function ProfileClient() {
                         )}
                       </div>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'policies' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <h3 className="text-sm font-bold text-card-foreground border-b border-border pb-2">Company Policies & Procedures</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    {[
+                      { name: "Administration Policy", file: "ADMINISTRATION POLICY.pdf" },
+                      { name: "Attendance Policy", file: "ATTENDANCE POLICY.pdf" },
+                      { name: "Employee Exit Procedure", file: "EMPLOYEE EXIT PROCEDURE.pdf" },
+                      { name: "Employee Joining Procedure", file: "EMPLOYEE JOINING PROCEDURE.pdf" },
+                      { name: "Employee Travel Policy", file: "EMPLOYEE TRAVEL POLICY.pdf" },
+                      { name: "Office Vehicle Usage", file: "OFFICE VEHICLE USAGE.pdf" }
+                    ].map((policy, idx) => (
+                      <a 
+                        key={idx} 
+                        href={`/policy/${policy.file}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center p-4 bg-muted/30 border border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all group"
+                      >
+                        <div className="p-2 bg-primary/10 text-primary rounded-lg mr-4 group-hover:scale-110 transition-transform">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-bold text-card-foreground group-hover:text-primary transition-colors">{policy.name}</h4>
+                          <p className="text-xs text-muted-foreground mt-0.5">PDF Document</p>
+                        </div>
+                        <Download className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    ))}
                   </div>
                 </div>
               )}

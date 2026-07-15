@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     const payrolls = await Payroll.find({ month, year })
       .populate({
         path: 'userId',
-        select: 'name employeeId department profileImage shiftId',
+        select: 'name employeeId department profileImage shiftId designation joiningDate address location bankName accountNumber ifscCode leaveBalance salaryDeductions',
         populate: {
           path: 'shiftId',
           model: 'Shift',
@@ -57,11 +57,11 @@ export async function POST(req: NextRequest) {
     const activeCompanyId = cookieStore.get('activeCompanyId')?.value || session.user.companyId;
 
     await dbConnect();
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
+    const startDate = new Date(year, month - 1, 1, 0, 0, 0);
+    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
     // Get all active employees with their shifts
-    const users = await User.find({ role: { $in: ['employee', 'intern', 'manager', 'team_head', 'department_head'] }, isActive: true }).populate('shiftId');
+    const users = await User.find({ role: { $in: ['employee', 'intern', 'manager', 'team_head', 'department_head', 'director'] }, isActive: true }).populate('shiftId');
     console.log(`Found ${users.length} users for company ${activeCompanyId}`);
 
     // Get holidays
