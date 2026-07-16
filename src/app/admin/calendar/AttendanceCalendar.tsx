@@ -36,7 +36,7 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
   // Edit Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [editData, setEditData] = useState({ status: 'present', loginTime: '', logoutTime: '', duration: 'full_day', halfDaySession: 'first_half' });
+  const [editData, setEditData] = useState<any>({ status: 'present', sessions: [], duration: 'full_day', halfDaySession: 'first_half' });
   const [isSaving, setIsSaving] = useState(false);
 
   // Fetch employees list if admin
@@ -136,24 +136,41 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
       return current >= from && current <= to;
     });
 
+    const userShiftSessions = data?.user?.shiftId?.sessions || [];
+    let initialSessions: any[] = [];
+
+    if (attendance && attendance.sessions?.length > 0) {
+      initialSessions = attendance.sessions.map((s: any) => ({
+        order: s.sessionOrder,
+        checkIn: s.checkIn ? format(new Date(s.checkIn), 'HH:mm') : '',
+        checkOut: s.checkOut ? format(new Date(s.checkOut), 'HH:mm') : '',
+      }));
+    } else if (userShiftSessions.length > 0) {
+      initialSessions = userShiftSessions.map((s: any) => ({
+        order: s.order,
+        checkIn: '',
+        checkOut: '',
+      }));
+    } else {
+      initialSessions = [{ order: 1, checkIn: '', checkOut: '' }];
+    }
+
     if (attendance) {
       setEditData({
         status: attendance.status,
-        loginTime: attendance.loginTime ? format(new Date(attendance.loginTime), 'HH:mm') : '',
-        logoutTime: attendance.logoutTime ? format(new Date(attendance.logoutTime), 'HH:mm') : '',
         duration: 'full_day',
-        halfDaySession: 'first_half'
+        halfDaySession: 'first_half',
+        sessions: initialSessions
       });
     } else if (leave) {
       setEditData({
         status: leave.leaveType,
-        loginTime: '',
-        logoutTime: '',
         duration: leave.duration || 'full_day',
-        halfDaySession: leave.halfDaySession || 'first_half'
+        halfDaySession: leave.halfDaySession || 'first_half',
+        sessions: initialSessions
       });
     } else {
-      setEditData({ status: 'present', loginTime: '09:00', logoutTime: '18:00', duration: 'full_day', halfDaySession: 'first_half' });
+      setEditData({ status: 'present', duration: 'full_day', halfDaySession: 'first_half', sessions: initialSessions });
     }
   };
 
@@ -444,26 +461,41 @@ export default function AttendanceCalendar({ userId, isAdmin = false }: Props) {
               )}
 
               {['present', 'late', 'half-day'].includes(editData.status) && (
-                <>
-                  <div>
-                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Login Time</label>
-                    <input
-                      type="time"
-                      className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
-                      value={editData.loginTime}
-                      onChange={e => setEditData({ ...editData, loginTime: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-card-foreground mb-1.5">Logout Time</label>
-                    <input
-                      type="time"
-                      className="w-full bg-background border border-border text-foreground rounded-xl p-2.5 min-h-[44px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none"
-                      value={editData.logoutTime}
-                      onChange={e => setEditData({ ...editData, logoutTime: e.target.value })}
-                    />
-                  </div>
-                </>
+                <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+                  {editData.sessions.map((session: any, index: number) => (
+                    <div key={index} className="p-3 bg-muted/50 rounded-xl space-y-3">
+                      <div className="font-bold text-sm text-card-foreground">Session {session.order}</div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-muted-foreground mb-1">Check In</label>
+                          <input
+                            type="time"
+                            className="w-full bg-background border border-border text-foreground rounded-xl p-2 min-h-[40px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none text-sm"
+                            value={session.checkIn}
+                            onChange={e => {
+                              const newSessions = [...editData.sessions];
+                              newSessions[index].checkIn = e.target.value;
+                              setEditData({ ...editData, sessions: newSessions });
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-muted-foreground mb-1">Check Out</label>
+                          <input
+                            type="time"
+                            className="w-full bg-background border border-border text-foreground rounded-xl p-2 min-h-[40px] focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none text-sm"
+                            value={session.checkOut}
+                            onChange={e => {
+                              const newSessions = [...editData.sessions];
+                              newSessions[index].checkOut = e.target.value;
+                              setEditData({ ...editData, sessions: newSessions });
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">

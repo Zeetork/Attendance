@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await req.json();
-    const { userId, date, status, loginTime, logoutTime, duration = 'full_day', halfDaySession } = data; // date should be "YYYY-MM-DD", loginTime "HH:mm"
+    const { userId, date, status, sessions, duration = 'full_day', halfDaySession } = data; // date should be "YYYY-MM-DD"
     const finalHalfDaySession = (halfDaySession === '' || !halfDaySession) ? null : halfDaySession;
 
     if (!userId || !date || !status) {
@@ -36,23 +36,41 @@ export async function POST(req: NextRequest) {
 
     let parsedLoginTime;
     let parsedLogoutTime;
-    let totalHours;
+    let totalHours = 0;
+    let dbSessions: any[] = [];
 
-    if (loginTime) {
-      const [hours, minutes] = loginTime.split(':');
-      const dateStr = attendanceDate.toISOString().split('T')[0];
-      parsedLoginTime = new Date(`${dateStr}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+05:30`);
-    }
+    if (sessions && Array.isArray(sessions)) {
+      sessions.forEach(s => {
+        let checkInTime = null;
+        let checkOutTime = null;
+        const dateStr = attendanceDate.toISOString().split('T')[0];
 
-    if (logoutTime) {
-      const [hours, minutes] = logoutTime.split(':');
-      const dateStr = attendanceDate.toISOString().split('T')[0];
-      parsedLogoutTime = new Date(`${dateStr}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+05:30`);
-    }
+        if (s.checkIn) {
+          const [hours, minutes] = s.checkIn.split(':');
+          checkInTime = new Date(`${dateStr}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+05:30`);
+          if (!parsedLoginTime) parsedLoginTime = checkInTime;
+        }
 
-    if (parsedLoginTime && parsedLogoutTime) {
-      const diffMs = parsedLogoutTime.getTime() - parsedLoginTime.getTime();
-      totalHours = diffMs / (1000 * 60 * 60);
+        if (s.checkOut) {
+          const [hours, minutes] = s.checkOut.split(':');
+          checkOutTime = new Date(`${dateStr}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00+05:30`);
+          parsedLogoutTime = checkOutTime; // Will overwrite to be the last one
+        }
+
+        if (checkInTime && checkOutTime) {
+          totalHours += (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
+        }
+
+        if (checkInTime || checkOutTime) {
+          dbSessions.push({
+            sessionOrder: s.order,
+            checkIn: checkInTime || undefined,
+            checkOut: checkOutTime || undefined,
+            status: (checkInTime && checkOutTime) ? 'Completed' : (checkInTime ? 'Pending' : 'Missing Checkout'),
+            lateMinutes: 0
+          });
+        }
+      });
     }
 
     const attendanceTypes = ['present', 'absent', 'half-day', 'late'];
@@ -279,6 +297,27 @@ export async function POST(req: NextRequest) {
       }
 
       // Upsert attendance record
+      const existingAttendanceObj = await Attendance.findOne({ userId, date: attendanceDate });
+      const usedExtraMinutes = existingAttendanceObj ? (existingAttendanceObj.totalExtraMinutes! - existingAttendanceObj.availableExtraMinutes!) : 0;
+
+      let scheduledMinutes = 0;
+      if (user.shiftId && (user.shiftId as any).sessions) {
+        (user.shiftId as any).sessions.forEach((s: any) => {
+          const [startH, startM] = s.startTime.split(':').map(Number);
+          const [endH, endM] = s.endTime.split(':').map(Number);
+          let duration = (endH * 60 + endM) - (startH * 60 + startM);
+          if (duration < 0) duration += 24 * 60;
+          scheduledMinutes += duration;
+        });
+      }
+
+      const workedMinutes = Math.round(totalHours * 60);
+      let totalExtraMinutes = 0;
+      if (scheduledMinutes > 0 && workedMinutes > scheduledMinutes) {
+        totalExtraMinutes = workedMinutes - scheduledMinutes;
+      }
+      const availableExtraMinutes = Math.max(0, totalExtraMinutes - usedExtraMinutes);
+
       const attendance = await Attendance.findOneAndUpdate(
         { userId, date: attendanceDate },
         {
@@ -286,7 +325,12 @@ export async function POST(req: NextRequest) {
             status,
             loginTime: parsedLoginTime,
             logoutTime: parsedLogoutTime,
+            sessions: dbSessions,
             totalHours,
+            scheduledMinutes,
+            workedMinutes,
+            totalExtraMinutes,
+            availableExtraMinutes,
             lateMinutes: status === 'late' ? 0 : 0 // simplify for manual override
           }
         },

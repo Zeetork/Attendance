@@ -39,8 +39,10 @@ export async function GET(req: NextRequest) {
     const startDate = startOfMonth(targetDate);
     const endDate = endOfMonth(targetDate);
 
-    // Fetch user to verify they exist
-    const user = await User.findById(targetUserId).select('name employeeId joiningDate');
+    // Fetch user to verify they exist and get shift
+    const user = await User.findById(targetUserId)
+      .select('name employeeId joiningDate shiftId')
+      .populate('shiftId');
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }

@@ -21,8 +21,7 @@ export default function PermissionClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [compensatePerm, setCompensatePerm] = useState<any>(null);
-  const [selectedAttId, setSelectedAttId] = useState('');
-  const [usedMinutes, setUsedMinutes] = useState(0);
+  const [selectedCompensations, setSelectedCompensations] = useState<{ [id: string]: number }>({});
   const [isCompensating, setIsCompensating] = useState(false);
 
   const balance = balanceData?.balance || { allowedMinutes: 120, usedMinutes: 0, remainingMinutes: 120 };
@@ -70,14 +69,19 @@ export default function PermissionClient() {
 
   const handleCompensate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedAttId || usedMinutes <= 0) return alert('Invalid selection');
+    const compsArray = Object.keys(selectedCompensations).map(id => ({
+      attendanceId: id,
+      usedMinutes: selectedCompensations[id]
+    })).filter(c => c.usedMinutes > 0);
+
+    if (compsArray.length === 0) return alert('Invalid selection. Select at least one attendance record.');
     
     setIsCompensating(true);
     try {
       const res = await fetch(`/api/employee/permissions/${compensatePerm._id}/compensate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ attendanceId: selectedAttId, usedMinutes })
+        body: JSON.stringify({ compensations: compsArray })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -235,7 +239,7 @@ export default function PermissionClient() {
           <div className="bg-card w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-4 border-b border-border flex justify-between items-center">
               <h3 className="font-bold text-lg">Compensate Permission</h3>
-              <button onClick={() => setCompensatePerm(null)} className="text-muted-foreground hover:text-foreground"><XCircle className="w-5 h-5" /></button>
+              <button onClick={() => { setCompensatePerm(null); setSelectedCompensations({}); }} className="text-muted-foreground hover:text-foreground"><XCircle className="w-5 h-5" /></button>
             </div>
             <div className="p-4 text-sm bg-muted/30">
               <div className="flex justify-between font-bold mb-2">
@@ -246,22 +250,64 @@ export default function PermissionClient() {
             </div>
             <form onSubmit={handleCompensate} className="p-4 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-muted-foreground mb-2">Select Attendance</label>
+                <label className="block text-xs font-bold text-muted-foreground mb-2">Select Attendances (Up to {formatMins(compensatePerm.pendingMinutes)})</label>
                 <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                  {attendances.map((att: any) => (
-                    <label key={att._id} className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer transition-colors ${selectedAttId === att._id ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'}`}>
-                      <div className="flex items-center gap-3">
-                        <input type="radio" name="attendanceId" value={att._id} checked={selectedAttId === att._id} onChange={() => { setSelectedAttId(att._id); setUsedMinutes(Math.min(compensatePerm.pendingMinutes, att.availableExtraMinutes)); }} className="text-primary focus:ring-primary" />
-                        <div>
-                          <div className="font-bold">{format(new Date(att.date), 'dd MMM yyyy')}</div>
-                          <div className="text-xs text-muted-foreground">Total Extra: {formatMins(att.totalExtraMinutes)}</div>
-                        </div>
+                  {attendances.map((att: any) => {
+                    const isSelected = selectedCompensations[att._id] !== undefined;
+                    return (
+                      <div key={att._id} className={`flex flex-col p-3 border rounded-xl transition-colors ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'}`}>
+                        <label className="flex items-center justify-between cursor-pointer w-full">
+                          <div className="flex items-center gap-3">
+                            <input 
+                              type="checkbox" 
+                              checked={isSelected} 
+                              onChange={(e) => {
+                                const newComps = { ...selectedCompensations };
+                                if (e.target.checked) {
+                                  // calculate how many pending left
+                                  const alreadyUsed = Object.values(newComps).reduce((a, b) => a + b, 0);
+                                  const stillPending = Math.max(0, compensatePerm.pendingMinutes - alreadyUsed);
+                                  if (stillPending > 0) {
+                                    newComps[att._id] = Math.min(stillPending, att.availableExtraMinutes);
+                                  } else {
+                                    newComps[att._id] = 0; // Or don't check
+                                  }
+                                } else {
+                                  delete newComps[att._id];
+                                }
+                                setSelectedCompensations(newComps);
+                              }} 
+                              className="text-primary rounded focus:ring-primary h-4 w-4" 
+                            />
+                            <div>
+                              <div className="font-bold">{format(new Date(att.date), 'dd MMM yyyy')}</div>
+                              <div className="text-xs text-muted-foreground">Total Extra: {formatMins(att.totalExtraMinutes)}</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-success font-bold">{formatMins(att.availableExtraMinutes)} Available</div>
+                          </div>
+                        </label>
+                        {isSelected && (
+                          <div className="mt-3 pl-7 flex items-center justify-between gap-4">
+                            <span className="text-xs font-semibold text-muted-foreground">Allocate Mins:</span>
+                            <input 
+                              type="number" 
+                              required 
+                              min={1} 
+                              max={Math.min(compensatePerm.pendingMinutes, att.availableExtraMinutes)}
+                              className="w-24 border border-border rounded-lg px-2 py-1 bg-background text-sm font-bold focus:ring-1 focus:ring-primary focus:outline-none" 
+                              value={selectedCompensations[att._id] || ''} 
+                              onChange={e => {
+                                const val = Number(e.target.value);
+                                setSelectedCompensations(prev => ({ ...prev, [att._id]: val }));
+                              }} 
+                            />
+                          </div>
+                        )}
                       </div>
-                      <div className="text-right">
-                        <div className="text-success font-bold">{formatMins(att.availableExtraMinutes)} Available</div>
-                      </div>
-                    </label>
-                  ))}
+                    );
+                  })}
                   {attendances.length === 0 && (
                     <div className="text-center p-4 text-muted-foreground font-bold border border-dashed border-border rounded-xl">
                       No attendance records with extra time found this month.
@@ -270,22 +316,18 @@ export default function PermissionClient() {
                 </div>
               </div>
               
-              {selectedAttId && (
-                <div>
-                  <label className="block text-xs font-bold text-muted-foreground mb-1">Minutes to Use (Max: {Math.min(compensatePerm.pendingMinutes, attendances.find((a: any) => a._id === selectedAttId)?.availableExtraMinutes || 0)})</label>
-                  <input 
-                    type="number" 
-                    required 
-                    min={1} 
-                    max={Math.min(compensatePerm.pendingMinutes, attendances.find((a: any) => a._id === selectedAttId)?.availableExtraMinutes || 0)}
-                    className="w-full border border-border rounded-xl px-3 py-2 bg-background font-bold" 
-                    value={usedMinutes} 
-                    onChange={e => setUsedMinutes(Number(e.target.value))} 
-                  />
-                </div>
-              )}
-
-              <button disabled={isCompensating || !selectedAttId || usedMinutes <= 0} type="submit" className="w-full py-2 bg-primary text-primary-foreground font-bold rounded-xl disabled:opacity-50">
+              <div className="flex justify-between items-center text-sm font-bold bg-muted/30 p-3 rounded-xl border border-border">
+                <span>Total Allocated:</span>
+                <span className={Object.values(selectedCompensations).reduce((a, b) => a + b, 0) > compensatePerm.pendingMinutes ? 'text-destructive' : 'text-primary'}>
+                  {formatMins(Object.values(selectedCompensations).reduce((a, b) => a + b, 0))} / {formatMins(compensatePerm.pendingMinutes)}
+                </span>
+              </div>
+              
+              <button 
+                type="submit" 
+                disabled={isCompensating || Object.values(selectedCompensations).reduce((a, b) => a + b, 0) <= 0 || Object.values(selectedCompensations).reduce((a, b) => a + b, 0) > compensatePerm.pendingMinutes} 
+                className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
                 {isCompensating ? 'Processing...' : 'Confirm Compensation'}
               </button>
             </form>

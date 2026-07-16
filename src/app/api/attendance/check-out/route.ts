@@ -106,36 +106,24 @@ export async function POST(req: NextRequest) {
       const firstSession = shift.sessions[0];
       const lastSession = shift.sessions[shift.sessions.length - 1];
 
-      const [startH, startM] = firstSession.startTime.split(':');
-      const shiftStartStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${startH.padStart(2, '0')}:${startM.padStart(2, '0')}:00+05:30`;
-      const shiftStartTime = new Date(shiftStartStr);
-
-      const [endH, endM] = lastSession.endTime.split(':');
-      const shiftEndStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${endH.padStart(2, '0')}:${endM.padStart(2, '0')}:00+05:30`;
-      const shiftEndTime = new Date(shiftEndStr);
-
-      const firstCheckIn = attendance.sessions[0]?.checkIn;
-      const lastCheckOut = attendance.sessions[attendance.sessions.length - 1]?.checkOut;
-
-      let extraBefore = 0;
-      let extraAfter = 0;
-
-      if (firstCheckIn && new Date(firstCheckIn) < shiftStartTime) {
-        extraBefore = differenceInMinutes(shiftStartTime, new Date(firstCheckIn));
+      let totalExtra = 0;
+      if (scheduledMinutes > 0 && totalMinutes > scheduledMinutes) {
+        totalExtra = totalMinutes - scheduledMinutes;
       }
 
-      if (lastCheckOut && new Date(lastCheckOut) > shiftEndTime) {
-        extraAfter = differenceInMinutes(new Date(lastCheckOut), shiftEndTime);
-      }
-
-      attendance.extraBeforeShiftMinutes = extraBefore;
-      attendance.extraAfterShiftMinutes = extraAfter;
-      attendance.totalExtraMinutes = extraBefore + extraAfter;
+      // Legacy fields (optional, but keep zeroed out to prevent confusion)
+      attendance.extraBeforeShiftMinutes = 0;
+      attendance.extraAfterShiftMinutes = 0;
       
-      // Calculate how much was already used (if any, though rare on first checkout)
-      const previouslyUsed = (attendance.totalExtraMinutes || 0) - (attendance.availableExtraMinutes || 0);
+      const previousTotalExtra = attendance.totalExtraMinutes || 0;
+      const previousAvailable = attendance.availableExtraMinutes || 0;
+      
+      attendance.totalExtraMinutes = totalExtra;
+      
+      // Calculate how much was already used
+      const previouslyUsed = previousTotalExtra - previousAvailable;
       const newlyUsed = isNaN(previouslyUsed) || previouslyUsed < 0 ? 0 : previouslyUsed;
-      attendance.availableExtraMinutes = Math.max(0, (extraBefore + extraAfter) - newlyUsed);
+      attendance.availableExtraMinutes = Math.max(0, totalExtra - newlyUsed);
     }
 
     await attendance.save();
