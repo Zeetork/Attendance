@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
     const [year, month, day] = date.split('-');
     const attendanceDate = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0));
 
-    let parsedLoginTime;
-    let parsedLogoutTime;
+    let parsedLoginTime: Date | undefined;
+    let parsedLogoutTime: Date | undefined;
     let totalHours = 0;
     let dbSessions: any[] = [];
 
