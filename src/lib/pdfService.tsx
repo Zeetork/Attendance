@@ -21,7 +21,17 @@ export async function generatePDF(htmlContent: string): Promise<Buffer> {
             fontSize: 16,
             fontFamily: 'Helvetica',
             lineHeight: 1.3,
-            marginBottom: -7
+            marginBottom: -7,
+            div:{
+              // display: "flex",
+              // alignItems: "flex-end",
+              // justifyContent: "flex-end",
+              paddingTop: 20,
+              paddingRight: 20
+            },
+            img: {
+              height: 60,
+            }
           }}>{sanitizedHtml}</Html>
       </Page>
     </Document>
