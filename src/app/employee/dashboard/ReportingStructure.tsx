@@ -1,4 +1,4 @@
-'use client';
+  'use client';
 
 import { User as UserIcon, Loader2, AlertTriangle, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -21,6 +21,7 @@ interface AttendanceData {
   status: string;
   loginTime?: string;
   logoutTime?: string;
+  sessions?: any[];
 }
 
 interface ReportingStructureProps {
@@ -98,20 +99,38 @@ export default function ReportingStructure({ manager, currentUser, subordinates,
   const [confirmAction, setConfirmAction] = useState<'check-in' | 'check-out' | null>(null);
 
   useEffect(() => {
-    if (!todayAttendance?.loginTime || todayAttendance?.logoutTime) {
-      setElapsed('00 : 00 : 00');
+    const calculateTotalWorkedMs = () => {
+      let total = 0;
+      if (todayAttendance?.sessions) {
+        todayAttendance.sessions.forEach((s: any) => {
+          if (s.checkIn && s.checkOut) {
+            total += new Date(s.checkOut).getTime() - new Date(s.checkIn).getTime();
+          }
+        });
+      }
+      return total;
+    };
+
+    const baseMs = calculateTotalWorkedMs();
+
+    if (sessionStatus !== 'CAN_CHECK_OUT' || !activeSessionInfo?.sessionState?.checkIn) {
+      const hours = Math.floor(baseMs / (1000 * 60 * 60)).toString().padStart(2, '0');
+      const mins = Math.floor((baseMs % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+      const secs = Math.floor((baseMs % (1000 * 60)) / 1000).toString().padStart(2, '0');
+      setElapsed(`${hours} : ${mins} : ${secs}`);
       return;
     }
 
-    const login = new Date(todayAttendance.loginTime).getTime();
+    const login = new Date(activeSessionInfo.sessionState.checkIn).getTime();
     
     const updateTimer = () => {
       const now = Date.now();
-      const diff = Math.max(0, now - login);
+      const currentSessionMs = Math.max(0, now - login);
+      const totalMs = baseMs + currentSessionMs;
 
-      const hours = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0');
-      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-      const secs = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+      const hours = Math.floor(totalMs / (1000 * 60 * 60)).toString().padStart(2, '0');
+      const mins = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+      const secs = Math.floor((totalMs % (1000 * 60)) / 1000).toString().padStart(2, '0');
 
       setElapsed(`${hours} : ${mins} : ${secs}`);
     };
@@ -120,7 +139,7 @@ export default function ReportingStructure({ manager, currentUser, subordinates,
     const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
-  }, [todayAttendance]);
+  }, [sessionStatus, activeSessionInfo, todayAttendance]);
 
   const executeAttendanceAction = async () => {
     if (!confirmAction) return;
@@ -204,7 +223,7 @@ export default function ReportingStructure({ manager, currentUser, subordinates,
              )}>
                {sessionStatus === 'CAN_CHECK_IN' ? 'Check In Available' : 
                 sessionStatus === 'CAN_CHECK_OUT' ? 'Checked In' : 
-                sessionStatus === 'COMPLETED' ? 'Session Completed' :
+                sessionStatus === 'ALL_COMPLETED' ? 'Session Completed' :
                 sessionStatus === 'NO_ACTIVE_SESSION' ? 'No Active Session' : 'Not Available'}
              </p>
           </div>
@@ -251,7 +270,7 @@ export default function ReportingStructure({ manager, currentUser, subordinates,
             </button>
           ) : (
             <div className="w-full bg-muted border border-border text-muted-foreground py-3.5 rounded-xl font-medium text-sm flex items-center justify-center cursor-not-allowed">
-              {sessionStatus === 'COMPLETED' ? 'Shift Completed' : 'Action Unavailable'}
+              {sessionStatus === 'ALL_COMPLETED' ? 'Shift Completed' : 'Action Unavailable'}
             </div>
           )}
         </div>

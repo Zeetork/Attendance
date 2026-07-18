@@ -18,7 +18,7 @@ export async function generatePDF(htmlContent: string): Promise<Buffer> {
       <Page size="A4" style={styles.page}>
         <Html
           style={{
-            fontSize: 16,
+            fontSize: 14,
             fontFamily: 'Helvetica',
             lineHeight: 1.3,
             marginBottom: -7,
