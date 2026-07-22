@@ -2,12 +2,22 @@ import { ReactNode } from 'react';
 import { SessionProvider } from 'next-auth/react';
 import { CompanyProvider } from '@/components/CompanyProvider';
 import { Toaster } from 'react-hot-toast';
+import { Allura } from "next/font/google";
 import './globals.css';
 
 export const metadata = {
   title: 'HRMS',
   description: 'Employee Attendance & Payroll Management System',
 };
+
+
+
+const allura = Allura({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-allura",
+});
+
 
 export default function RootLayout({
   children,
