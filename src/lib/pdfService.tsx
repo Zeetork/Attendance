@@ -59,8 +59,8 @@ export async function generatePDF(htmlContent: string): Promise<Buffer> {
   try {
     const page = await browser.newPage();
     
-    // Wait until network is idle so fonts have time to load
-    await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+    // Wait until dom is loaded (fonts are embedded as base64, so no network wait is needed)
+    await page.setContent(fullHtml, { waitUntil: 'load' });
 
     const pdfUint8Array = await page.pdf({
       format: 'A4',
