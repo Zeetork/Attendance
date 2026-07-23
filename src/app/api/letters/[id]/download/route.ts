@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
 import GeneratedLetter from '@/models/GeneratedLetter';
-import { generatePDF } from '@/lib/pdfService';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -36,16 +35,52 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'No content found for this letter' }, { status: 400 });
     }
 
-    const pdfBuffer = await generatePDF(letter.content);
+    // Instead of generating a PDF on the server (which causes issues on serverless deployments like Vercel),
+    // we return an HTML page that automatically triggers the browser's native print-to-PDF functionality.
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Letter - ${employee.name || 'Employee'}</title>
+          <style>
+            @font-face {
+              font-family: "Allura";
+              src: url("/font/Allura/Allura-Regular.ttf") format("truetype");
+            }
+            body {
+              background-color: #ffffff;
+              font-size: 16px;
+              text-align: justify;
+              font-family: Helvetica, Arial, sans-serif;
+              line-height: 1.5;
+              margin: 0;
+              padding: 20px;
+            }
+            @media print {
+              @page {
+                size: A4;
+                margin: 0; /* Removing page margin hides the browser's default header/footer (date, URL, etc.) */
+              }
+            }
+            div {
+              padding-top: 20px;
+              padding-right: 20px;
+            }
+          </style>
+        </head>
+        <body onload="setTimeout(() => window.print(), 500)">
+          ${letter.content}
+        </body>
+      </html>
+    `;
 
     const headers = new Headers();
-    headers.set('Content-Type', 'application/pdf');
-    headers.set('Content-Disposition', `attachment; filename="Letter_${employee.name?.replace(/\\s+/g, '_') || 'Employee'}.pdf"`);
+    headers.set('Content-Type', 'text/html');
 
-    // Convert Buffer to Uint8Array to satisfy NextResponse BodyInit types
-    return new NextResponse(new Uint8Array(pdfBuffer), { status: 200, headers });
+    return new NextResponse(html, { status: 200, headers });
   } catch (error: any) {
-    console.error('PDF download error:', error);
+    console.error('PDF display error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
