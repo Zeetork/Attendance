@@ -10,10 +10,13 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function PayslipsClient() {
   const { data, error, isLoading } = useSWR('/api/employee/payslips', fetcher);
+  const { data: lettersData, isLoading: lettersLoading } = useSWR('/api/employee/letters', fetcher);
+  
   const [selectedPayslip, setSelectedPayslip] = useState<any>(null);
   const { activeCompany } = useCompany();
 
   const payslips = data?.payrolls || [];
+  const letters = lettersData?.letters || [];
 
   const handlePrint = () => {
     window.print();
@@ -79,6 +82,59 @@ export default function PayslipsClient() {
               </div>
             );
           })
+        )}
+      </div>
+      
+      {/* Letters Section */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden pt-8 mt-8 border-t border-border">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">My Letters</h1>
+          <p className="text-sm text-muted-foreground mt-1">View and download your official letters and documents.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:hidden">
+        {lettersLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-card border border-border rounded-2xl p-6 h-48 animate-pulse"></div>
+          ))
+        ) : letters.length === 0 ? (
+          <div className="col-span-full text-center py-12 text-muted-foreground bg-card rounded-2xl border border-border">
+            No letters available yet.
+          </div>
+        ) : (
+          letters.map((letter: any) => (
+            <div key={letter._id} className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:border-primary/50 transition-colors group flex flex-col justify-between">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-primary/10 rounded-xl text-primary group-hover:bg-primary/20 transition-colors">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-card-foreground text-lg group-hover:text-primary transition-colors">
+                      {letter.templateId?.templateName || 'Official Letter'}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">Generated: {format(new Date(letter.createdAt), 'MMM dd, yyyy')}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2 mb-6">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Category</span>
+                  <span className="text-card-foreground font-bold">{letter.templateId?.category || 'General'}</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => window.open(`/api/letters/${letter._id}/download`, '_blank')}
+                className="w-full flex items-center justify-center px-4 py-2 min-h-[44px] bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/80 transition-colors border border-border text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download PDF
+              </button>
+            </div>
+          ))
         )}
       </div>
 

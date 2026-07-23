@@ -1,14 +1,31 @@
 'use client';
 
 import useSWR from 'swr';
-import { Download, FileText, Calendar } from 'lucide-react';
+import { Download, FileText, Calendar, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'react-hot-toast';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function SentLettersPage() {
-  const { data, isLoading } = useSWR('/api/letters/history', fetcher);
+  const { data, isLoading, mutate } = useSWR('/api/letters/history', fetcher);
   const history = data?.history || [];
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this letter? This action cannot be undone.')) return;
+    
+    try {
+      const res = await fetch(`/api/letters/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to delete letter');
+      }
+      toast.success('Letter deleted successfully');
+      mutate();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
 
   if (isLoading) return <div className="text-foreground font-bold text-center p-6">Loading history...</div>;
 
@@ -60,12 +77,25 @@ export default function SentLettersPage() {
                       {format(new Date(record.createdAt), 'MMM dd, yyyy HH:mm')}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    {/* Re-download button is not fully implemented since we didn't save the PDF to S3 in the backend yet. */}
-                    <button className="text-primary hover:text-primary/80 font-bold flex items-center justify-end w-full" title="Re-download coming soon">
-                      <Download className="w-4 h-4 mr-1" />
-                      <span className="text-xs">Download</span>
-                    </button>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-end gap-4">
+                      <button 
+                        onClick={() => window.open(`/api/letters/${record._id}/download`, '_blank')}
+                        className="text-primary hover:text-primary/80 font-bold flex items-center transition-colors" 
+                        title="Download PDF"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        <span className="text-xs">Download</span>
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(record._id)}
+                        className="text-destructive hover:text-destructive/80 font-bold flex items-center transition-colors" 
+                        title="Delete Letter"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        <span className="text-xs">Delete</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

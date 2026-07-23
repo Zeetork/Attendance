@@ -1,7 +1,4 @@
-import { generatePDF } from './pdfService';
-import { sendEmail } from './emailService';
 import GeneratedLetter from '@/models/GeneratedLetter';
-import LetterEmailLog from '@/models/LetterEmailLog';
 import User from '@/models/User';
 
 interface BulkSendParams {
@@ -31,14 +28,11 @@ export async function processBulkLetters({
     let generatedLetterId = null;
 
     try {
-      // 1. Generate PDF
-      const pdfBuffer = await generatePDF(empData.htmlContent);
-
-      // 2. Save Generated Letter to History
+      // Just save Generated Letter to History so it reflects in the UI for employees/admins
       const generatedLetter = await GeneratedLetter.create({
         employeeId: empData.employeeId,
         templateId,
-        status: 'SENT',
+        status: 'SENT', // We keep 'SENT' to indicate it has been successfully assigned
         variables: empData.variables,
         content: empData.htmlContent,
         generatedAt: new Date(),
@@ -46,37 +40,14 @@ export async function processBulkLetters({
       });
       generatedLetterId = generatedLetter._id;
 
-      // 3. Send Email
-      await sendEmail({
-        to: empData.email,
-        subject: templateSubject,
-        html: `<p>Dear ${empData.name},</p><p>Please find attached your letter.</p><br><p>Regards,<br>HR Team</p>`,
-        attachments: [
-          {
-            filename: `${templateSubject.replace(/\s+/g, '_')}_${empData.name.replace(/\s+/g, '_')}.pdf`,
-            content: pdfBuffer,
-            encoding: 'base64',
-          },
-        ],
-      });
+      // Note: We removed the email sending logic (sendEmail and LetterEmailLog) as requested.
+      // The letter is now only saved to the database to be viewed/downloaded via the website.
 
       status = 'SENT';
     } catch (error: any) {
       status = 'FAILED';
       errorMessage = error.message;
     }
-
-    // 4. Log the Email
-    await LetterEmailLog.create({
-      employeeId: empData.employeeId,
-      templateId,
-      generatedLetterId: generatedLetterId || undefined,
-      email: empData.email,
-      subject: templateSubject,
-      status,
-      errorMessage: errorMessage || undefined,
-      sentAt: status === 'SENT' ? new Date() : undefined,
-    });
 
     results.push({ employeeId: empData.employeeId, status, errorMessage });
   }
