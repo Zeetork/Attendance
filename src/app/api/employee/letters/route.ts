@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/lib/mongodb';
 import GeneratedLetter from '@/models/GeneratedLetter';
+import LetterTemplate from '@/models/LetterTemplate';
 
 export async function GET(req: NextRequest) {
   try {

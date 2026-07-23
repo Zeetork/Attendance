@@ -13,6 +13,7 @@ export default function PayslipsClient() {
   const { data: lettersData, isLoading: lettersLoading } = useSWR('/api/employee/letters', fetcher);
   
   const [selectedPayslip, setSelectedPayslip] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'payslips' | 'letters'>('payslips');
   const { activeCompany } = useCompany();
 
   const payslips = data?.payrolls || [];
@@ -26,11 +27,41 @@ export default function PayslipsClient() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">My Payslips</h1>
-          <p className="text-sm text-muted-foreground mt-1">View and download your monthly salary slips.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">My Documents</h1>
+          <p className="text-sm text-muted-foreground mt-1">View and download your payslips and official letters.</p>
         </div>
       </div>
 
+      <div className="flex border-b border-border print:hidden gap-8">
+        <button
+          onClick={() => setActiveTab('payslips')}
+          className={`pb-3 text-sm font-bold transition-colors relative ${
+            activeTab === 'payslips' 
+              ? 'text-primary' 
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Payslips
+          {activeTab === 'payslips' && (
+            <div className="absolute bottom-[-1px] left-0 w-full h-[2px] bg-primary rounded-t-full"></div>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('letters')}
+          className={`pb-3 text-sm font-bold transition-colors relative ${
+            activeTab === 'letters' 
+              ? 'text-primary' 
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Letters
+          {activeTab === 'letters' && (
+            <div className="absolute bottom-[-1px] left-0 w-full h-[2px] bg-primary rounded-t-full"></div>
+          )}
+        </button>
+      </div>
+
+      {activeTab === 'payslips' ? (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:hidden">
         {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
@@ -84,15 +115,7 @@ export default function PayslipsClient() {
           })
         )}
       </div>
-      
-      {/* Letters Section */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden pt-8 mt-8 border-t border-border">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">My Letters</h1>
-          <p className="text-sm text-muted-foreground mt-1">View and download your official letters and documents.</p>
-        </div>
-      </div>
-
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:hidden">
         {lettersLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
@@ -137,6 +160,7 @@ export default function PayslipsClient() {
           ))
         )}
       </div>
+      )}
 
       {/* Payslip Modal (Also used for printing) */}
       {selectedPayslip && (
