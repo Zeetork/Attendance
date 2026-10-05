@@ -1,119 +1,149 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { requestWebPushPermission } from '@/lib/webPushNotifications';
+import { useSession } from 'next-auth/react';
+import { Bell, X, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import {
+  autoRegisterPushToken,
+  requestWebPushPermission,
+  setupForegroundMessageListener,
+} from '@/lib/webPushNotifications';
 
+/**
+ * WebPushInitializer:
+ * 1. Checks if browser notifications are enabled for the current user.
+ * 2. If already granted: silently registers/refreshes the FCM token and listens for foreground push alerts.
+ * 3. If turned off / not granted ('default'): displays an elegant, non-intrusive prompt asking the user
+ *    to turn on browser notifications so they receive check-in and check-out reminders.
+ * 4. If blocked ('denied'): optionally shows a helpful tip on how to enable them in the browser settings.
+ */
 export default function WebPushInitializer() {
-  const [isSupported, setIsSupported] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [token, setToken] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { data: session, status } = useSession();
+  const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('default');
+  const [isVisible, setIsVisible] = useState(false);
+  const [isRequesting, setIsRequesting] = useState(false);
 
-  const [testStatus, setTestStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [testResult, setTestResult] = useState<string | null>(null);
-
-  const handleTestNotification = async () => {
-    setTestStatus('loading');
-    setTestResult(null);
-    try {
-      const response = await fetch('/api/notifications/test', {
-        method: 'POST'
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setTestStatus('success');
-        setTestResult(`Test notification sent successfully. Sent to ${data.result?.sent} devices.`);
-      } else {
-        setTestStatus('error');
-        setTestResult(data.error || 'Failed to send notification.');
-      }
-    } catch (err: any) {
-      console.error(err);
-      setTestStatus('error');
-      setTestResult('Failed to send notification.');
-    }
-  };
   useEffect(() => {
-    // Check if notifications are supported on mount
-    if (typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator) {
-      setIsSupported(true);
+    if (status !== 'authenticated' || !session?.user?.id) return;
+
+    if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) {
+      setPermission('unsupported');
+      return;
     }
-  }, []);
+
+    const currentPermission = Notification.permission;
+    setPermission(currentPermission);
+
+    if (currentPermission === 'granted') {
+      // 1. User has already enabled notifications -> auto-sync token and attach listener
+      setupForegroundMessageListener();
+      autoRegisterPushToken().catch((err) => {
+        console.warn('Auto web push registration notice:', err);
+      });
+      setIsVisible(false);
+    } else if (currentPermission === 'default') {
+      // 2. Notifications are turned off / not yet prompted -> check if dismissed in current session
+      const isDismissed = sessionStorage.getItem('hrms_push_prompt_dismissed');
+      if (!isDismissed) {
+        // Small delay so page loads smoothly before showing prompt
+        const timer = setTimeout(() => {
+          setIsVisible(true);
+        }, 1200);
+        return () => clearTimeout(timer);
+      }
+    } else if (currentPermission === 'denied') {
+      // 3. Blocked by browser settings
+      const isDismissed = sessionStorage.getItem('hrms_push_denied_dismissed');
+      if (!isDismissed) {
+        setIsVisible(false); // Don't aggressively nag if blocked, keep it subtle
+      }
+    }
+  }, [session, status]);
 
   const handleEnableNotifications = async () => {
-    setStatus('loading');
-    setErrorMessage(null);
+    setIsRequesting(true);
     try {
-      const fcmToken = await requestWebPushPermission();
-      if (fcmToken) {
-        // Send the token to our Next.js backend
-        const response = await fetch('/api/notifications/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: fcmToken, platform: 'web' }),
+      const token = await requestWebPushPermission();
+      if (token) {
+        setPermission('granted');
+        setIsVisible(false);
+        toast.success('Push notifications enabled! You will now receive check-in & check-out reminders.', {
+          icon: '🔔',
+          duration: 5000,
         });
-
-        if (response.ok) {
-          setToken(fcmToken);
-          setStatus('success');
-        } else {
-          const errorData = await response.json();
-          setStatus('error');
-          setErrorMessage(errorData.error || 'Failed to register token with server.');
-        }
       } else {
-        setStatus('error');
-        setErrorMessage('Permission denied, or token generation failed. Check console for details.');
+        const updatedPerm = Notification.permission;
+        setPermission(updatedPerm);
+        if (updatedPerm === 'denied') {
+          toast.error('Notifications were blocked. Please enable them in your browser settings.');
+          setIsVisible(false);
+        } else {
+          toast('Notification permission was dismissed.', { icon: 'ℹ️' });
+        }
       }
-    } catch (err: any) {
-      console.error(err);
-      setStatus('error');
-      setErrorMessage(err.message || 'An unexpected error occurred.');
+    } catch (err) {
+      console.error('Failed to request notification permission:', err);
+      toast.error('Failed to enable notifications.');
+    } finally {
+      setIsRequesting(false);
     }
   };
 
-  if (!isSupported) {
-    return null; // Don't render on environments that don't support it (e.g. Capacitor natively without browser APIs)
-  }
+  const handleDismiss = () => {
+    setIsVisible(false);
+    sessionStorage.setItem('hrms_push_prompt_dismissed', 'true');
+  };
 
-  if (status === 'success') {
-    return (
-      <div className="p-4 bg-green-100 text-green-800 rounded-md my-4 shadow-sm border border-green-200">
-        <p className="font-bold">Web Push Enabled!</p>
-        <p className="text-xs mt-1 break-all bg-green-50 p-2 rounded">Token: {token}</p>
-
-        <div className="mt-4 pt-4 border-t border-green-200">
-          <button
-            onClick={handleTestNotification}
-            disabled={testStatus === 'loading'}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm font-medium"
-          >
-            {testStatus === 'loading' ? 'Sending...' : 'Send Test Notification'}
-          </button>
-          
-          {testStatus === 'success' && <p className="mt-2 text-sm text-green-700 font-medium">{testResult}</p>}
-          {testStatus === 'error' && <p className="mt-2 text-sm text-red-600 font-medium">{testResult}</p>}
-        </div>
-      </div>
-    );
+  if (!isVisible || permission === 'granted' || permission === 'unsupported') {
+    return null;
   }
 
   return (
-    <div className="p-4 bg-blue-50 border border-blue-200 rounded-md my-4 shadow-sm">
-      <h3 className="text-lg font-semibold text-blue-900 mb-1">Browser Notifications Test</h3>
-      <p className="text-sm text-blue-700 mb-4">
-        Enable browser notifications to test Firebase Web Push.
-      </p>
-      <button
-        onClick={handleEnableNotifications}
-        disabled={status === 'loading'}
-        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm font-medium"
-      >
-        {status === 'loading' ? 'Enabling...' : 'Enable Notifications'}
-      </button>
-      {status === 'error' && (
-        <p className="mt-3 text-sm text-red-600 font-medium">{errorMessage}</p>
-      )}
+    <div className="fixed bottom-5 right-5 z-50 max-w-sm w-[calc(100%-2.5rem)] animate-in fade-in slide-in-from-bottom-5 duration-300">
+      <div className="bg-card text-card-foreground border border-border/80 shadow-2xl rounded-2xl p-4 sm:p-5 flex flex-col gap-3.5 backdrop-blur-md bg-card/95">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="relative p-2.5 bg-amber-500/10 text-amber-500 rounded-xl flex-shrink-0">
+              <Bell className="h-5 w-5 animate-bounce" />
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-amber-500 animate-ping" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm text-foreground leading-tight">
+                Turn On Notifications
+              </h4>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                Never miss your daily check-in and check-out attendance reminders.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleDismiss}
+            aria-label="Dismiss notification prompt"
+            className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors flex-shrink-0"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
+          <button
+            onClick={handleDismiss}
+            disabled={isRequesting}
+            className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+          >
+            Not Now
+          </button>
+          <button
+            onClick={handleEnableNotifications}
+            disabled={isRequesting}
+            className="px-3.5 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-lg shadow-sm transition-all flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <Bell className="h-3.5 w-3.5" />
+            <span>{isRequesting ? 'Enabling...' : 'Turn On'}</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

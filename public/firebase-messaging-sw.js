@@ -16,11 +16,36 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  const notificationTitle = payload.notification?.title || 'New Notification';
+  const notificationTitle = payload.notification?.title || payload.data?.title || 'TruFlow Attendance';
   const notificationOptions = {
-    body: payload.notification?.body,
-    icon: '/TF_logo.png' // Adjust if needed
+    body: payload.notification?.body || payload.data?.body || '',
+    icon: '/TF.png',
+    badge: '/TF.png',
+    data: {
+      url: payload.data?.url || payload.fcmOptions?.link || '/'
+    }
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  return self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+self.addEventListener('notificationclick', function(event) {
+  console.log('[firebase-messaging-sw.js] Notification clicked: ', event.notification);
+  event.notification.close();
+
+  const urlToOpen = event.notification?.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(windowClients) {
+      for (let i = 0; i < windowClients.length; i++) {
+        const client = windowClients[i];
+        if (client.url && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
 });

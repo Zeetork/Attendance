@@ -48,9 +48,7 @@ export default function RootLayout({
         <SessionProvider>
           <CompanyProvider>
             <PushNotificationInitializer />
-            {/* <div className="container mx-auto px-4">
-              <WebPushInitializer />
-            </div> */}
+            <WebPushInitializer />
             {children}
             <Toaster position="bottom-right" />
           </CompanyProvider>

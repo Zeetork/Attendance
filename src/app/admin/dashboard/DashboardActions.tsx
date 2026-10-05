@@ -3,10 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import { Bell, Clock, LogOut, FileText } from 'lucide-react';
+import WebPushModal from '@/components/WebPushModal';
 
 export default function DashboardActions() {
   const router = useRouter();
   const [loadingType, setLoadingType] = useState<string | null>(null);
+  const [isPushModalOpen, setIsPushModalOpen] = useState(false);
 
   const handleReminder = async (type: 'check-in' | 'check-out') => {
     setLoadingType(type);
@@ -21,12 +24,15 @@ export default function DashboardActions() {
 
       const data = await res.json();
       if (res.ok) {
-        toast.success(`Success! Emails sent: ${data.sentTo?.length || 0}`);
+        toast.success(
+          data.message ||
+            `${type === 'check-in' ? 'Check-In' : 'Check-Out'} reminders processed for ${data.sentTo?.length || 0} employee(s). Push notifications: ${data.pushCount || 0}.`
+        );
       } else {
         toast.error(data.error || 'Failed to send reminder');
       }
     } catch (error) {
-      toast.error('An error occurred');
+      toast.error('An error occurred while sending reminders');
       console.error(error);
     } finally {
       setLoadingType(null);
@@ -34,29 +40,48 @@ export default function DashboardActions() {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
-      <button 
-        onClick={() => handleReminder('check-in')}
-        disabled={loadingType === 'check-in'}
-        className="w-full sm:w-auto px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors shadow-sm font-medium disabled:opacity-50"
-      >
-        {loadingType === 'check-in' ? 'Sending...' : 'Check In Reminder'}
-      </button>
-      
-      <button 
-        onClick={() => handleReminder('check-out')}
-        disabled={loadingType === 'check-out'}
-        className="w-full sm:w-auto px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors shadow-sm font-medium disabled:opacity-50"
-      >
-        {loadingType === 'check-out' ? 'Sending...' : 'Check Out Reminder'}
-      </button>
+    <>
+      <div className="flex flex-wrap items-center w-full sm:w-auto gap-2.5">
+        {/* Test / Custom Web Push Notification */}
+        <button
+          onClick={() => setIsPushModalOpen(true)}
+          className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 bg-card hover:bg-muted border border-border text-foreground rounded-lg transition-colors shadow-sm text-sm font-medium"
+        >
+          <Bell className="h-4 w-4 text-primary" />
+          <span>Web Push Test</span>
+        </button>
 
-      <button 
-        onClick={() => router.push('/admin/payroll')}
-        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm font-medium"
-      >
-        Generate Payroll
-      </button>
-    </div>
+        {/* Check In Reminder Button */}
+        <button
+          onClick={() => handleReminder('check-in')}
+          disabled={loadingType === 'check-in'}
+          className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors shadow-sm text-sm font-medium disabled:opacity-50"
+        >
+          <Clock className="h-4 w-4" />
+          <span>{loadingType === 'check-in' ? 'Sending...' : 'Check In Reminder'}</span>
+        </button>
+
+        {/* Check Out Reminder Button */}
+        <button
+          onClick={() => handleReminder('check-out')}
+          disabled={loadingType === 'check-out'}
+          className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm text-sm font-medium disabled:opacity-50"
+        >
+          <LogOut className="h-4 w-4" />
+          <span>{loadingType === 'check-out' ? 'Sending...' : 'Check Out Reminder'}</span>
+        </button>
+
+        {/* Payroll */}
+        <button
+          onClick={() => router.push('/admin/payroll')}
+          className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm text-sm font-medium"
+        >
+          <FileText className="h-4 w-4" />
+          <span>Generate Payroll</span>
+        </button>
+      </div>
+
+      <WebPushModal isOpen={isPushModalOpen} onClose={() => setIsPushModalOpen(false)} />
+    </>
   );
 }

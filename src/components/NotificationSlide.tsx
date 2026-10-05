@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Bell, Check, Trash2, Loader2, Circle } from 'lucide-react';
+import { X, Bell, Check, Trash2, Loader2, Circle, Radio, Send } from 'lucide-react';
 import useSWR from 'swr';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { api } from '@/services/api';
+import { toast } from 'react-hot-toast';
+import { requestWebPushPermission } from '@/lib/webPushNotifications';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -17,6 +19,73 @@ interface NotificationSlideProps {
 export default function NotificationSlide({ isOpen, onClose }: NotificationSlideProps) {
   const { data, error, isLoading, mutate } = useSWR(isOpen ? '/api/notifications' : null, fetcher);
   const [marking, setMarking] = useState(false);
+  const [pushStatus, setPushStatus] = useState<'default' | 'granted' | 'denied' | 'unsupported'>('default');
+  const [isEnablingPush, setIsEnablingPush] = useState(false);
+  const [isTestingPush, setIsTestingPush] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (!('Notification' in window)) {
+        setPushStatus('unsupported');
+      } else {
+        setPushStatus(Notification.permission);
+      }
+    }
+
+    const handleFCM = () => {
+      mutate();
+    };
+
+    window.addEventListener('fcm-message-received', handleFCM);
+    return () => {
+      window.removeEventListener('fcm-message-received', handleFCM);
+    };
+  }, [mutate]);
+
+  const handleEnablePush = async () => {
+    setIsEnablingPush(true);
+    try {
+      const token = await requestWebPushPermission();
+      if (token) {
+        setPushStatus('granted');
+        toast.success('Web push notifications enabled!');
+      } else {
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+          setPushStatus(Notification.permission);
+        }
+        toast.error('Could not enable notifications. Permission was denied or dismissed.');
+      }
+    } catch (err: any) {
+      toast.error('Failed to enable push notifications');
+    } finally {
+      setIsEnablingPush(false);
+    }
+  };
+
+  const handleTestPush = async () => {
+    setIsTestingPush(true);
+    try {
+      const res = await fetch('/api/notifications/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: 'TruFlow Attendance Alert',
+          body: 'Test notification delivered successfully! Push reminders are fully operational.',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success('Test push notification dispatched!');
+        mutate();
+      } else {
+        toast.error(data.error || 'Failed to dispatch test notification');
+      }
+    } catch (err) {
+      toast.error('Failed to send test notification');
+    } finally {
+      setIsTestingPush(false);
+    }
+  };
 
   const notifications = data?.notifications || [];
   const unreadCount = notifications.filter((n: any) => !n.isRead).length;
@@ -75,6 +144,44 @@ export default function NotificationSlide({ isOpen, onClose }: NotificationSlide
             <X className="h-5 w-5" />
           </button>
         </div>
+
+        {/* Web Push Status / Enable Bar */}
+        {pushStatus !== 'unsupported' && (
+          <div className="px-4 py-2.5 bg-accent/40 border-b border-border text-xs flex items-center justify-between">
+            {pushStatus === 'granted' ? (
+              <div className="flex items-center justify-between w-full">
+                <span className="text-green-600 dark:text-green-400 font-semibold flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  Web Push Active
+                </span>
+                <button
+                  onClick={handleTestPush}
+                  disabled={isTestingPush}
+                  className="px-2.5 py-1 text-[11px] font-semibold bg-background hover:bg-muted border border-border rounded-md text-foreground transition-colors disabled:opacity-50"
+                >
+                  {isTestingPush ? 'Sending...' : 'Send Test Alert'}
+                </button>
+              </div>
+            ) : pushStatus === 'denied' ? (
+              <div className="text-muted-foreground text-[11px]">
+                <span>Push notifications are blocked in your browser settings.</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between w-full gap-2">
+                <span className="text-muted-foreground text-[11px] leading-tight">
+                  Get instant check-in/out push reminders
+                </span>
+                <button
+                  onClick={handleEnablePush}
+                  disabled={isEnablingPush}
+                  className="px-2.5 py-1 text-[11px] font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-md transition-colors whitespace-nowrap disabled:opacity-50"
+                >
+                  {isEnablingPush ? 'Enabling...' : 'Enable Push'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
