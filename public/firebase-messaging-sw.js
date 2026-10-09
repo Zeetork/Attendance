@@ -14,7 +14,7 @@ firebase.initializeApp(firebaseConfig);
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(function(payload) {
+messaging.onBackgroundMessage(function (payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
   const notificationTitle = payload.notification?.title || payload.data?.title || 'TruFlow Attendance';
   const notificationOptions = {
@@ -29,14 +29,14 @@ messaging.onBackgroundMessage(function(payload) {
   return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-self.addEventListener('notificationclick', function(event) {
+self.addEventListener('notificationclick', function (event) {
   console.log('[firebase-messaging-sw.js] Notification clicked: ', event.notification);
   event.notification.close();
 
   const urlToOpen = event.notification?.data?.url || '/';
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(windowClients) {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (windowClients) {
       for (let i = 0; i < windowClients.length; i++) {
         const client = windowClients[i];
         if (client.url && 'focus' in client) {

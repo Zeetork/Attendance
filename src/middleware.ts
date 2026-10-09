@@ -10,6 +10,16 @@ export default auth((req) => {
   const isAuthPage = nextUrl.pathname.startsWith('/login');
 
   if (isAuthPage) {
+    if (nextUrl.searchParams.get('error') === 'inactive') {
+      const response = NextResponse.next();
+      response.cookies.delete('authjs.session-token');
+      response.cookies.delete('__Secure-authjs.session-token');
+      response.cookies.delete('next-auth.session-token');
+      response.cookies.delete('__Secure-next-auth.session-token');
+      response.cookies.delete('activeCompanyId');
+      return response;
+    }
+
     if (isAuthenticated) {
       const adminRoles = ['admin', 'super_admin', 'company_admin'];
       if (adminRoles.includes(req.auth?.user?.role as string)) {

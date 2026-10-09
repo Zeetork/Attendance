@@ -19,8 +19,9 @@ const allura = Allura({
 });
 
 
-import PushNotificationInitializer from '@/components/PushNotificationInitializer';
+import NativePushNotifications from '@/components/NativePushNotifications';
 import WebPushInitializer from '@/components/WebPushInitializer';
+import UserStatusWatcher from '@/components/UserStatusWatcher';
 
 export default function RootLayout({
   children,
@@ -47,7 +48,8 @@ export default function RootLayout({
       <body className="min-h-screen font-sans antialiased bg-background text-foreground">
         <SessionProvider>
           <CompanyProvider>
-            <PushNotificationInitializer />
+            <UserStatusWatcher />
+            <NativePushNotifications />
             <WebPushInitializer />
             {children}
             <Toaster position="bottom-right" />

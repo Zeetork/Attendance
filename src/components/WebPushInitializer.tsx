@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Bell, X, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { Capacitor } from '@capacitor/core';
 import {
   autoRegisterPushToken,
   requestWebPushPermission,
@@ -20,28 +21,30 @@ import {
  */
 export default function WebPushInitializer() {
   const { data: session, status } = useSession();
-  const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('default');
+  const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>(() => {
+    if (typeof window === 'undefined') return 'default';
+    if (
+      Capacitor.isNativePlatform() ||
+      !('Notification' in window) ||
+      !('serviceWorker' in navigator)
+    ) {
+      return 'unsupported';
+    }
+    return Notification.permission;
+  });
   const [isVisible, setIsVisible] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
 
   useEffect(() => {
-    if (status !== 'authenticated' || !session?.user?.id) return;
-
-    if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) {
-      setPermission('unsupported');
-      return;
-    }
+    if (status !== 'authenticated' || !session?.user?.id || permission === 'unsupported') return;
 
     const currentPermission = Notification.permission;
-    setPermission(currentPermission);
-
     if (currentPermission === 'granted') {
       // 1. User has already enabled notifications -> auto-sync token and attach listener
       setupForegroundMessageListener();
       autoRegisterPushToken().catch((err) => {
         console.warn('Auto web push registration notice:', err);
       });
-      setIsVisible(false);
     } else if (currentPermission === 'default') {
       // 2. Notifications are turned off / not yet prompted -> check if dismissed in current session
       const isDismissed = sessionStorage.getItem('hrms_push_prompt_dismissed');
@@ -53,13 +56,9 @@ export default function WebPushInitializer() {
         return () => clearTimeout(timer);
       }
     } else if (currentPermission === 'denied') {
-      // 3. Blocked by browser settings
-      const isDismissed = sessionStorage.getItem('hrms_push_denied_dismissed');
-      if (!isDismissed) {
-        setIsVisible(false); // Don't aggressively nag if blocked, keep it subtle
-      }
+      // 3. Blocked by browser settings - keep prompt hidden
     }
-  }, [session, status]);
+  }, [session, status, permission]);
 
   const handleEnableNotifications = async () => {
     setIsRequesting(true);

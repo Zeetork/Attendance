@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
@@ -18,6 +18,15 @@ export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('error') === 'inactive') {
+        setError('Your account has been deactivated by the administrator. You have been logged out.');
+      }
+    }
+  }, []);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -37,7 +46,17 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
+        const isInactive =
+          (result as any).code === 'inactive_account' ||
+          (result as any).error === 'inactive_account' ||
+          result.url?.includes('code=inactive_account') ||
+          result.url?.includes('inactive_account');
+
+        if (isInactive) {
+          setError('Your account is deactivated. Please contact your administrator.');
+        } else {
+          setError('Invalid email or password');
+        }
       } else {
         router.push('/');
         router.refresh();
