@@ -5,10 +5,15 @@ import User from '@/models/User';
 import Attendance from '@/models/Attendance';
 import Leave from '@/models/Leave';
 import Notification from '@/models/Notification';
+import Shift, { IShift } from '@/models/Shift';
+import Holiday from '@/models/Holiday';
 import { sendWebPushNotification } from '@/lib/sendWebPushNotification';
 import mongoose from 'mongoose';
 
-// Helper to determine today's date range in IST
+// Ensure Shift model is loaded in Mongoose schema cache
+void Shift;
+
+// Helper to determine today's date range and day name in IST
 function getTodayISTDateRange() {
   const now = new Date();
   const istDateString = now.toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata' });
@@ -23,8 +28,12 @@ function getTodayISTDateRange() {
     day: 'numeric',
     timeZone: 'Asia/Kolkata',
   });
+  const dayName = new Date(todayStart).toLocaleDateString('en-US', {
+    weekday: 'long',
+    timeZone: 'Asia/Kolkata',
+  });
 
-  return { todayStart, todayEnd, formattedDate };
+  return { todayStart, todayEnd, formattedDate, dayName };
 }
 
 // Helper to process attendance reminders for a given type ('check-in' or 'check-out')
@@ -35,10 +44,20 @@ async function processReminders({
   type: 'check-in' | 'check-out';
   companyId?: string | null;
 }) {
-  const { todayStart, todayEnd, formattedDate } = getTodayISTDateRange();
+  const { todayStart, todayEnd, formattedDate, dayName } = getTodayISTDateRange();
 
-  // Build user query - include all active staff and employees
-  const query: any = {
+  // 1. Pre-fetch today's public and company holidays
+  const todayHolidays = await Holiday.find(
+    {
+      date: { $gte: todayStart, $lte: todayEnd },
+      holidayType: { $in: ['public', 'company'] },
+    },
+    null,
+    { bypassTenant: true }
+  ).lean();
+
+  // 2. Build user query - include all active staff and employees
+  const query: Record<string, unknown> = {
     isActive: true,
   };
 
@@ -46,15 +65,39 @@ async function processReminders({
     query.companyId = new mongoose.Types.ObjectId(companyId);
   }
 
-  const activeEmployees = await User.find(query, null, { bypassTenant: true }).lean();
+  // Populate shiftId to inspect workingDays pattern
+  const activeEmployees = await User.find(query, null, { bypassTenant: true })
+    .populate('shiftId')
+    .lean();
 
   const remindersSent: string[] = [];
   let pushCount = 0;
   let inAppCount = 0;
 
   for (const employee of activeEmployees) {
-    // 1. Check if employee has an approved leave today
-    const activeLeave = await Leave.findOne(
+    // 3. Check if today is a Holiday for this employee's company or public
+    const isHoliday = todayHolidays.some((h) => {
+      if (!h.companyId) return true; // public holiday applies to everyone
+      return employee.companyId && h.companyId.toString() === employee.companyId.toString();
+    });
+
+    if (isHoliday && type === 'check-in') {
+      continue; // Never send check-in reminders on holidays
+    }
+
+    // 4. Check if today is a Weekly Off according to the employee's assigned shift
+    const shift = employee.shiftId as unknown as IShift | null;
+    const isWeeklyOff =
+      shift && Array.isArray(shift.workingDays) && shift.workingDays.length > 0
+        ? !shift.workingDays.some((wd: string) => wd.toLowerCase() === dayName.toLowerCase())
+        : dayName.toLowerCase() === 'sunday';
+
+    if (isWeeklyOff && type === 'check-in') {
+      continue; // Skip employee on weekly off
+    }
+
+    // 5. Check if employee has an approved leave today
+    const approvedLeaves = await Leave.find(
       {
         userId: employee._id,
         status: 'approved',
@@ -63,13 +106,25 @@ async function processReminders({
       },
       null,
       { bypassTenant: true }
+    ).lean();
+
+    const isFullDayApproved = approvedLeaves.some((l) => l.duration !== 'half_day');
+    const hasFirstHalfApproved = approvedLeaves.some(
+      (l) => l.duration === 'half_day' && l.halfDaySession === 'first_half'
+    );
+    const hasSecondHalfApproved = approvedLeaves.some(
+      (l) => l.duration === 'half_day' && l.halfDaySession === 'second_half'
     );
 
-    if (activeLeave) {
-      continue; // Skip employee on leave
+    if (type === 'check-in' && (isFullDayApproved || hasFirstHalfApproved)) {
+      continue; // Skip employee on full-day or first-half approved leave
     }
 
-    // 2. Check today's attendance record
+    if (type === 'check-out' && (isFullDayApproved || hasSecondHalfApproved)) {
+      continue; // Skip employee on full-day or second-half approved leave
+    }
+
+    // 6. Check today's attendance record
     const todayAttendance = await Attendance.findOne(
       {
         userId: employee._id,
@@ -79,20 +134,34 @@ async function processReminders({
       { bypassTenant: true }
     );
 
+    const hasCheckedIn = Boolean(
+      todayAttendance?.loginTime ||
+      todayAttendance?.firstHalf?.checkIn ||
+      (Array.isArray(todayAttendance?.sessions) && todayAttendance.sessions.some((s) => s.checkIn))
+    );
+
+    const hasCheckedOut = Boolean(
+      todayAttendance?.logoutTime ||
+      todayAttendance?.secondHalf?.checkOut ||
+      (Array.isArray(todayAttendance?.sessions) &&
+        todayAttendance.sessions.length > 0 &&
+        todayAttendance.sessions.every((s) => s.checkOut))
+    );
+
     let shouldSend = false;
     let title = '';
     let body = '';
 
     if (type === 'check-in') {
       // Has not checked in yet
-      if (!todayAttendance || !todayAttendance.loginTime) {
+      if (!hasCheckedIn) {
         shouldSend = true;
         title = 'Action Required: Daily Attendance Check-In Reminder';
         body = `Hi ${employee.name}, please remember to mark your check-in attendance for today (${formattedDate}).`;
       }
     } else if (type === 'check-out') {
       // Checked in, but hasn't checked out yet
-      if (todayAttendance && todayAttendance.loginTime && !todayAttendance.logoutTime) {
+      if (hasCheckedIn && !hasCheckedOut) {
         shouldSend = true;
         title = 'Action Required: Daily Attendance Check-Out Reminder';
         body = `Hi ${employee.name}, please remember to check out before leaving to ensure your work hours are tracked.`;
@@ -111,6 +180,7 @@ async function processReminders({
         data: {
           url: '/employee/attendance',
           type: `reminder_${type}`,
+          tag: `attendance_reminder_${type}`,
         },
       });
       if (pushRes.sent > 0) {
@@ -169,9 +239,10 @@ export async function GET(req: Request) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
     console.error('CRON Error [Attendance Reminder]:', error);
-    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error', details: message }, { status: 500 });
   }
 }
 
@@ -179,8 +250,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    const role = (session?.user as any)?.role;
-    if (!session?.user?.id || !['admin', 'super_admin', 'company_admin'].includes(role)) {
+    const user = session?.user as { id?: string; role?: string; companyId?: string } | undefined;
+    const role = user?.role;
+    if (!user?.id || !role || !['admin', 'super_admin', 'company_admin'].includes(role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -192,7 +264,7 @@ export async function POST(req: Request) {
     await dbConnect();
 
     // If company admin, only send to their company
-    const companyId = role === 'company_admin' ? (session.user as any).companyId : null;
+    const companyId = role === 'company_admin' ? user.companyId : null;
     const result = await processReminders({ type, companyId });
 
     return NextResponse.json(
@@ -206,8 +278,9 @@ export async function POST(req: Request) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
     console.error('API Error [Attendance Reminder POST]:', error);
-    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error', details: message }, { status: 500 });
   }
 }

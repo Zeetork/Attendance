@@ -22,8 +22,23 @@ export const sendWebPushNotification = async (
     return { found: 0, sent: 0, failed: 0 };
   }
 
-  const tokenStrings = tokens.map((t) => t.token);
+  // Deduplicate tokens: if an employee has multiple tokens for the same platform or device,
+  // keep only the most recent active token to prevent sending duplicate notifications to the same client.
+  const tokenMap = new Map<string, string>();
+  const sortedTokens = [...tokens].sort((a, b) => {
+    return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
+  });
+
+  for (const t of sortedTokens) {
+    const key = t.deviceId ? `${t.platform}:${t.deviceId}` : `${t.platform}`;
+    if (!tokenMap.has(key)) {
+      tokenMap.set(key, t.token);
+    }
+  }
+
+  const tokenStrings = Array.from(new Set(tokenMap.values()));
   const clickUrl = notification.data?.url || (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+  const notificationTag = notification.data?.tag || notification.data?.type || 'attendance-notification';
 
   // 2. Build the message with notification, webpush config, and data payload
   const message: MulticastMessage = {
@@ -31,13 +46,20 @@ export const sendWebPushNotification = async (
       title: notification.title,
       body: notification.body,
     },
-    data: notification.data || {},
+    data: {
+      ...(notification.data || {}),
+      title: notification.title,
+      body: notification.body,
+      tag: notificationTag,
+      url: clickUrl,
+    },
     webpush: {
       notification: {
         title: notification.title,
         body: notification.body,
         icon: '/TF.png',
         badge: '/TF.png',
+        tag: notificationTag,
       },
       fcmOptions: {
         link: clickUrl,
@@ -52,7 +74,7 @@ export const sendWebPushNotification = async (
     // 3. Handle individual token failures & cleanup stale tokens
     if (response.failureCount > 0) {
       const failedTokens: string[] = [];
-      response.responses.forEach((resp: any, idx: number) => {
+      response.responses.forEach((resp, idx: number) => {
         if (!resp.success) {
           const errorCode = resp.error?.code;
           if (
@@ -65,7 +87,7 @@ export const sendWebPushNotification = async (
       });
 
       if (failedTokens.length > 0) {
-        await PushToken.deleteMany({ token: { $in: failedTokens } }, { bypassTenant: true } as any);
+        await PushToken.deleteMany({ token: { $in: failedTokens } });
       }
     }
 
@@ -95,6 +117,7 @@ export const sendWebPushToAll = async (
 
   const tokenStrings = Array.from(new Set(tokens.map((t) => t.token)));
   const clickUrl = notification.data?.url || (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+  const notificationTag = notification.data?.tag || notification.data?.type || 'attendance-notification';
 
   let totalSent = 0;
   let totalFailed = 0;
@@ -109,13 +132,20 @@ export const sendWebPushToAll = async (
         title: notification.title,
         body: notification.body,
       },
-      data: notification.data || {},
+      data: {
+        ...(notification.data || {}),
+        title: notification.title,
+        body: notification.body,
+        tag: notificationTag,
+        url: clickUrl,
+      },
       webpush: {
         notification: {
           title: notification.title,
           body: notification.body,
           icon: '/TF.png',
           badge: '/TF.png',
+          tag: notificationTag,
         },
         fcmOptions: {
           link: clickUrl,
@@ -130,7 +160,7 @@ export const sendWebPushToAll = async (
       totalFailed += response.failureCount;
 
       if (response.failureCount > 0) {
-        response.responses.forEach((resp: any, idx: number) => {
+        response.responses.forEach((resp, idx: number) => {
           if (!resp.success) {
             const errorCode = resp.error?.code;
             if (

@@ -31,8 +31,9 @@ export const requestWebPushPermission = async (): Promise<string | null> => {
       return null;
     }
 
-    // Register service worker
-    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    // Register service worker with version cache-buster and force update
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js?v=1.0.3');
+    await registration.update().catch(() => {});
     await navigator.serviceWorker.ready;
 
     const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
@@ -90,20 +91,7 @@ export const setupForegroundMessageListener = (messagingInstance?: Messaging | n
           duration: 6000,
         });
 
-        // 2. If the user is on another application/tab, show native OS notification as well
-        if (document.hidden && Notification.permission === 'granted') {
-          try {
-            new Notification(title, {
-              body,
-              icon: '/TF.png',
-              badge: '/TF.png',
-            });
-          } catch (e) {
-            // Some mobile browsers restrict new Notification in document context
-          }
-        }
-
-        // 3. Dispatch an event for reactive components (like Notification bell) to update
+        // 2. Dispatch an event for reactive components (like Notification bell) to update
         window.dispatchEvent(new CustomEvent('fcm-message-received', { detail: payload }));
       });
 

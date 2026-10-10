@@ -5,6 +5,7 @@ export interface IPushToken extends Document {
   userId: mongoose.Types.ObjectId;
   token: string;
   platform: 'web' | 'android' | 'ios';
+  deviceId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,6 +16,7 @@ const PushTokenSchema: Schema = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     token: { type: String, required: true, unique: true },
     platform: { type: String, enum: ['web', 'android', 'ios'], required: true },
+    deviceId: { type: String, required: false },
   },
   { timestamps: true }
 );
@@ -22,6 +24,7 @@ const PushTokenSchema: Schema = new Schema(
 // Indexes for faster lookup
 PushTokenSchema.index({ userId: 1 });
 PushTokenSchema.index({ companyId: 1 });
+PushTokenSchema.index({ userId: 1, deviceId: 1 });
 
 const PushToken: Model<IPushToken> = mongoose.models.PushToken || mongoose.model<IPushToken>('PushToken', PushTokenSchema);
 export default PushToken;

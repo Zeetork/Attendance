@@ -1,5 +1,15 @@
+// Firebase Messaging Service Worker v1.0.3
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+
+// Ensure new versions activate immediately without waiting for browser restart
+self.addEventListener('install', function () {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function (event) {
+  event.waitUntil(self.clients.claim());
+});
 
 const firebaseConfig = {
   apiKey: "AIzaSyCbTUYmWhYGU4sBp69L2KhC2h7nR8sF4Gw",
@@ -16,11 +26,22 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function (payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  const notificationTitle = payload.notification?.title || payload.data?.title || 'TruFlow Attendance';
+
+  // If the push message already has a notification payload, Firebase Cloud Messaging
+  // automatically displays it in the system tray. Never call showNotification() here
+  // to prevent duplicate popups.
+  if (payload.notification) {
+    return;
+  }
+
+  // Only display manually if this is a data-only message (no payload.notification)
+  const notificationTitle = payload.data?.title || 'TruFlow Attendance';
   const notificationOptions = {
-    body: payload.notification?.body || payload.data?.body || '',
+    body: payload.data?.body || '',
     icon: '/TF.png',
     badge: '/TF.png',
+    tag: payload.data?.tag || payload.data?.type || 'attendance-notification',
+    renotify: false,
     data: {
       url: payload.data?.url || payload.fcmOptions?.link || '/'
     }
