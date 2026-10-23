@@ -4,8 +4,17 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Search, CheckCircle, XCircle, Clock, User as UserIcon, Calendar } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Clock, User as UserIcon, Calendar, FileText, ExternalLink, Download } from 'lucide-react';
 import { api } from '@/services/api';
+
+function getAttachmentUrl(file: string): string {
+  if (!file) return '';
+  const match = file.match(/\/file\/([a-zA-Z0-9]+)/);
+  if (match) {
+    return `/api/leaves/attachment/${match[1]}`;
+  }
+  return file;
+}
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -125,7 +134,38 @@ export default function LeavesClient() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-card-foreground">
-                        {leave.leaveType}
+                        <div>{leave.leaveType}</div>
+                        {leave.attachments && leave.attachments.length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-1.5">
+                            {leave.attachments.map((file: string, index: number) => {
+                              const viewUrl = getAttachmentUrl(file);
+                              const downloadUrl = `${viewUrl}${viewUrl.includes('?') ? '&' : '?'}download=true`;
+                              return (
+                                <div key={index} className="inline-flex items-center rounded-lg overflow-hidden border border-blue-500/30 bg-blue-500/10 shadow-sm">
+                                  <a
+                                    href={viewUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-colors"
+                                    title="Open in new tab"
+                                  >
+                                    <FileText className="w-3.5 h-3.5" />
+                                    <span>{leave.leaveType === 'Sick Leave' ? 'Medical Certificate' : 'Document'}</span>
+                                    <ExternalLink className="w-2.5 h-2.5 opacity-70" />
+                                  </a>
+                                  <a
+                                    href={downloadUrl}
+                                    download
+                                    className="px-2 py-1 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30 border-l border-blue-500/20 transition-colors"
+                                    title="Direct Download"
+                                  >
+                                    <Download className="w-3 h-3" />
+                                  </a>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-bold text-card-foreground">{format(new Date(leave.fromDate), 'MMM dd')} {leave.duration === 'multiple_days' ? `- ${format(new Date(leave.toDate), 'MMM dd')}` : ''}</div>

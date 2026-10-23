@@ -4,9 +4,18 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { format } from 'date-fns';
-import { Plus, X, CheckCircle, XCircle, Clock, Loader2, Calendar } from 'lucide-react';
+import { Plus, X, CheckCircle, XCircle, Clock, Loader2, Calendar, FileText, Trash2, ExternalLink, Download } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { api } from '@/services/api';
+
+function getAttachmentUrl(file: string): string {
+  if (!file) return '';
+  const match = file.match(/\/file\/([a-zA-Z0-9]+)/);
+  if (match) {
+    return `/api/leaves/attachment/${match[1]}`;
+  }
+  return file;
+}
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -34,6 +43,7 @@ export default function EmployeeLeavesClient() {
     }
   }, [searchParams]);
   
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     leaveType: '',
     fromDate: '',
@@ -41,7 +51,6 @@ export default function EmployeeLeavesClient() {
     duration: 'full_day',
     halfDaySession: '',
     reason: '',
-    attachments: [] as string[]
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,10 +58,23 @@ export default function EmployeeLeavesClient() {
     setIsSubmitting(true);
     
     try {
+      const submitFormData = new FormData();
+      submitFormData.append('leaveType', formData.leaveType);
+      submitFormData.append('fromDate', formData.fromDate);
+      submitFormData.append('toDate', formData.duration === 'full_day' ? formData.fromDate : formData.toDate);
+      submitFormData.append('duration', formData.duration);
+      if (formData.halfDaySession) {
+        submitFormData.append('halfDaySession', formData.halfDaySession);
+      }
+      submitFormData.append('reason', formData.reason);
+
+      selectedFiles.forEach(file => {
+        submitFormData.append('files', file);
+      });
+
       const res = await api('/api/leaves/apply', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: submitFormData,
       });
       
       if (!res.ok) {
@@ -62,7 +84,8 @@ export default function EmployeeLeavesClient() {
       
       mutate();
       setIsModalOpen(false);
-      setFormData({ leaveType: '', fromDate: '', toDate: '', duration: 'full_day', halfDaySession: '', reason: '', attachments: [] });
+      setFormData({ leaveType: '', fromDate: '', toDate: '', duration: 'full_day', halfDaySession: '', reason: '' });
+      setSelectedFiles([]);
       setSelectedRestrictedHolidayId('');
       toast.success('Leave applied successfully');
     } catch (err: any) {
@@ -74,16 +97,26 @@ export default function EmployeeLeavesClient() {
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    Promise.all(files.map(file => {
-      return new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    })).then(base64Files => {
-      setFormData(prev => ({ ...prev, attachments: [...prev.attachments, ...base64Files] }));
-    });
+    const allowed = ['pdf', 'png', 'jpg', 'jpeg'];
+    const validFiles: File[] = [];
+
+    for (const file of files) {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (!ext || !allowed.includes(ext)) {
+        toast.error(`"${file.name}" is not supported. Please upload PDF, PNG, JPG, or JPEG.`);
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...validFiles]);
+    }
+    e.target.value = '';
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const leaves = data?.leaves || [];
@@ -208,6 +241,37 @@ export default function EmployeeLeavesClient() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-muted-foreground group-hover:text-accent-foreground/80 max-w-xs truncate" title={leave.reason}>{leave.reason}</div>
+                        {leave.attachments && leave.attachments.length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-1.5">
+                            {leave.attachments.map((file: string, index: number) => {
+                              const viewUrl = getAttachmentUrl(file);
+                              const downloadUrl = `${viewUrl}${viewUrl.includes('?') ? '&' : '?'}download=true`;
+                              return (
+                                <div key={index} className="inline-flex items-center rounded-lg overflow-hidden border border-blue-500/20 bg-blue-500/10 shadow-sm">
+                                  <a
+                                    href={viewUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-colors"
+                                    title="Open in new tab"
+                                  >
+                                    <FileText className="w-3 h-3" />
+                                    <span>{leave.leaveType === 'Sick Leave' ? 'Medical Certificate' : 'Document'}</span>
+                                    <ExternalLink className="w-2.5 h-2.5 opacity-70" />
+                                  </a>
+                                  <a
+                                    href={downloadUrl}
+                                    download
+                                    className="px-1.5 py-0.5 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30 border-l border-blue-500/20 transition-colors"
+                                    title="Direct Download"
+                                  >
+                                    <Download className="w-3 h-3" />
+                                  </a>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground group-hover:text-accent-foreground/80">
                         {format(new Date(leave.createdAt), 'MMM dd, yyyy')}
@@ -423,17 +487,40 @@ export default function EmployeeLeavesClient() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-card-foreground mb-1.5">Supporting Documents</label>
+                  <label className="block text-sm font-medium text-card-foreground mb-1.5">
+                    {formData.leaveType === 'Sick Leave' ? 'Medical Certificate (Zoho WorkDrive)' : 'Supporting Documents'}
+                  </label>
                   <input
                     type="file"
                     multiple
-                    accept=".pdf,.jpg,.jpeg,.png"
+                    accept=".pdf,.png,.jpg,.jpeg"
                     className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-muted-foreground file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 text-sm transition-colors"
                     onChange={handleFileUpload}
                   />
-                  <p className="text-xs text-muted-foreground mt-1.5">Medical certificate required for Sick Leave &gt; 4 days.</p>
-                  {formData.attachments.length > 0 && (
-                    <div className="mt-2 text-sm text-green-500">{formData.attachments.length} file(s) attached</div>
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    Acceptable formats: <span className="font-semibold text-foreground">PDF, PNG, JPG, JPEG</span>. Stored securely in Zoho WorkDrive.
+                  </p>
+
+                  {selectedFiles.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {selectedFiles.map((file, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-2 bg-muted/40 rounded-xl border border-border text-xs">
+                          <div className="flex items-center gap-2 truncate">
+                            <FileText className="w-4 h-4 text-primary shrink-0" />
+                            <span className="font-medium truncate text-foreground">{file.name}</span>
+                            <span className="text-muted-foreground text-[10px]">({(file.size / 1024).toFixed(1)} KB)</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFile(idx)}
+                            className="text-destructive hover:text-destructive/80 p-1 rounded-md transition-colors"
+                            title="Remove file"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
 
@@ -443,7 +530,14 @@ export default function EmployeeLeavesClient() {
                     disabled={isSubmitting}
                     className="w-full inline-flex justify-center items-center rounded-xl border border-transparent shadow-sm px-4 py-2 min-h-[44px] bg-primary text-sm font-bold text-primary-foreground hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:ml-3 sm:w-auto disabled:opacity-50 transition-colors"
                   >
-                    {isSubmitting ? <Loader2 className="animate-spin h-5 w-5" /> : 'Submit Application'}
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                        <span>Uploading & Applying...</span>
+                      </>
+                    ) : (
+                      'Submit Application'
+                    )}
                   </button>
                   <button
                     type="button"

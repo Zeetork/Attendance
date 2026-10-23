@@ -3,9 +3,18 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { format } from 'date-fns';
-import { CheckCircle, XCircle, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, FileText, ExternalLink, Download } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { api } from '@/services/api';
+
+function getAttachmentUrl(file: string): string {
+  if (!file) return '';
+  const match = file.match(/\/file\/([a-zA-Z0-9]+)/);
+  if (match) {
+    return `/api/leaves/attachment/${match[1]}`;
+  }
+  return file;
+}
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -68,20 +77,38 @@ export default function ApprovalClient() {
             <p className="text-sm font-bold text-muted-foreground">Date: {format(new Date(req.fromDate), 'MMM dd, yyyy')} {req.duration === 'multiple_days' ? `- ${format(new Date(req.toDate), 'MMM dd, yyyy')}` : ''}</p>
             <p className="text-xs font-bold text-muted-foreground">Duration: {req.duration === 'half_day' ? `Half Day (${req.halfDaySession === 'first_half' ? 'First Half' : 'Second Half'})` : req.duration === 'multiple_days' ? 'Multiple Days' : 'Full Day'} • {req.numberOfDays} Day(s)</p>
             {req.attachments && req.attachments.length > 0 && (
-              <div className="mt-2">
-                <p className="text-xs font-bold text-muted-foreground mb-1">Supporting Documents:</p>
+              <div className="mt-2.5">
+                <p className="text-xs font-bold text-muted-foreground mb-1.5">
+                  {req.leaveType === 'Sick Leave' ? 'Medical Certificate (Zoho WorkDrive):' : 'Supporting Documents:'}
+                </p>
                 <div className="flex flex-wrap gap-2">
-                  {req.attachments.map((file: string, index: number) => (
-                    <a
-                      key={index}
-                      href={file}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-bold text-primary hover:text-primary/80 hover:underline bg-primary/10 border border-primary/20 px-2 py-1 rounded transition-colors"
-                    >
-                      View Document {index + 1}
-                    </a>
-                  ))}
+                  {req.attachments.map((file: string, index: number) => {
+                    const viewUrl = getAttachmentUrl(file);
+                    const downloadUrl = `${viewUrl}${viewUrl.includes('?') ? '&' : '?'}download=true`;
+                    return (
+                      <div key={index} className="inline-flex items-center rounded-xl overflow-hidden border border-blue-500/30 bg-blue-500/10 shadow-sm">
+                        <a
+                          href={viewUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-all"
+                          title="Open in new tab"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>{req.leaveType === 'Sick Leave' ? `View Medical Certificate${req.attachments.length > 1 ? ` #${index + 1}` : ''}` : `View Document ${index + 1}`}</span>
+                          <ExternalLink className="w-3 h-3 opacity-70" />
+                        </a>
+                        <a
+                          href={downloadUrl}
+                          download
+                          className="px-2.5 py-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-500/30 border-l border-blue-500/20 transition-all"
+                          title="Direct Download"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
