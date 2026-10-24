@@ -161,7 +161,7 @@ export function generatePayslipHtml(payroll: any, user: any, company: any) {
           </tr>
           <tr>
             <td>Bonus</td>
-            <td class="text-right border-r">${formatAmount(bonus)}</td>
+            <td class="text-right border-r">${bonus && bonus > 0 ? formatAmount(bonus) : '-'}</td>
             <td>Rental Deductions</td>
             <td class="text-right">${formatAmount(rental)}</td>
           </tr>

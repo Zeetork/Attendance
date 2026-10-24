@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
-import { Search, Edit, Loader2, Save, X, Clock, Calendar } from 'lucide-react';
+import { Search, Edit, Loader2, Save, X, Clock, Calendar, Gift } from 'lucide-react';
 import { api } from '@/services/api';
 import SalaryTimelineManager from './SalaryTimelineManager';
+import BonusHistoryManager from './BonusHistoryManager';
 import { getSalaryForPayrollPeriod } from '@/lib/salaryUtils';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -19,6 +20,9 @@ export default function SalaryConfigurator() {
 
   // Salary Timeline modal state
   const [selectedUserForTimeline, setSelectedUserForTimeline] = useState<any | null>(null);
+
+  // Bonus History modal state
+  const [isBonusHistoryOpen, setIsBonusHistoryOpen] = useState(false);
 
   const users = data?.users || [];
   
@@ -60,7 +64,7 @@ export default function SalaryConfigurator() {
 
   return (
     <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col">
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b border-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="relative max-w-md w-full">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-muted-foreground" />
@@ -73,6 +77,15 @@ export default function SalaryConfigurator() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+
+        <button
+          type="button"
+          onClick={() => setIsBonusHistoryOpen(true)}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl shadow-sm hover:bg-primary/90 transition-colors shrink-0 min-h-[44px]"
+        >
+          <Gift className="w-4 h-4" />
+          Bonus History
+        </button>
       </div>
 
       <div className="overflow-x-auto">
@@ -277,6 +290,13 @@ export default function SalaryConfigurator() {
           }}
         />
       )}
+
+      {/* Bonus History & Bulk Distribution Modal */}
+      <BonusHistoryManager
+        isOpen={isBonusHistoryOpen}
+        onClose={() => setIsBonusHistoryOpen(false)}
+        onUpdate={() => mutate()}
+      />
     </div>
   );
 }

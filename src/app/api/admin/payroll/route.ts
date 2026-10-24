@@ -7,6 +7,7 @@ import User from '@/models/User';
 import Attendance from '@/models/Attendance';
 import Holiday from '@/models/Holiday';
 import Leave from '@/models/Leave';
+import BonusHistory from '@/models/BonusHistory';
 import { startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay } from 'date-fns';
 import { getSalaryForPayrollPeriod } from '@/lib/salaryUtils';
 
@@ -103,6 +104,13 @@ export async function POST(req: NextRequest) {
 
     const daysInMonth = eachDayOfInterval({ start: startDate, end: endDate });
     const totalCalendarDays = new Date(year, month, 0).getDate();
+
+    // Check if there is a Bonus History record for this company, month & year
+    const bonusHistoryQuery: any = { month, year };
+    if (activeCompanyId) {
+      bonusHistoryQuery.companyId = activeCompanyId;
+    }
+    const bonusHistoryRecord = await BonusHistory.findOne(bonusHistoryQuery).lean();
 
     const generatedPayrolls = [];
 
@@ -286,7 +294,25 @@ export async function POST(req: NextRequest) {
       const basicSalary = timeline?.basicSalary ?? Math.round(monthlySalary * 0.5);
       const hra = timeline?.hra ?? Math.round(monthlySalary * 0.15);
       const da = timeline?.da ?? (monthlySalary - basicSalary - hra);
-      const bonus = timeline?.bonus || 0;
+
+      // Determine bonus: Check Bonus History first, fallback to salary timeline
+      let bonus = 0;
+      let isBonusFromHistory = false;
+      if (bonusHistoryRecord && bonusHistoryRecord.employees && bonusHistoryRecord.employees.length > 0) {
+        const empBonus = bonusHistoryRecord.employees.find(
+          (e: any) => e.userId?.toString() === user._id.toString() || e.employeeId === user.employeeId
+        );
+        if (empBonus && typeof empBonus.bonusAmount === 'number') {
+          bonus = empBonus.bonusAmount;
+          isBonusFromHistory = true;
+        }
+      }
+
+      // If not in bonus history, fallback to timeline
+      if (!isBonusFromHistory) {
+        bonus = timeline?.bonus || 0;
+      }
+
       const basicPlusDa = basicSalary + da;
 
       const salaryTimelineEffectiveFrom = salaryInfo?.effectiveFrom ? new Date(salaryInfo.effectiveFrom) : undefined;
@@ -356,7 +382,8 @@ export async function POST(req: NextRequest) {
       }
 
       const deductionAmount = lossOfPay + timelineOtherDeductions + esiDeduction + hraDeduction + loanDeduction;
-      const grossSalary = monthlySalary + extraPayAmount;
+      const bonusAddition = isBonusFromHistory ? bonus : 0;
+      const grossSalary = monthlySalary + extraPayAmount + bonusAddition;
       const netSalary = grossSalary - deductionAmount;
 
       // Delete any previous payroll for this user for the same month & year to ensure no duplicate records exist
@@ -392,7 +419,7 @@ export async function POST(req: NextRequest) {
         loanDeduction,
         lossOfPay,
         otherDeductions: timelineOtherDeductions,
-        grossSalary: monthlySalary,
+        grossSalary,
         deductionAmount,
         netSalary,
         generatedAt: new Date(),

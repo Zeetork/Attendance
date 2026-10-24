@@ -746,7 +746,7 @@ export default function PayrollClient() {
                               </tr>
                               <tr className="border-b border-black">
                                 <td className="p-2 border-r border-black">Bonus</td>
-                                <td className="p-2 border-r border-black text-right">{fmt(bonus)}</td>
+                                <td className="p-2 border-r border-black text-right">{bonus && bonus > 0 ? fmt(bonus) : '-'}</td>
                                 <td className="p-2 border-r border-black">Rental Deductions</td>
                                 <td className="p-2 text-right">{fmt(rental)}</td>
                               </tr>

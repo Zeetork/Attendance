@@ -311,7 +311,7 @@ export const PayslipDocument = ({ payroll, user, company }: PayslipProps) => {
           {/* Row 4 */}
           <View style={styles.row}>
             <Text style={styles.earnLabelCell}>Bonus</Text>
-            <Text style={styles.earnAmountCell}>{formatAmount(bonus)}</Text>
+            <Text style={styles.earnAmountCell}>{bonus && bonus > 0 ? formatAmount(bonus) : '-'}</Text>
             <Text style={styles.dedLabelCell}>Rental Deductions</Text>
             <Text style={styles.dedAmountCell}>{formatAmount(rental)}</Text>
           </View>
